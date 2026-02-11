@@ -3,22 +3,24 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#0b0b0c" />
+  <meta name="theme-color" content="#ffffff" />
   <title>LP Grill — Pedidos</title>
 
   <style>
     :root{
-      --bg:#0b0b0c;
-      --card:#121214;
-      --card2:#17171a;
-      --text:#f4f4f5;
-      --muted:#a1a1aa;
-      --line:#242428;
-     --accent:#22c55e;
-      --accent2:#ffffff;
+      /* ✅ ALTERADO: tema claro */
+      --bg:#ffffff;
+      --card:#ffffff;
+      --card2:#f6f7f9;
+      --text:#111827;
+      --muted:#6b7280;
+      --line:#e5e7eb;
+
+      --accent:#22c55e;
+      --accent2:#0b0b0c;
       --ok:#22c55e;
       --warn:#f59e0b;
-      --shadow: 0 16px 40px rgba(0,0,0,.35);
+      --shadow: 0 16px 40px rgba(0,0,0,.12);
       --radius: 18px;
     }
     *{box-sizing:border-box}
@@ -26,27 +28,32 @@
     body{
       margin:0;
       font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, "Apple Color Emoji","Segoe UI Emoji";
-      background: radial-gradient(1200px 700px at 10% -10%, rgba(239,68,68,.18), transparent 55%),
-                  radial-gradient(900px 600px at 110% 10%, rgba(255,255,255,.06), transparent 55%),
-                  var(--bg);
+      /* ✅ ALTERADO: fundo branco com leve degradê */
+      background:
+        radial-gradient(1200px 700px at 10% -10%, rgba(34,197,94,.14), transparent 55%),
+        radial-gradient(900px 600px at 110% 10%, rgba(0,0,0,.04), transparent 55%),
+        var(--bg);
       color:var(--text);
     }
     a{color:inherit}
     .wrap{max-width:1120px;margin:0 auto;padding:18px 16px 110px}
+
     .topbar{
       position:sticky; top:0; z-index:20;
       backdrop-filter: blur(10px);
-      background: linear-gradient(to bottom, rgba(11,11,12,.92), rgba(11,11,12,.55));
-      border-bottom: 1px solid rgba(255,255,255,.06);
+      /* ✅ ALTERADO: topbar clara */
+      background: linear-gradient(to bottom, rgba(255,255,255,.92), rgba(255,255,255,.70));
+      border-bottom: 1px solid rgba(0,0,0,.06);
     }
     .topbar .inner{max-width:1120px;margin:0 auto;padding:14px 16px;display:flex;gap:12px;align-items:center;justify-content:space-between}
     .brand{display:flex;gap:12px;align-items:center}
     .logo{
       width:44px;height:44px;border-radius:14px;
       display:grid;place-items:center;
-      background: radial-gradient(120px 60px at 30% 20%, rgba(239,68,68,.35), transparent 60%), #101012;
-      border:1px solid rgba(255,255,255,.10);
-      box-shadow: 0 12px 26px rgba(0,0,0,.35);
+      /* ✅ ALTERADO: logo box claro */
+      background: radial-gradient(120px 60px at 30% 20%, rgba(34,197,94,.18), transparent 60%), #ffffff;
+      border:1px solid rgba(0,0,0,.10);
+      box-shadow: 0 12px 26px rgba(0,0,0,.12);
       overflow:hidden;
     }
     .logo img{width:100%;height:100%;object-fit:cover;display:none}
@@ -55,8 +62,8 @@
     .pill{
       display:inline-flex;align-items:center;gap:8px;
       padding:8px 10px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(18,18,20,.7);
+      border:1px solid rgba(0,0,0,.08);
+      background: rgba(255,255,255,.85);
       color:var(--muted);
       font-size:12px;
       white-space:nowrap;
@@ -65,8 +72,8 @@
     .dot.open{background:var(--ok)}
     .actions{display:flex;gap:10px;align-items:center}
     .btn{
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(18,18,20,.85);
+      border:1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.92);
       color:var(--text);
       padding:10px 12px;border-radius:14px;
       font-weight:600;
@@ -74,25 +81,26 @@
       transition:.15s ease;
       display:inline-flex;align-items:center;gap:10px;
     }
-    .btn:hover{transform: translateY(-1px); border-color: rgba(255,255,255,.22)}
+    .btn:hover{transform: translateY(-1px); border-color: rgba(0,0,0,.18)}
     .btn.primary{
-  background: linear-gradient(135deg, rgba(34,197,94,.95), rgba(34,197,94,.70));
-  border-color: rgba(34,197,94,.40);
-  box-shadow: 0 16px 34px rgba(34,197,94,.18);
-}
+      background: linear-gradient(135deg, rgba(34,197,94,.95), rgba(34,197,94,.75));
+      border-color: rgba(34,197,94,.45);
+      box-shadow: 0 16px 34px rgba(34,197,94,.18);
+      color:#fff;
     }
     .btn.ghost{background:transparent}
     .badge{
       min-width:20px;height:20px;padding:0 6px;border-radius:999px;
-      background: rgba(255,255,255,.10);
+      background: rgba(0,0,0,.06);
       display:inline-grid;place-items:center;
       font-size:12px;font-weight:800;
+      color: var(--text);
     }
 
     .hero{padding:18px 0 8px;display:grid;gap:14px}
     .heroCard{
-      background: linear-gradient(135deg, rgba(255,255,255,.06), rgba(255,255,255,.02));
-      border:1px solid rgba(255,255,255,.10);
+      background: linear-gradient(135deg, rgba(0,0,0,.03), rgba(0,0,0,.01));
+      border:1px solid rgba(0,0,0,.08);
       border-radius: var(--radius);
       padding:16px;
       box-shadow: var(--shadow);
@@ -103,8 +111,8 @@
       flex:1;
       min-width:220px;
       display:flex;gap:10px;align-items:center;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(18,18,20,.75);
+      border:1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.92);
       padding:10px 12px;border-radius:16px;
     }
     .search input{
@@ -115,8 +123,8 @@
     .tabs{display:flex;gap:10px;flex-wrap:wrap}
     .tab{
       padding:10px 12px;border-radius:999px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(18,18,20,.55);
+      border:1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.75);
       color:var(--muted);
       font-weight:700;font-size:13px;
       cursor:pointer;
@@ -124,8 +132,8 @@
     }
     .tab.active{
       color:var(--text);
-      border-color: rgba(239,68,68,.55);
-      background: rgba(239,68,68,.12);
+      border-color: rgba(34,197,94,.55);
+      background: rgba(34,197,94,.12);
     }
 
     .grid{display:grid;grid-template-columns: 1.2fr .8fr;gap:16px;margin-top:12px}
@@ -133,11 +141,11 @@
 
     .list{display:grid;gap:12px}
     .card{
-      background: linear-gradient(180deg, rgba(18,18,20,.92), rgba(18,18,20,.70));
-      border:1px solid rgba(255,255,255,.10);
+      background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,.88));
+      border:1px solid rgba(0,0,0,.08);
       border-radius: var(--radius);
       padding:14px;
-      box-shadow: 0 10px 26px rgba(0,0,0,.25);
+      box-shadow: 0 10px 26px rgba(0,0,0,.10);
     }
 
     /* ITEM COM FOTO */
@@ -148,8 +156,8 @@
       align-items:center;
       padding:12px;
       border-radius:16px;
-      border:1px solid rgba(255,255,255,.08);
-      background: rgba(23,23,26,.55);
+      border:1px solid rgba(0,0,0,.08);
+      background: rgba(0,0,0,.02);
     }
     @media (max-width: 520px){
       .item{grid-template-columns: 78px 1fr; grid-template-areas:
@@ -162,8 +170,8 @@
     }
     .thumb{
       width:86px;height:86px;border-radius:16px; overflow:hidden;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(255,255,255,.04);
+      border:1px solid rgba(0,0,0,.10);
+      background: rgba(0,0,0,.04);
       display:grid;place-items:center;
     }
     .thumb img{width:100%;height:100%;object-fit:cover;display:block}
@@ -175,14 +183,14 @@
     .qty{
       display:inline-flex;align-items:center;gap:10px;
       padding:8px 10px;border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(18,18,20,.65);
+      border:1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.92);
       justify-content:flex-end;
     }
     .qty button{
       width:28px;height:28px;border-radius:10px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(255,255,255,.06);
+      border:1px solid rgba(0,0,0,.10);
+      background: rgba(0,0,0,.04);
       color:var(--text);
       cursor:pointer;
       font-weight:900;
@@ -197,13 +205,13 @@
     .cartRow{
       display:grid;grid-template-columns: 1fr auto;gap:10px;align-items:center;
       padding:10px;border-radius:14px;
-      border:1px solid rgba(255,255,255,.08);
-      background: rgba(23,23,26,.40);
+      border:1px solid rgba(0,0,0,.08);
+      background: rgba(0,0,0,.02);
     }
     .cartRow .name{font-weight:800;font-size:13px}
     .cartRow .meta{color:var(--muted);font-size:12px;margin-top:2px}
     .cartRow .rm{border:0;background:transparent;color:rgba(239,68,68,.95);cursor:pointer;font-weight:900}
-    .totals{margin-top:12px;border-top:1px solid rgba(255,255,255,.10);padding-top:12px;display:grid;gap:8px}
+    .totals{margin-top:12px;border-top:1px solid rgba(0,0,0,.08);padding-top:12px;display:grid;gap:8px}
     .line{display:flex;justify-content:space-between;gap:10px;color:var(--muted);font-size:13px}
     .line strong{color:var(--text)}
     .form{display:grid;gap:10px;margin-top:12px}
@@ -211,8 +219,8 @@
     .field label{font-size:12px;color:var(--muted);font-weight:700}
     .field input, .field textarea, .field select{
       border-radius:14px;
-      border:1px solid rgba(255,255,255,.12);
-      background: rgba(18,18,20,.65);
+      border:1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.92);
       color:var(--text);
       padding:10px 12px;
       outline: none;
@@ -224,19 +232,19 @@
 
     .notice{
       padding:10px 12px;border-radius:16px;
-      border:1px solid rgba(255,255,255,.10);
-      background: rgba(245,158,11,.10);
+      border:1px solid rgba(0,0,0,.08);
+      background: rgba(245,158,11,.12);
       color: var(--text);
       font-size:13px;
       display:flex;gap:10px;align-items:flex-start;
     }
-    .notice.ok{background: rgba(34,197,94,.10)}
+    .notice.ok{background: rgba(34,197,94,.12)}
     .notice small{color:var(--muted)}
     .footer{
       margin-top:16px;color:var(--muted);font-size:12px;
       display:flex;justify-content:space-between;gap:12px;flex-wrap:wrap
     }
-    .divider{height:1px;background:rgba(255,255,255,.08);margin:12px 0}
+    .divider{height:1px;background:rgba(0,0,0,.08);margin:12px 0}
 
     /* BOTÃO FIXO NO CELULAR */
     .stickyOrder{
@@ -249,10 +257,10 @@
       max-width:1120px;
       margin:0 auto;
       border-radius: 18px;
-      border:1px solid rgba(255,255,255,.14);
-      background: rgba(18,18,20,.88);
+      border:1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.92);
       backdrop-filter: blur(10px);
-      box-shadow: 0 18px 40px rgba(0,0,0,.45);
+      box-shadow: 0 18px 40px rgba(0,0,0,.18);
       display:flex; gap:10px; align-items:center; justify-content:space-between;
       padding:10px;
     }
@@ -265,6 +273,27 @@
     @media (max-width: 980px){
       .stickyOrder{display:block;}
     }
+
+    /* ✅ NOVO: Botão flutuante WhatsApp (lado direito) */
+    .waFloat{
+      position:fixed;
+      right:16px;
+      bottom:16px;
+      z-index:999;
+      display:flex;
+    }
+    .waFloat a{
+      width:58px;height:58px;border-radius:18px;
+      display:grid;place-items:center;
+      background: #25D366;
+      color:#fff;
+      border:1px solid rgba(0,0,0,.08);
+      box-shadow: 0 16px 34px rgba(0,0,0,.18);
+      text-decoration:none;
+      font-size:24px;
+      font-weight:900;
+    }
+    .waFloat a:active{transform: scale(.98)}
   </style>
 </head>
 <body>
@@ -273,7 +302,7 @@
     <div class="inner">
       <div class="brand">
         <div class="logo" id="logoBox" title="LP Grill">
-          <span style="font-weight:900;color:#fff;letter-spacing:.8px">LP</span>
+          <span style="font-weight:900;color:#111827;letter-spacing:.8px">LP</span>
           <img id="logoImg" alt="LP Grill logo" />
         </div>
         <div>
@@ -409,6 +438,11 @@
     </div>
   </div>
 
+  <!-- ✅ NOVO: BOTÃO FLUTUANTE WHATSAPP (lado direito) -->
+  <div class="waFloat" aria-label="Atalho WhatsApp">
+    <a id="waFloatBtn" href="#" target="_blank" rel="noopener" title="Chamar no WhatsApp">🟢</a>
+  </div>
+
 <script>
 /** =========================
  *  CONFIG (EDITE AQUI)
@@ -420,21 +454,26 @@ const CONFIG = {
   pixKey: "PIX: 31998064556",
   deliveryFee: 5.00,
   hours: [
-  { day: 0, open: null, close: null },        // De:Segunda a Sabado - 11:00 as 15:00.
-  
-],
+    { day: 0, open: null, close: null },
+  ],
   logoFile: "LOGO.png",
 };
 
+/** ✅ NOVO: link do botão flutuante usando o número do CONFIG */
+(function setFloatingWhatsApp(){
+  const msg = `Olá! Vim pelo site do ${CONFIG.storeName}.`;
+  const url = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
+  const a = document.getElementById("waFloatBtn");
+  if(a) a.href = url;
+})();
+
 /** =========================
  *  CARDÁPIO (EDITE AQUI)
- *  Para aparecer foto, envie a imagem com o mesmo nome do "img"
  *  ========================= */
 const MENU = [
   {
     cat: "Marmitas",
     items: [
-      // ✅ ALTERADO para 23 reais
       { id:"m1", name:"Marmita tradicional", desc:"Arroz, feijão, salada e mistura do dia.", price: 23.00, img:"marmita-tradicional.jpg" },
       { id:"m2", name:"Marmita frango", desc:"Frango + acompanhamentos do dia.", price: 20.00, img:"marmita-frango.jpg" },
       { id:"m3", name:"Marmita carne", desc:"Carne + acompanhamentos do dia.", price: 22.00, img:"marmita-carne.jpg" },
@@ -727,13 +766,10 @@ function setMiniInfo(){
 
 function tryLoadLogo(){
   const img = el("logoImg");
-  img.src = CONFIG.logoFile + "?v=" + Date.now(); // evita cache
+  img.src = CONFIG.logoFile + "?v=" + Date.now();
   img.onload = ()=>{
     img.style.display = "block";
     el("logoBox").querySelector("span").style.display = "none";
-  };
-  img.onerror = ()=>{
-    // se der erro, fica o "LP" mesmo (pra não quebrar)
   };
 }
 
@@ -756,7 +792,7 @@ el("search").addEventListener("input", (e)=>{ state.q = e.target.value; renderMe
 el("clearBtn").onclick = ()=>{
   if(confirm("Limpar carrinho?")){
     state.cart = {};
-    saveCart();
+    localStorage.setItem("lpgrill_cart", JSON.stringify(state.cart));
     render();
   }
 };
