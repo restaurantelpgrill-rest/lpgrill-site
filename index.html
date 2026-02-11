@@ -148,7 +148,58 @@ body{
       padding:14px;
       box-shadow: 0 10px 26px rgba(0,0,0,.10);
     }
+    
+/* =========================
+   TIPOGRAFIA (mais escura + um pouco maior)
+   ========================= */
 
+:root{
+  --text-strong:#111827;  /* quase preto (títulos) */
+  --text:#1f2937;         /* cinza bem escuro (texto) */
+  --text-soft:#374151;    /* descrições */
+}
+
+html{ font-size: 106%; } /* +6% geral (bem leve) */
+
+body{
+  color: var(--text);
+  -webkit-font-smoothing: antialiased;
+  text-rendering: optimizeLegibility;
+}
+
+/* Títulos e nomes dos itens */
+h1,h2,h3,.title,.item-title,.product-title{
+  color: var(--text-strong) !important;
+  font-weight: 700;
+  letter-spacing: .2px;
+}
+
+/* Textos/descrições */
+p,.subtitle,.desc,.item-desc,.product-desc,.muted,.chip,.tag{
+  color: var(--text-soft) !important;
+}
+
+/* Preços */
+.price,.product-price,.total,.money{
+  color: #000 !important;
+  font-weight: 800;
+  font-size: 1.06em;
+}
+
+/* Campo de busca */
+input, textarea, select{
+  color: var(--text-strong) !important;
+  font-size: 1em;
+}
+input::placeholder{
+  color: #4b5563 !important;
+  opacity: 1;
+}
+
+/* Deixa os cards mais “sólidos” (melhor contraste) */
+.card,.panel,.menu-card,.product-card{
+  background: rgba(255,255,255,.94) !important;
+}
     /* ITEM COM FOTO */
     .item{
       display:grid;
