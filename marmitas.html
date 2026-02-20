@@ -1,65 +1,27 @@
 <!doctype html>
-<html lang="pt-br">
+<html>
 <head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>LP Grill — Bebidas</title>
-  <link rel="stylesheet" href="./css/style.css" />
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<link rel="stylesheet" href="css/style.css">
+<title>Bebidas</title>
 </head>
-
 <body class="app">
-  <header class="cover subinfo">
-    <div class="cover-bg"></div>
-    <div class="container">
-      <div class="topbar">
-        <a class="backlink" href="./index.html" aria-label="Voltar">←</a>
 
-        <div class="brand">
-          <img class="brand-logo" src="./img/logo.png" alt="LP Grill" onerror="this.style.display='none'">
-          <div class="brand-txt">
-            <h1>Bebidas</h1>
-            <p class="muted">Geladas • do jeito certo</p>
-          </div>
-        </div>
+<header class="pagebar">
+<a class="back" href="index.html">← Menu</a>
+<h2>Bebidas</h2>
+</header>
 
-        <button class="cart-btn" id="openCart" type="button" aria-label="Abrir carrinho">
-          <span class="cart-ico">🛒</span>
-          <span class="cart-badge" id="cartBadge">0</span>
-        </button>
-      </div>
+<main class="container">
+<div class="product-grid" id="lista"></div>
+</main>
 
-      <div class="cover-search" style="margin-top:12px">
-        <input id="searchItems" type="search" placeholder="Buscar item..." autocomplete="off" />
-      </div>
-    </div>
-  </header>
-
-  <main class="container">
-    <div class="product-grid" id="productList"></div>
-    <button class="ghost-btn" id="emptyHint" style="display:none" type="button">
-      Ainda sem itens aqui — adicione no <strong>js/data.js</strong>
-    </button>
-  </main>
-
-  <a class="wa-float" id="waFloat" href="#" target="_blank" aria-label="Chamar no WhatsApp">
-    <img src="./img/whatsapp.png" alt="WhatsApp" onerror="this.outerHTML='💬'">
-  </a>
-
-  <div class="sticky-cta">
-    <button class="cta" id="ctaCart" type="button">
-      <span>Ver carrinho</span>
-      <strong id="ctaTotal">R$ 0,00</strong>
-    </button>
-    <a class="cta primary" href="./checkout.html">Finalizar</a>
-  </div>
-
-  <script src="./js/data.js"></script>
-  <script src="./js/cart.js"></script>
-  <script src="./js/page-products.js"></script>
-
-  <script>
-    // MUDE SÓ ISSO EM CADA PÁGINA:
-    renderCategoryPage("bebidas");
-  </script>
+<script src="js/data.js"></script>
+<script src="js/cart.js"></script>
+<script src="js/app.js"></script>
+<script>
+renderCategory("marmitas","lista");
+</script>
 </body>
 </html>
