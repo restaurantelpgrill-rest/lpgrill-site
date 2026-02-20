@@ -1,6 +1,6 @@
 window.SITE = {
   brand: "LP Grill",
-  tagline: "Pedidos rápidos • WhatsApp",
+  tagline: "Cardápio rápido • Pedido no WhatsApp",
 
   meta: {
     taxa: 5.00,
@@ -10,16 +10,16 @@ window.SITE = {
   },
 
   contact: {
-    whatsapp: "5531998832407" // <-- TROQUE (somente números com 55)
+    whatsapp: "5531998832407"
   },
 
   categories: [
-    { id:"marmitas", title:"Marmitas", icon:"🍱", desc:"Prontas e bem servidas" },
-    { id:"churrasco", title:"Churrasco", icon:"🔥", desc:"Carnes na brasa" },
-    { id:"porcoes", title:"Porções", icon:"🍟", desc:"Para compartilhar" },
-    { id:"lanches", title:"Lanches", icon:"🍔", desc:"Artesanais" },
-    { id:"bebidas", title:"Bebidas", icon:"🥤", desc:"Geladas" },
-    { id:"sobremesas", title:"Sobremesas", icon:"🍰", desc:"Doces" }
+    { id:"marmitas",  title:"Marmitas",  icon:"🍱", desc:"Prontas e bem servidas", img:"./img/marmita-tradicional.jpg" },
+    { id:"churrasco", title:"Churrasco", icon:"🔥", desc:"Carnes na brasa",       img:"./img/frango-grelhado.jpg" },
+    { id:"porcoes",   title:"Porções",   icon:"🍟", desc:"Para compartilhar",    img:"./img/batata.jpg" },
+    { id:"lanches",   title:"Lanches",   icon:"🍔", desc:"Artesanais",           img:"./img/burger.jpg" },
+    { id:"bebidas",   title:"Bebidas",   icon:"🥤", desc:"Bem geladas",          img:"./img/coca-lata.jpg" },
+    { id:"sobremesas",title:"Sobremesas",icon:"🍰", desc:"Doces",                img:"./img/pudim.jpg" }
   ],
 
   items: [
