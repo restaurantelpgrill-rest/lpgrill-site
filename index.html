@@ -4,60 +4,99 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>LP Grill — Cardápio</title>
-  <meta name="theme-color" content="#16a34a" />
+  <meta name="theme-color" content="#7f1d1d" />
   <link rel="stylesheet" href="./css/style.css" />
 </head>
 <body>
 
   <header class="top">
     <div class="wrap top__bar">
-      <div class="brand">
-        <div class="brand__logo">
-          <img src="./img/LOGO.png" alt="LP Grill" onerror="this.style.display='none'">
-          <span class="brand__dot" aria-hidden="true"></span>
-        </div>
+      <a class="iconBtn" href="./index.html" title="Voltar">←</a>
+
+      <div class="brand brand--mini">
         <div class="brand__txt">
-          <h1 id="brandName">LP Grill</h1>
-          <p id="brandTag">Pedidos rápidos • WhatsApp</p>
+          <h1 id="pageTitle">Cardápio</h1>
+          <p id="pageSub" class="muted">Escolha seus itens</p>
         </div>
       </div>
 
-      <a class="iconBtn" href="./cardapio.html" title="Ver cardápio">
-        ☰
-      </a>
+      <button class="iconBtn" id="openCart" title="Carrinho">🛒</button>
     </div>
-
-    <div class="wrap chips" id="chips"></div>
 
     <div class="wrap search">
-      <input id="q" type="search" placeholder="Buscar categoria..." autocomplete="off">
+      <input id="qItems" type="search" placeholder="Buscar item..." autocomplete="off">
     </div>
+
+    <div class="wrap chips chips--sub" id="catChips"></div>
   </header>
 
   <main class="wrap main">
-    <section class="grid" id="cats"></section>
+    <section class="items" id="items"></section>
+  </main>
 
-    <section class="reviews">
-      <div class="reviews__head">
-        <h2>Avaliações</h2>
-        <div class="rate">
-          <span class="star">★</span>
-          <span id="rateVal">4.9</span>
-          <span class="muted">/ 5</span>
+  <!-- Drawer do carrinho -->
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer__backdrop" id="closeCart"></div>
+
+    <div class="drawer__panel">
+      <div class="drawer__head">
+        <h3>Seu pedido</h3>
+        <button class="iconBtn" id="closeCart2" title="Fechar">✕</button>
+      </div>
+
+      <div class="drawer__body">
+        <div id="cartList"></div>
+
+        <div class="formCard">
+          <div class="formCard__title">Dados para entrega</div>
+
+          <div class="formGrid">
+            <label class="field">
+              <span>Nome</span>
+              <input id="custName" type="text" placeholder="Seu nome" autocomplete="name">
+            </label>
+
+            <label class="field">
+              <span>Forma de pagamento</span>
+              <select id="payMethod">
+                <option value="Pix">Pix</option>
+                <option value="Cartão">Cartão</option>
+                <option value="Dinheiro">Dinheiro</option>
+              </select>
+            </label>
+
+            <label class="field field--full">
+              <span>Endereço (obrigatório)</span>
+              <input id="custAddr" type="text" placeholder="Rua, número, bairro, referência..." autocomplete="street-address">
+            </label>
+
+            <p class="warn" id="addrWarn" hidden>Coloque o endereço para enviar o pedido!!</p>
+          </div>
         </div>
       </div>
 
-      <div class="reviews__grid" id="reviews"></div>
+      <div class="drawer__foot">
+        <div class="tot">
+          <span>Total</span>
+          <strong id="cartTotal">R$ 0,00</strong>
+        </div>
 
-      <button class="ghostBtn" id="moreReviews">Ver mais avaliações</button>
+        <button class="btn btn--wa" id="finishBtn">Finalizar no WhatsApp</button>
+        <button class="ghostBtn" id="clearBtn">Limpar carrinho</button>
+      </div>
+    </div>
+  </aside>
 
-      <p class="adminLink">
-        Admin (para você): <a href="./admin.html">abrir painel</a>
-      </p>
-    </section>
-  </main>
-
-  <a id="waFloat" class="waFloat" href="#" target="_blank" rel="noopener">WhatsApp</a>
+  <!-- Barra fixa inferior -->
+  <div class="bottomBar" id="bottomBar" hidden>
+    <div class="wrap bottomBar__row">
+      <div class="bottomBar__left">
+        <strong id="bbTotal">R$ 0,00</strong>
+        <span class="muted" id="bbCount">0 itens</span>
+      </div>
+      <button class="btn btn--primary" id="bbOpen">Finalizar</button>
+    </div>
+  </div>
 
   <script src="./js/data.js"></script>
   <script src="./js/cart.js"></script>
