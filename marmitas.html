@@ -1,27 +1,70 @@
 <!doctype html>
-<html>
+<html lang="pt-br">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="stylesheet" href="css/style.css">
-<title>Bebidas</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Marmitas</title>
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body class="app">
 
-<header class="pagebar">
-<a class="back" href="index.html">← Menu</a>
-<h2>Bebidas</h2>
-</header>
+  <header class="pagebar">
+    <a class="back" href="index.html">← Voltar ao Menu</a>
+    <div class="page-title"><h1>Marmitas</h1><p>Pratos do dia • bem servidos</p></div>
+    <button class="cart-btn" id="openCart" aria-label="Abrir carrinho">
+      <span class="cart-ico">🛒</span><span class="cart-badge" id="cartCount">0</span>
+    </button>
+  </header>
 
-<main class="container">
-<div class="product-grid" id="lista"></div>
-</main>
+  <div class="container" id="infoBar"></div>
 
-<script src="js/data.js"></script>
-<script src="js/cart.js"></script>
-<script src="js/app.js"></script>
-<script>
-renderCategory("marmitas","lista");
-</script>
+  <main class="container">
+    <section class="product-grid" id="listMarmitas"></section>
+  </main>
+
+  <a class="wa-float" id="waFloat" href="#" aria-label="WhatsApp">
+    <img src="img/whatsapp.png" alt="WhatsApp">
+  </a>
+
+  <div class="sticky-cta" id="stickyCTA" hidden>
+    <button class="cta" id="ctaOpenCart" type="button">
+      <span>Ver carrinho</span><strong id="ctaTotal">R$ 0,00</strong>
+    </button>
+    <a class="cta primary" href="checkout.html">Finalizar</a>
+  </div>
+
+  <aside class="drawer" id="cartDrawer" aria-hidden="true">
+    <div class="drawer-backdrop" id="closeCartBackdrop"></div>
+    <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="Carrinho">
+      <div class="drawer-head">
+        <div><h3>Seu carrinho</h3><p class="muted">Itens + taxa (se entrega)</p></div>
+        <button class="icon-btn" id="closeCart" aria-label="Fechar">✕</button>
+      </div>
+      <div class="drawer-body">
+        <div class="delivery-toggle">
+          <button class="dt-btn" id="modeEntrega" type="button">🚚 Entrega</button>
+          <button class="dt-btn" id="modeRetirar" type="button">🏬 Retirar</button>
+        </div>
+        <div id="cartItems"></div>
+      </div>
+      <div class="drawer-foot">
+        <div class="totals">
+          <div class="row"><span>Subtotal</span><strong id="subTotal">R$ 0,00</strong></div>
+          <div class="row"><span>Taxa</span><strong id="deliveryFee">R$ 0,00</strong></div>
+          <div class="row total"><span>Total</span><strong id="grandTotal">R$ 0,00</strong></div>
+          <div class="mini muted">⏱️ Tempo médio: <span id="etaText">30–60 min</span></div>
+        </div>
+        <div class="drawer-actions">
+          <button class="btn light" id="clearCart" type="button">Limpar</button>
+          <a class="btn primary" href="checkout.html">Finalizar</a>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <script src="js/data.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/app.js"></script>
+  <script>window.renderCategory("marmitas","listMarmitas");</script>
 </body>
 </html>
