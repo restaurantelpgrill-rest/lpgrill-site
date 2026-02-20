@@ -44,6 +44,195 @@
       .admin-gear:hover{ opacity:.55; }
     }
   </style>
+
+  <!-- =========================
+       WINE PREMIUM (HOME) + PIX
+  ========================== -->
+  <style>
+    :root{
+      --wine-950:#14090C;
+      --wine-900:#1C0B10;
+      --wine-850:#240D14;
+      --wine-800:#2E101B;
+      --wine-700:#4A1627;
+
+      --gold-500:#D6B36A;
+      --gold-400:#E6C983;
+
+      --cream-50:#FFF8F1;
+      --cream-100:#F3E9DD;
+
+      --text:#121017;
+      --text-inv:#FFF7F1;
+      --muted:rgba(255,247,241,.72);
+
+      --line:rgba(255,255,255,.12);
+      --shadow: 0 18px 50px rgba(0,0,0,.35);
+
+      --radius:18px;
+    }
+
+    /* Fundo premium (claro + wine) */
+    .wine-hero{
+      position:relative;
+      margin-top: 16px;
+      background:
+        radial-gradient(1100px 520px at 15% 18%, rgba(214,179,106,.22), transparent 55%),
+        radial-gradient(900px 520px at 85% 25%, rgba(74,22,39,.28), transparent 55%),
+        linear-gradient(180deg, var(--cream-50), var(--cream-100));
+      border: 1px solid rgba(0,0,0,.06);
+      border-radius: 18px;
+      overflow: hidden;
+    }
+
+    .wine-shell{
+      max-width: 1120px;
+      margin: 0 auto;
+      padding: 18px 16px 20px;
+    }
+
+    .wine-topbar{
+      display:flex; align-items:center; justify-content:space-between;
+      gap: 12px;
+      flex-wrap: wrap;
+    }
+
+    .wine-badge{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:10px 14px;
+      border-radius: 999px;
+      background: rgba(214,179,106,.16);
+      border:1px solid rgba(214,179,106,.38);
+      color:#5a3d10;
+      font-weight:700;
+    }
+
+    .wine-card{
+      background: linear-gradient(180deg, rgba(28,11,16,.92), rgba(20,9,12,.94));
+      color: var(--text-inv);
+      border: 1px solid rgba(255,255,255,.10);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+
+    .wine-card .inner{
+      padding: 16px;
+    }
+
+    .wine-title{
+      font-size: 22px;
+      line-height: 1.15;
+      margin: 12px 0 6px;
+      color: #1c0b10;
+      letter-spacing: -0.2px;
+    }
+
+    .wine-sub{
+      color: rgba(28,11,16,.72);
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 70ch;
+      margin: 0;
+    }
+
+    .wine-grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    @media(max-width: 900px){
+      .wine-grid{ grid-template-columns: 1fr; }
+    }
+
+    /* Botões */
+    .btn-wine{
+      display:inline-flex; align-items:center; justify-content:center;
+      gap:10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border:1px solid rgba(255,255,255,.12);
+      background: rgba(255,255,255,.08);
+      color: var(--text-inv);
+      font-weight: 800;
+      cursor:pointer;
+      text-decoration:none;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+    }
+    .btn-wine:hover{ transform: translateY(-1px); background: rgba(255,255,255,.12); border-color: rgba(255,255,255,.18); }
+    .btn-gold{
+      background: linear-gradient(180deg, rgba(230,201,131,.95), rgba(214,179,106,.92));
+      color:#2a1607;
+      border:1px solid rgba(214,179,106,.65);
+    }
+    .btn-gold:hover{ background: linear-gradient(180deg, rgba(242,220,165,.98), rgba(214,179,106,.95)); }
+
+    /* PIX box */
+    .pix-row{ display:flex; gap:12px; align-items:stretch; flex-wrap:wrap; }
+    .pix-qr{
+      width: 168px; height: 168px;
+      background: rgba(255,255,255,.06);
+      border:1px dashed rgba(255,255,255,.22);
+      border-radius: 16px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .pix-meta{ flex:1; min-width: 240px; }
+    .pix-label{ font-size: 12px; color: rgba(255,247,241,.70); margin-bottom: 6px; }
+    .pix-value{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 13px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(0,0,0,.28);
+      border:1px solid rgba(255,255,255,.12);
+      word-break: break-all;
+    }
+
+    /* status pagamento */
+    .pay-status{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.06);
+      border:1px solid rgba(255,255,255,.10);
+    }
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      border:1px solid rgba(0,0,0,.08);
+      background: rgba(255,255,255,.55);
+      color: rgba(20,9,12,.92);
+    }
+    .pill.ok{
+      background: rgba(0, 200, 120, .14);
+      border-color: rgba(0, 200, 120, .35);
+      color: rgba(0, 90, 50, 1);
+    }
+    .pill.wait{
+      background: rgba(214,179,106,.22);
+      border-color: rgba(214,179,106,.45);
+      color: rgba(90, 60, 10, 1);
+    }
+
+    .toast{
+      position: fixed;
+      left: 50%;
+      bottom: 18px;
+      transform: translateX(-50%);
+      background: rgba(20,9,12,.92);
+      color: var(--text-inv);
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: 14px;
+      padding: 12px 14px;
+      box-shadow: var(--shadow);
+      display:none;
+      z-index: 9999;
+      max-width: calc(100vw - 28px);
+    }
+  </style>
 </head>
 
 <body class="app">
@@ -56,8 +245,6 @@
       <h1>LP Grill</h1>
       <p>Pedidos rápidos • WhatsApp</p>
     </div>
-
-    <!-- (removido o botão admin aqui do header para ficar discreto e não chamar atenção) -->
 
     <button class="cart-btn" id="openCart" aria-label="Abrir carrinho">
       <span class="cart-ico">🛒</span><span class="cart-badge" id="cartCount">0</span>
@@ -93,6 +280,75 @@
         <div class="tile-sub">Enviar no WhatsApp</div>
       </a>
     </div>
+
+    <!-- =========================
+         BLOCO PIX (HOME)
+    ========================== -->
+    <section class="wine-hero" aria-label="Pagamento via Pix">
+      <div class="wine-shell">
+        <div class="wine-topbar">
+          <div class="wine-badge">🍷 Pagamento via Pix</div>
+          <div id="payPill" class="pill wait">⏳ Aguardando pagamento</div>
+        </div>
+
+        <h2 class="wine-title">Pague pelo Pix (QR Code)</h2>
+        <p class="wine-sub">
+          Aponte a câmera do seu banco no QR Code ou copie o Pix “copia e cola”.
+          Depois toque em <b>“Já paguei”</b> para aparecer <b>Pagamento confirmado ✅</b>.
+        </p>
+
+        <div class="wine-grid">
+          <div class="wine-card">
+            <div class="inner">
+              <div class="pix-row">
+                <div class="pix-qr">
+                  <canvas id="pixCanvas" width="168" height="168"></canvas>
+                </div>
+
+                <div class="pix-meta">
+                  <div class="pix-label">PIX Copia e Cola</div>
+                  <div id="pixPayload" class="pix-value">Gerando Pix...</div>
+
+                  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+                    <button class="btn-wine btn-gold" id="btnCopyPix" type="button">📋 Copiar Pix</button>
+                    <button class="btn-wine" id="btnPaid" type="button">✅ Já paguei</button>
+                  </div>
+
+                  <div style="margin-top:12px; font-size:12px; color:rgba(255,247,241,.72);">
+                    Dica: se preferir, copie e cole no app do banco.
+                  </div>
+                </div>
+              </div>
+
+              <div style="height:12px;"></div>
+
+              <div class="pay-status">
+                <div>
+                  <div style="font-weight:900;">Status</div>
+                  <div id="payText" style="font-size:13px; color:rgba(255,247,241,.72);">
+                    Aguardando você confirmar.
+                  </div>
+                </div>
+                <button class="btn-wine" id="btnResetPay" type="button">↺ Reset</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="wine-card">
+            <div class="inner">
+              <div style="font-size:16px; font-weight:900; margin-bottom:6px;">Aviso de pagamento</div>
+              <div style="font-size:13px; color:rgba(255,247,241,.72); line-height:1.55;">
+                Quando você tocar em <b>“Já paguei”</b>, o site exibe <b>Pagamento confirmado ✅</b>
+                e salva isso no navegador (pra não sumir).
+                <br><br>
+                Se quiser no próximo passo eu deixo o botão: <b>“Enviar comprovante no WhatsApp”</b> com texto pronto.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
 
     <a class="wa-float" id="waFloat" href="#" aria-label="WhatsApp">
       <img src="img/whatsapp.png" alt="WhatsApp">
@@ -138,6 +394,8 @@
     </div>
   </aside>
 
+  <div class="toast" id="toast"></div>
+
   <!-- Script da engrenagem: abre admin com chave -->
   <script>
     (() => {
@@ -165,6 +423,166 @@
   <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
   <script src="js/render.js"></script>
+
+  <!-- QRCode (obrigatório) -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+  <!-- PIX QR automático + aviso confirmado -->
+  <script>
+    /* =========================
+       PIX QR AUTOMÁTICO + CONFIRMAÇÃO
+    ========================= */
+
+    /* >>> CONFIGURE AQUI <<< */
+    const PIX = {
+      key: "SEU_PIX_AQUI",            // chave pix (cpf/cnpj/email/telefone/aleatória)
+      merchantName: "LP GRILL",       // nome que aparece no pix
+      merchantCity: "BELO HORIZONTE", // cidade (sem acento funciona melhor)
+      txid: "LPGRILL01",              // identificador (pode ser fixo ou por pedido)
+      amount: 0                       // 0 = sem valor fixo (cliente digita no banco). Ex fixo: 39.90
+    };
+
+    function emv(id, value){
+      const len = String(value.length).padStart(2, "0");
+      return `${id}${len}${value}`;
+    }
+
+    function crc16(payload){
+      let crc = 0xFFFF;
+      for (let i = 0; i < payload.length; i++) {
+        crc ^= payload.charCodeAt(i) << 8;
+        for (let j = 0; j < 8; j++) {
+          crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
+          crc &= 0xFFFF;
+        }
+      }
+      return crc.toString(16).toUpperCase().padStart(4, "0");
+    }
+
+    function buildPixPayload({key, merchantName, merchantCity, txid, amount}){
+      const gui = emv("00", "br.gov.bcb.pix");
+      const keyField = emv("01", key);
+
+      const addData = emv("05", txid || "***");
+      const additionalDataFieldTemplate = emv("62", addData);
+
+      const mai = emv("26", gui + keyField);
+
+      const amt = (amount && Number(amount) > 0)
+        ? emv("54", Number(amount).toFixed(2))
+        : "";
+
+      const payloadNoCrc =
+          emv("00", "01") +
+          emv("01", "12") +
+          mai +
+          emv("52", "0000") +
+          emv("53", "986") +
+          amt +
+          emv("58", "BR") +
+          emv("59", (merchantName || "LP GRILL").substring(0, 25)) +
+          emv("60", (merchantCity || "BELO HORIZONTE").substring(0, 15)) +
+          additionalDataFieldTemplate +
+          "6304";
+
+      const crc = crc16(payloadNoCrc);
+      return payloadNoCrc + crc;
+    }
+
+    const $ = (s)=> document.querySelector(s);
+
+    function toast(msg){
+      const el = $("#toast");
+      if(!el) return;
+      el.textContent = msg;
+      el.style.display = "block";
+      clearTimeout(window.__t);
+      window.__t = setTimeout(()=> el.style.display = "none", 2200);
+    }
+
+    function setPaidUI(paid){
+      const pill = $("#payPill");
+      const payText = $("#payText");
+      if(!pill || !payText) return;
+
+      if(paid){
+        pill.classList.remove("wait");
+        pill.classList.add("ok");
+        pill.textContent = "✅ Pagamento confirmado";
+        payText.textContent = "Confirmado no seu navegador. Obrigado!";
+      }else{
+        pill.classList.remove("ok");
+        pill.classList.add("wait");
+        pill.textContent = "⏳ Aguardando pagamento";
+        payText.textContent = "Aguardando você confirmar.";
+      }
+    }
+
+    (function initPix(){
+      const payloadEl = $("#pixPayload");
+      const canvas = $("#pixCanvas");
+
+      if(!payloadEl || !canvas){
+        console.warn("Bloco PIX não encontrado no DOM.");
+        return;
+      }
+
+      const payload = buildPixPayload(PIX);
+      payloadEl.textContent = payload;
+
+      if(typeof QRCode === "undefined"){
+        payloadEl.textContent = "Erro: biblioteca de QRCode não carregou.";
+        return;
+      }
+
+      QRCode.toCanvas(canvas, payload, { margin: 1, scale: 6 }, function (error) {
+        if (error) {
+          payloadEl.textContent = "Erro ao gerar QR. Verifique a chave Pix.";
+          console.error(error);
+        }
+      });
+
+      const paid = localStorage.getItem("LPGRILL_PIX_PAID_V1") === "1";
+      setPaidUI(paid);
+
+      const btnCopy = $("#btnCopyPix");
+      const btnPaid = $("#btnPaid");
+      const btnReset = $("#btnResetPay");
+
+      if(btnCopy){
+        btnCopy.addEventListener("click", async ()=>{
+          try{
+            await navigator.clipboard.writeText(payload);
+            toast("Pix copiado ✅");
+          }catch(e){
+            const t = document.createElement("textarea");
+            t.value = payload;
+            document.body.appendChild(t);
+            t.select();
+            document.execCommand("copy");
+            document.body.removeChild(t);
+            toast("Pix copiado ✅");
+          }
+        });
+      }
+
+      if(btnPaid){
+        btnPaid.addEventListener("click", ()=>{
+          localStorage.setItem("LPGRILL_PIX_PAID_V1", "1");
+          setPaidUI(true);
+          toast("Pagamento confirmado ✅");
+        });
+      }
+
+      if(btnReset){
+        btnReset.addEventListener("click", ()=>{
+          localStorage.removeItem("LPGRILL_PIX_PAID_V1");
+          setPaidUI(false);
+          toast("Status resetado.");
+        });
+      }
+    })();
+  </script>
 
 </body>
 </html>
