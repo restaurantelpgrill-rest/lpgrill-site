@@ -97,4 +97,72 @@
   <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
 </body>
+  <!-- BLOQUEIO POR SENHA -->
+<section id="lockBox" class="lock">
+  <div class="lock-card">
+    <h1 id="lockTitle">Área restrita</h1>
+    <p id="lockHint" class="muted"></p>
+
+    <input id="lockPass" type="password" placeholder="Digite a senha" autocomplete="current-password">
+    <div class="lock-actions">
+      <button id="btnUnlock" class="btn">Entrar</button>
+      <button id="btnResetPass" class="btn ghost">Trocar senha</button>
+      <button id="btnLogout" class="btn danger">Sair</button>
+    </div>
+
+    <small class="muted">*Senha serve para evitar alterações acidentais. Para segurança real, precisa servidor/login.</small>
+  </div>
+</section>
+
+<!-- APP ADMIN -->
+<main id="adminApp" style="display:none;">
+  <header class="adm-top">
+    <h1>Admin • LP Grill</h1>
+
+    <div class="adm-tools">
+      <button id="btnExport" class="btn ghost">Exportar backup</button>
+      <label class="btn ghost" style="cursor:pointer;">
+        Importar backup
+        <input id="fileImport" type="file" accept="application/json" style="display:none;">
+      </label>
+      <button id="btnSaveAll" class="btn">Salvar</button>
+      <span class="muted">Total itens: <b id="countAll">0</b></span>
+    </div>
+  </header>
+
+  <!-- CATEGORIAS -->
+  <section class="adm-section">
+    <div class="adm-head">
+      <h2>Marmitas</h2>
+      <button class="btn js-add" data-cat="marmitas">Adicionar produto</button>
+    </div>
+    <div class="adm-list" data-list="marmitas"></div>
+  </section>
+
+  <section class="adm-section">
+    <div class="adm-head">
+      <h2>Porções</h2>
+      <button class="btn js-add" data-cat="porcoes">Adicionar produto</button>
+    </div>
+    <div class="adm-list" data-list="porcoes"></div>
+  </section>
+
+  <section class="adm-section">
+    <div class="adm-head">
+      <h2>Bebidas</h2>
+      <button class="btn js-add" data-cat="bebidas">Adicionar produto</button>
+    </div>
+    <div class="adm-list" data-list="bebidas"></div>
+  </section>
+
+  <section class="adm-section">
+    <div class="adm-head">
+      <h2>Sobremesas</h2>
+      <button class="btn js-add" data-cat="sobremesas">Adicionar produto</button>
+    </div>
+    <div class="adm-list" data-list="sobremesas"></div>
+  </section>
+
+  <div id="toast" class="toast"></div>
+</main>
 </html>
