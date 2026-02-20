@@ -34,14 +34,19 @@
       const list = cats.filter(c =>
         !t || c.title.toLowerCase().includes(t) || (c.desc||"").toLowerCase().includes(t)
       );
+
       catsEl.innerHTML = list.map(c => `
-        <a class="card" href="./cardapio.html?cat=${encodeURIComponent(c.id)}">
-          <div class="card__ico">${esc(c.icon)}</div>
-          <div class="card__txt">
-            <h3>${esc(c.title)}</h3>
-            <p class="muted">${esc(c.desc || "")}</p>
+        <a class="catCard" href="./cardapio.html?cat=${encodeURIComponent(c.id)}">
+          <div class="catCard__img">
+            ${c.img ? `<img src="${esc(c.img)}" alt="${esc(c.title)}" onerror="this.style.display='none'">` : ``}
           </div>
-          <div class="card__arrow">›</div>
+          <div class="catCard__body">
+            <div class="catCard__left">
+              <h3>${esc(c.title)}</h3>
+              <p>${esc(c.desc || "")}</p>
+            </div>
+            <div class="catCard__badge" title="${esc(c.title)}">${esc(c.icon || "🍽️")}</div>
+          </div>
         </a>
       `).join("");
     };
@@ -61,7 +66,6 @@
     `).join("");
 
     $("#rateVal").textContent = "4.9";
-    $("#moreReviews")?.addEventListener("click", () => alert("Depois conectamos avaliações reais, se quiser 😉"));
 
     const wa = $("#waFloat");
     if(wa){
@@ -138,7 +142,7 @@
       $$("[data-sub]").forEach(b => b.addEventListener("click", ()=> CART.sub(b.dataset.sub, 1)));
     };
 
-    // Drawer carrinho
+    // Drawer carrinho (abre/fecha)
     const drawer = $("#drawer");
     const openCart = () => { drawer.classList.add("is-open"); drawer.setAttribute("aria-hidden","false"); };
     const closeCart = () => { drawer.classList.remove("is-open"); drawer.setAttribute("aria-hidden","true"); };
@@ -148,119 +152,24 @@
     $("#closeCart2")?.addEventListener("click", closeCart);
     $("#bbOpen")?.addEventListener("click", openCart);
 
-    // Form
-    const custName = $("#custName");
-    const custAddr = $("#custAddr");
-    const addrWrap = $("#addrWrap");
-    const payMethod = $("#payMethod");
-    const trocoWrap = $("#trocoWrap");
-    const trocoFor = $("#trocoFor");
-    const obs = $("#obs");
-    const warn = $("#addrWarn");
-    const modeInput = $("#orderMode");
-
-    const segBtns = $$(".seg__btn");
-    function setMode(mode){
-      modeInput.value = mode;
-      segBtns.forEach(b => b.classList.toggle("is-on", b.dataset.mode === mode));
-      const isEntrega = mode === "Entrega";
-      addrWrap.style.display = isEntrega ? "" : "none";
-      if(!isEntrega){
-        warn.hidden = true;
-        custAddr.classList.remove("is-bad");
-      }
-    }
-    segBtns.forEach(b => b.addEventListener("click", ()=> setMode(b.dataset.mode)));
-    setMode("Entrega");
-
-    function syncPay(){
-      const pay = payMethod.value;
-      trocoWrap.hidden = (pay !== "Dinheiro");
-      if(pay !== "Dinheiro") trocoFor.value = "";
-    }
-    payMethod.addEventListener("change", syncPay);
-    syncPay();
-
-    const hideWarn = () => { warn.hidden = true; custAddr?.classList.remove("is-bad"); };
-    custAddr?.addEventListener("input", hideWarn);
-
-    $("#clearBtn")?.addEventListener("click", () => {
-      if(confirm("Limpar carrinho?")) CART.clear();
-    });
-
-    $("#finishBtn")?.addEventListener("click", () => {
-      const mode = modeInput.value || "Entrega";
-      const addr = (custAddr?.value || "").trim();
-      const name = (custName?.value || "").trim();
-      const pay  = (payMethod?.value || "Pix").trim();
-      const troco = (trocoFor?.value || "").trim();
-      const obsTxt = (obs?.value || "").trim();
-
-      if(mode === "Entrega" && !addr){
-        warn.hidden = false;
-        custAddr.classList.add("is-bad");
-        custAddr.focus();
-        return;
-      }
-
-      const link = CART.waLink({
-        name, address: addr, pay, mode, troco, obs: obsTxt
-      });
-      window.open(link, "_blank");
-    });
-
-    CART.onChange(({count,total,lines}) => {
-      const listEl = $("#cartList");
-      if(listEl){
-        if(!lines.length){
-          listEl.innerHTML = `<p class="muted">Seu carrinho está vazio.</p>`;
-        }else{
-          listEl.innerHTML = lines.map(l => `
-            <div class="cartRow">
-              <div class="cartRow__main">
-                <b>${esc(l.item.name)}</b>
-                <span class="muted">${CART.money(l.item.price)} • x${l.qty}</span>
-              </div>
-              <div class="cartRow__act">
-                <button class="qtyBtn" data-csub="${esc(l.id)}">−</button>
-                <button class="qtyBtn" data-cadd="${esc(l.id)}">+</button>
-              </div>
-            </div>
-          `).join("");
-
-          $$("[data-cadd]").forEach(b => b.addEventListener("click", ()=> CART.add(b.dataset.cadd, 1)));
-          $$("[data-csub]").forEach(b => b.addEventListener("click", ()=> CART.sub(b.dataset.csub, 1)));
-        }
-      }
-
+    // bottom bar + total (compatível com seu cart.js premium)
+    CART.onChange(({count,total}) => {
       const taxa = Number(window.SITE?.meta?.taxa || 0);
-      $("#cartTotal").textContent = CART.money(total + taxa);
-
       const bb = $("#bottomBar");
       if(bb){
         bb.hidden = (count === 0);
         $("#bbTotal").textContent = CART.money(total + taxa);
         $("#bbCount").textContent = `${count} item${count===1?"":"s"}`;
       }
+      const ct = $("#cartTotal");
+      if(ct) ct.textContent = CART.money(total + taxa);
     });
 
     buildChips();
     setTitle();
-    renderItems();
     renderChips();
-
+    renderItems();
     q?.addEventListener("input", e => renderItems(e.target.value));
-  }
-
-  function renderChips(){
-    const el = $("#chips");
-    if(!el) return;
-    const m = window.SITE?.meta || {};
-    el.innerHTML = `
-      <span class="chip">🚚 Taxa: <b>${CART.money(m.taxa || 0)}</b></span>
-      <span class="chip">⏱️ Tempo: <b>${esc(m.tempo || "")}</b></span>
-      <span class="chip">🕒 ${esc(m.horario || "")}</span>
-    `;
   }
 
   window.addEventListener("DOMContentLoaded", () => {
