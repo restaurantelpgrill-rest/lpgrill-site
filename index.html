@@ -4,7 +4,7 @@
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>LP Grill — Cardápio</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <link rel="stylesheet" href="./css/style.css" />
 </head>
 
 <body class="app">
@@ -15,132 +15,111 @@
     <div class="container">
       <div class="topbar">
         <div class="brand">
-          <!-- Troque a logo se quiser -->
-          <img class="brand-logo" src="img/logo.png" alt="LP Grill" onerror="this.style.display='none'">
+          <img class="brand-logo" src="./img/logo.png" alt="LP Grill" onerror="this.style.display='none'">
           <div class="brand-txt">
             <h1 id="brandName">LP Grill</h1>
             <p id="brandTag" class="muted">Pedidos rápidos • WhatsApp</p>
           </div>
         </div>
 
-        <!-- botão carrinho (se você já usa drawer, mantém esse id) -->
         <button class="cart-btn" id="openCart" type="button" aria-label="Abrir carrinho">
           <span class="cart-ico">🛒</span>
           <span class="cart-badge" id="cartBadge">0</span>
         </button>
       </div>
 
-      <!-- Pills de info -->
       <div class="cover-info">
         <div class="pill">🚚 <strong id="feeLabel">Taxa:</strong> <span id="feeValue">R$ 5,00</span></div>
         <div class="pill">⏱️ <strong id="timeLabel">Tempo:</strong> <span id="timeValue">30–60 min</span></div>
         <div class="pill">🕒 <span id="hoursValue">Segunda a Sábado até 00:00</span></div>
       </div>
 
-      <!-- Busca -->
       <div class="cover-search">
         <input id="searchHome" type="search" placeholder="Buscar categoria..." autocomplete="off" />
       </div>
     </div>
   </header>
 
-  <!-- HOME CARDS (igual Açaí) -->
   <main class="container">
     <div class="grid" id="homeGrid">
 
-      <!-- 1 -->
-      <a class="tile" data-title="Marmitas" href="marmitas.html">
+      <a class="tile" data-title="Marmitas" href="./marmitas.html">
         <div class="tile-ico">🍱</div>
         <div class="tile-title">Marmitas</div>
         <div class="tile-sub">Pratos do dia • bem servidos</div>
       </a>
 
-      <!-- 2 -->
-      <a class="tile" data-title="Churrasco" href="churrasco.html">
+      <a class="tile" data-title="Churrasco" href="./churrasco.html">
         <div class="tile-ico">🥩</div>
         <div class="tile-title">Churrasco</div>
         <div class="tile-sub">Cortes premium • na brasa</div>
       </a>
 
-      <!-- 3 -->
-      <a class="tile" data-title="Porções" href="porcoes.html">
+      <a class="tile" data-title="Porções" href="./porcoes.html">
         <div class="tile-ico">🍟</div>
         <div class="tile-title">Porções</div>
         <div class="tile-sub">Perfeito pra compartilhar</div>
       </a>
 
-      <!-- 4 -->
-      <a class="tile" data-title="Lanches" href="lanches.html">
+      <a class="tile" data-title="Lanches" href="./lanches.html">
         <div class="tile-ico">🍔</div>
         <div class="tile-title">Lanches</div>
         <div class="tile-sub">Rápido • suculento</div>
       </a>
 
-      <!-- 5 -->
-      <a class="tile" data-title="Bebidas" href="bebidas.html">
+      <a class="tile" data-title="Bebidas" href="./bebidas.html">
         <div class="tile-ico">🥤</div>
         <div class="tile-title">Bebidas</div>
         <div class="tile-sub">Geladas • do jeito certo</div>
       </a>
 
-      <!-- 6 -->
-      <a class="tile" data-title="Sobremesas" href="sobremesas.html">
+      <a class="tile" data-title="Sobremesas" href="./sobremesas.html">
         <div class="tile-ico">🍰</div>
         <div class="tile-title">Sobremesas</div>
         <div class="tile-sub">Finalize com chave de ouro</div>
       </a>
 
-      <!-- Finalizar -->
-      <a class="tile highlight pulse" data-title="Finalizar pedido" href="checkout.html">
+      <a class="tile highlight pulse" data-title="Finalizar pedido" href="./checkout.html">
         <div class="tile-ico">✅</div>
         <div class="tile-title">Finalizar Pedido</div>
         <div class="tile-sub">Enviar no WhatsApp</div>
       </a>
 
     </div>
-
-    <!-- (Opcional) reviews/avaliações igual Açaí, se você quiser depois -->
   </main>
 
-  <!-- Whats flutuante -->
   <a class="wa-float" id="waFloat" href="#" target="_blank" aria-label="Chamar no WhatsApp">
-    <img src="img/whatsapp.png" alt="WhatsApp" onerror="this.outerHTML='💬'">
+    <img src="./img/whatsapp.png" alt="WhatsApp" onerror="this.outerHTML='💬'">
   </a>
 
-  <!-- Sticky CTA igual Açaí -->
   <div class="sticky-cta">
     <button class="cta" id="ctaCart" type="button">
       <span>Ver carrinho</span>
       <strong id="ctaTotal">R$ 0,00</strong>
     </button>
-    <a class="cta primary" href="checkout.html">Finalizar</a>
+    <a class="cta primary" href="./checkout.html">Finalizar</a>
   </div>
 
   <script>
-    // ====== CONFIG RÁPIDA (trocar aqui e pronto) ======
     const CFG = {
       name: "LP Grill",
       tagline: "Pedidos rápidos • WhatsApp",
       fee: "R$ 5,00",
       time: "30–60 min",
       hours: "Segunda a Sábado até 00:00",
-      // coloque só números com DDI 55
       whatsapp: "5531999999999",
       whatsappMsg: "Olá! Quero fazer um pedido no LP Grill 🍽️"
     };
 
-    // aplica dados no topo
     document.getElementById("brandName").textContent = CFG.name;
     document.getElementById("brandTag").textContent = CFG.tagline;
     document.getElementById("feeValue").textContent = CFG.fee;
     document.getElementById("timeValue").textContent = CFG.time;
     document.getElementById("hoursValue").textContent = CFG.hours;
 
-    // link Whats
     const wa = document.getElementById("waFloat");
     wa.href = `https://wa.me/${CFG.whatsapp}?text=${encodeURIComponent(CFG.whatsappMsg)}`;
 
-    // busca filtra cards (igual Açaí)
     const input = document.getElementById("searchHome");
     const tiles = [...document.querySelectorAll("#homeGrid .tile")];
     input.addEventListener("input", () => {
@@ -151,16 +130,12 @@
       });
     });
 
-    // ====== Carrinho (placeholders p/ não quebrar)
-    // Se você já tem app.js do carrinho, pode remover este bloco.
     const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
     const badge = document.getElementById("cartBadge");
     const total = document.getElementById("ctaTotal");
-    // deixa visível “0” sem dar erro
     badge.textContent = "0";
     total.textContent = money(0);
 
-    // botões abrir carrinho: se você já tem drawer, só capture o clique no seu JS
     document.getElementById("openCart").addEventListener("click", ()=> alert("Carrinho: conecte seu drawer/app.js aqui."));
     document.getElementById("ctaCart").addEventListener("click", ()=> alert("Carrinho: conecte seu drawer/app.js aqui."));
   </script>
