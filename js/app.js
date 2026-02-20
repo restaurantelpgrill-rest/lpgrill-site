@@ -23,7 +23,6 @@
   function buildHome(){
     $("#brandName").textContent = window.SITE?.brand || "Restaurante";
     $("#brandTag").textContent = window.SITE?.tagline || "Pedidos no WhatsApp";
-
     buildChips();
 
     const catsEl = $("#cats");
@@ -35,7 +34,6 @@
       const list = cats.filter(c =>
         !t || c.title.toLowerCase().includes(t) || (c.desc||"").toLowerCase().includes(t)
       );
-
       catsEl.innerHTML = list.map(c => `
         <a class="card" href="./cardapio.html?cat=${encodeURIComponent(c.id)}">
           <div class="card__ico">${esc(c.icon)}</div>
@@ -63,7 +61,7 @@
     `).join("");
 
     $("#rateVal").textContent = "4.9";
-    $("#moreReviews")?.addEventListener("click", () => alert("Depois conectamos avaliações reais, se você quiser 😉"));
+    $("#moreReviews")?.addEventListener("click", () => alert("Depois conectamos avaliações reais, se quiser 😉"));
 
     const wa = $("#waFloat");
     if(wa){
@@ -150,13 +148,40 @@
     $("#closeCart2")?.addEventListener("click", closeCart);
     $("#bbOpen")?.addEventListener("click", openCart);
 
-    // Inputs
+    // Form
     const custName = $("#custName");
     const custAddr = $("#custAddr");
+    const addrWrap = $("#addrWrap");
     const payMethod = $("#payMethod");
+    const trocoWrap = $("#trocoWrap");
+    const trocoFor = $("#trocoFor");
+    const obs = $("#obs");
     const warn = $("#addrWarn");
+    const modeInput = $("#orderMode");
 
-    const hideWarn = () => { if(warn) warn.hidden = true; custAddr?.classList.remove("is-bad"); };
+    const segBtns = $$(".seg__btn");
+    function setMode(mode){
+      modeInput.value = mode;
+      segBtns.forEach(b => b.classList.toggle("is-on", b.dataset.mode === mode));
+      const isEntrega = mode === "Entrega";
+      addrWrap.style.display = isEntrega ? "" : "none";
+      if(!isEntrega){
+        warn.hidden = true;
+        custAddr.classList.remove("is-bad");
+      }
+    }
+    segBtns.forEach(b => b.addEventListener("click", ()=> setMode(b.dataset.mode)));
+    setMode("Entrega");
+
+    function syncPay(){
+      const pay = payMethod.value;
+      trocoWrap.hidden = (pay !== "Dinheiro");
+      if(pay !== "Dinheiro") trocoFor.value = "";
+    }
+    payMethod.addEventListener("change", syncPay);
+    syncPay();
+
+    const hideWarn = () => { warn.hidden = true; custAddr?.classList.remove("is-bad"); };
     custAddr?.addEventListener("input", hideWarn);
 
     $("#clearBtn")?.addEventListener("click", () => {
@@ -164,18 +189,23 @@
     });
 
     $("#finishBtn")?.addEventListener("click", () => {
+      const mode = modeInput.value || "Entrega";
       const addr = (custAddr?.value || "").trim();
       const name = (custName?.value || "").trim();
       const pay  = (payMethod?.value || "Pix").trim();
+      const troco = (trocoFor?.value || "").trim();
+      const obsTxt = (obs?.value || "").trim();
 
-      if(!addr){
-        if(warn) warn.hidden = false;
-        custAddr?.classList.add("is-bad");
-        custAddr?.focus();
+      if(mode === "Entrega" && !addr){
+        warn.hidden = false;
+        custAddr.classList.add("is-bad");
+        custAddr.focus();
         return;
       }
 
-      const link = CART.waLink({ name, address: addr, pay });
+      const link = CART.waLink({
+        name, address: addr, pay, mode, troco, obs: obsTxt
+      });
       window.open(link, "_blank");
     });
 
@@ -216,8 +246,8 @@
 
     buildChips();
     setTitle();
-    renderChips();
     renderItems();
+    renderChips();
 
     q?.addEventListener("input", e => renderItems(e.target.value));
   }
