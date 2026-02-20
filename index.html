@@ -14,6 +14,12 @@
       <p>Pedidos rápidos • WhatsApp</p>
     </div>
 
+    <!-- Botão Admin (abre a página admin com senha) -->
+    <a class="icon-btn" href="admin.html" aria-label="Abrir Admin" title="Admin"
+       style="margin-right:10px; text-decoration:none;">
+      ⚙️
+    </a>
+
     <button class="cart-btn" id="openCart" aria-label="Abrir carrinho">
       <span class="cart-ico">🛒</span><span class="cart-badge" id="cartCount">0</span>
     </button>
@@ -48,6 +54,27 @@
         <div class="tile-sub">Enviar no WhatsApp</div>
       </a>
     </div>
+
+    <!-- ===== CONTAINERS (render.js preenche aqui) ===== -->
+    <section style="margin-top:18px;">
+      <h2 style="margin:10px 0;">Destaques • Marmitas</h2>
+      <div id="marmitas" class="lp-grid"></div>
+    </section>
+
+    <section style="margin-top:18px;">
+      <h2 style="margin:10px 0;">Destaques • Porções</h2>
+      <div id="porcoes" class="lp-grid"></div>
+    </section>
+
+    <section style="margin-top:18px;">
+      <h2 style="margin:10px 0;">Destaques • Bebidas</h2>
+      <div id="bebidas" class="lp-grid"></div>
+    </section>
+
+    <section style="margin-top:18px;">
+      <h2 style="margin:10px 0;">Destaques • Sobremesas</h2>
+      <div id="sobremesas" class="lp-grid"></div>
+    </section>
   </main>
 
   <a class="wa-float" id="waFloat" href="#" aria-label="WhatsApp">
@@ -93,11 +120,10 @@
     </div>
   </aside>
 
+  <!-- Scripts (uma vez só, na ordem certa) -->
   <script src="js/data.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
+  <script src="js/render.js"></script>
 </body>
 </html>
-<script src="js/data.js"></script>
-<script src="js/render.js"></script>
-</body>
