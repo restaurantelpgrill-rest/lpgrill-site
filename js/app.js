@@ -1,7 +1,10 @@
 (() => {
   const $ = (s, el=document) => el.querySelector(s);
   const $$ = (s, el=document) => Array.from(el.querySelectorAll(s));
-  const esc = (str="") => String(str).replace(/[&<>"']/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'}[m]));
+
+  const esc = (str="") => String(str).replace(/[&<>"']/g, m => ({
+    '&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#039;'
+  }[m]));
 
   function isHome(){ return !!$("#cats"); }
   function isMenu(){ return !!$("#items"); }
@@ -25,11 +28,14 @@
 
     const catsEl = $("#cats");
     const q = $("#q");
-
     const cats = window.SITE?.categories || [];
+
     const render = (term="") => {
       const t = term.trim().toLowerCase();
-      const list = cats.filter(c => !t || c.title.toLowerCase().includes(t) || (c.desc||"").toLowerCase().includes(t));
+      const list = cats.filter(c =>
+        !t || c.title.toLowerCase().includes(t) || (c.desc||"").toLowerCase().includes(t)
+      );
+
       catsEl.innerHTML = list.map(c => `
         <a class="card" href="./cardapio.html?cat=${encodeURIComponent(c.id)}">
           <div class="card__ico">${esc(c.icon)}</div>
@@ -45,7 +51,6 @@
     render();
     q?.addEventListener("input", e => render(e.target.value));
 
-    // reviews
     const rv = window.SITE?.reviews || [];
     $("#reviews").innerHTML = rv.map(r => `
       <div class="review">
@@ -58,12 +63,11 @@
     `).join("");
 
     $("#rateVal").textContent = "4.9";
-    $("#moreReviews")?.addEventListener("click", () => alert("Depois você pode ligar isso ao Google Reviews 😉"));
+    $("#moreReviews")?.addEventListener("click", () => alert("Depois conectamos avaliações reais, se você quiser 😉"));
 
-    // botão whatsapp flutuante
     const wa = $("#waFloat");
     if(wa){
-      wa.href = CART.waLink();
+      wa.href = `https://wa.me/${window.SITE?.contact?.whatsapp || ""}`;
       wa.textContent = "WhatsApp";
     }
   }
@@ -82,9 +86,7 @@
     const q = $("#qItems");
 
     let activeCat = getCatFromURL();
-
-    const catExists = cats.some(c => c.id === activeCat);
-    if(!catExists) activeCat = cats[0]?.id || "";
+    if(!cats.some(c => c.id === activeCat)) activeCat = cats[0]?.id || "";
 
     const setTitle = () => {
       const c = cats.find(x => x.id === activeCat);
@@ -112,7 +114,8 @@
 
     const renderItems = (term="") => {
       const t = term.trim().toLowerCase();
-      const list = itemsAll.filter(it => it.cat === activeCat)
+      const list = itemsAll
+        .filter(it => it.cat === activeCat)
         .filter(it => !t || it.name.toLowerCase().includes(t) || (it.desc||"").toLowerCase().includes(t));
 
       itemsEl.innerHTML = list.map(it => `
@@ -137,7 +140,7 @@
       $$("[data-sub]").forEach(b => b.addEventListener("click", ()=> CART.sub(b.dataset.sub, 1)));
     };
 
-    // Carrinho UI
+    // Drawer carrinho
     const drawer = $("#drawer");
     const openCart = () => { drawer.classList.add("is-open"); drawer.setAttribute("aria-hidden","false"); };
     const closeCart = () => { drawer.classList.remove("is-open"); drawer.setAttribute("aria-hidden","true"); };
@@ -147,17 +150,36 @@
     $("#closeCart2")?.addEventListener("click", closeCart);
     $("#bbOpen")?.addEventListener("click", openCart);
 
+    // Inputs
+    const custName = $("#custName");
+    const custAddr = $("#custAddr");
+    const payMethod = $("#payMethod");
+    const warn = $("#addrWarn");
+
+    const hideWarn = () => { if(warn) warn.hidden = true; custAddr?.classList.remove("is-bad"); };
+    custAddr?.addEventListener("input", hideWarn);
+
     $("#clearBtn")?.addEventListener("click", () => {
       if(confirm("Limpar carrinho?")) CART.clear();
     });
 
     $("#finishBtn")?.addEventListener("click", () => {
-      const link = CART.waLink();
+      const addr = (custAddr?.value || "").trim();
+      const name = (custName?.value || "").trim();
+      const pay  = (payMethod?.value || "Pix").trim();
+
+      if(!addr){
+        if(warn) warn.hidden = false;
+        custAddr?.classList.add("is-bad");
+        custAddr?.focus();
+        return;
+      }
+
+      const link = CART.waLink({ name, address: addr, pay });
       window.open(link, "_blank");
     });
 
     CART.onChange(({count,total,lines}) => {
-      // drawer list
       const listEl = $("#cartList");
       if(listEl){
         if(!lines.length){
@@ -175,6 +197,7 @@
               </div>
             </div>
           `).join("");
+
           $$("[data-cadd]").forEach(b => b.addEventListener("click", ()=> CART.add(b.dataset.cadd, 1)));
           $$("[data-csub]").forEach(b => b.addEventListener("click", ()=> CART.sub(b.dataset.csub, 1)));
         }
@@ -183,7 +206,6 @@
       const taxa = Number(window.SITE?.meta?.taxa || 0);
       $("#cartTotal").textContent = CART.money(total + taxa);
 
-      // bottom bar
       const bb = $("#bottomBar");
       if(bb){
         bb.hidden = (count === 0);
@@ -192,6 +214,7 @@
       }
     });
 
+    buildChips();
     setTitle();
     renderChips();
     renderItems();
@@ -210,7 +233,6 @@
     `;
   }
 
-  // Boot
   window.addEventListener("DOMContentLoaded", () => {
     if(isHome()) buildHome();
     if(isMenu()) buildMenu();
