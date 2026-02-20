@@ -1,167 +1,268 @@
-// js/app.js — liga UI + drawer do carrinho + controles +/-
+// js/app.js — LP Grill (padrão Açaí: render + carrinho + drawer)
 (function(){
-  // ===== Utils =====
-  window.money = window.money || function(v){
-    return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-  };
-
   const CFG = {
     brand: "LP Grill",
-    whatsapp: "5531999999999" // TROQUE
+    whatsapp: "5531999999999", // TROQUE
+    deliveryFee: 5.00,
+    eta: "30–60 min"
   };
 
-  // ===== Drawer (painel do carrinho) =====
-  function ensureDrawer(){
-    if(document.getElementById("cartDrawer")) return;
+  // ===== utils
+  const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  const $ = (s)=> document.querySelector(s);
 
-    const wrap = document.createElement("div");
-    wrap.className = "drawer";
-    wrap.id = "cartDrawer";
-    wrap.innerHTML = `
-      <div class="drawer-backdrop" id="drawerBackdrop"></div>
-      <aside class="drawer-panel" role="dialog" aria-label="Carrinho">
-        <div class="drawer-head">
-          <div>
-            <strong style="font-size:16px">Seu carrinho</strong>
-            <div class="mini muted">Itens selecionados</div>
+  // ===== cart state (localStorage)
+  const CART_KEY = "LPGRILL_CART_V2";
+  const MODE_KEY = "LPGRILL_MODE_V2"; // entrega|retirar
+
+  const readCart = ()=> { try{return JSON.parse(localStorage.getItem(CART_KEY)||"{}")}catch{return {}}; };
+  const writeCart = (m)=> localStorage.setItem(CART_KEY, JSON.stringify(m));
+  const readMode = ()=> (localStorage.getItem(MODE_KEY) || "entrega");
+  const writeMode = (v)=> localStorage.setItem(MODE_KEY, v);
+
+  function allProducts(){
+    const list = [];
+    if(window.DATA){
+      for(const k in window.DATA){
+        if(Array.isArray(window.DATA[k])) list.push(...window.DATA[k]);
+      }
+    }
+    return list;
+  }
+  function findProduct(id){ return allProducts().find(p=>p.id===id); }
+
+  function qty(id){
+    const m = readCart();
+    return Number(m[id]||0);
+  }
+  function count(){
+    const m = readCart();
+    return Object.values(m).reduce((a,b)=>a+(b||0),0);
+  }
+  function subtotal(){
+    const m = readCart();
+    let sum = 0;
+    for(const [id, q] of Object.entries(m)){
+      const p = findProduct(id);
+      if(p) sum += p.price * q;
+    }
+    return sum;
+  }
+  function fee(){
+    return readMode()==="entrega" ? Number(CFG.deliveryFee||0) : 0;
+  }
+  function total(){
+    return subtotal() + fee();
+  }
+
+  function add(id){
+    const m = readCart();
+    m[id] = Number(m[id]||0) + 1;
+    writeCart(m);
+    syncUI();
+  }
+  function dec(id){
+    const m = readCart();
+    m[id] = Number(m[id]||0) - 1;
+    if(m[id] <= 0) delete m[id];
+    writeCart(m);
+    syncUI();
+  }
+  function remove(id){
+    const m = readCart();
+    delete m[id];
+    writeCart(m);
+    syncUI();
+  }
+  function clear(){
+    writeCart({});
+    syncUI();
+  }
+
+  // ===== drawer open/close
+  function openDrawer(){
+    const d = $("#cartDrawer");
+    if(!d) return;
+    d.classList.add("open");
+    d.setAttribute("aria-hidden","false");
+    renderDrawer();
+  }
+  function closeDrawer(){
+    const d = $("#cartDrawer");
+    if(!d) return;
+    d.classList.remove("open");
+    d.setAttribute("aria-hidden","true");
+  }
+
+  // ===== render product cards
+  function productCard(p){
+    return `
+      <article class="product" data-tap="${p.id}">
+        <img class="pimg" src="${p.img}" alt="${p.title}" onerror="this.style.display='none'">
+        <div class="pbody">
+          <div class="ptitle">
+            <strong>${p.title}</strong>
+            <span class="price">${money(p.price)}</span>
           </div>
-          <button class="icon-btn" id="closeCart" type="button">✕</button>
+          <div class="pdesc">${p.desc||""}</div>
+          <div class="pmeta">
+            <span class="badge">${p.tag||"LP Grill"}</span>
+            <div class="qty">
+              <button class="qbtn" data-dec="${p.id}" type="button">-</button>
+              <strong data-qty-for="${p.id}">0</strong>
+              <button class="qbtn" data-add="${p.id}" type="button">+</button>
+            </div>
+          </div>
         </div>
-
-        <div class="drawer-body" id="drawerBody"></div>
-
-        <div class="drawer-foot">
-          <div class="totals">
-            <div class="row total"><span>Total</span><strong id="drawerTotal">${money(0)}</strong></div>
-          </div>
-
-          <div class="drawer-actions">
-            <a class="btn primary" id="goCheckout" href="./checkout.html">Finalizar</a>
-            <button class="btn light" id="clearCart" type="button">Limpar</button>
-          </div>
-        </div>
-      </aside>
+      </article>
     `;
-    document.body.appendChild(wrap);
-
-    const open = ()=> { wrap.classList.add("open"); renderDrawer(); };
-    const close = ()=> wrap.classList.remove("open");
-
-    document.getElementById("openCart")?.addEventListener("click", open);
-    document.getElementById("ctaCart")?.addEventListener("click", open);
-    document.getElementById("drawerBackdrop")?.addEventListener("click", close);
-    document.getElementById("closeCart")?.addEventListener("click", close);
-
-    document.getElementById("clearCart")?.addEventListener("click", ()=>{
-      Cart.clear();
-      renderDrawer();
-    });
-
-    // expõe para outras páginas chamarem
-    window.openCart = open;
   }
 
-  function renderDrawer(){
-    const body = document.getElementById("drawerBody");
-    const tot = document.getElementById("drawerTotal");
-    if(!body) return;
+  // função global para páginas chamarem (igual você pediu)
+  window.renderCategory = function(key, listId){
+    const list = document.getElementById(listId);
+    if(!list) return;
 
-    const items = Cart.itemsDetailed();
-    if(!items.length){
-      body.innerHTML = `<div class="muted" style="padding:10px 2px">Seu carrinho está vazio.</div>`;
-      if(tot) tot.textContent = money(0);
-      Cart.syncUI();
-      return;
-    }
+    const items = (window.DATA && window.DATA[key]) ? window.DATA[key] : [];
+    list.innerHTML = items.map(productCard).join("");
 
-    body.innerHTML = items.map(({id, qty, product:p}) => `
-      <div class="citem">
-        <div class="citem-top">
-          <div>
-            <div class="cname">${p.title}</div>
-            <div class="cdesc">${money(p.price)} cada</div>
-          </div>
-          <button class="qbtn remove" data-remove="${id}">remover</button>
-        </div>
-
-        <div class="ccontrols">
-          <div class="qty">
-            <button class="qbtn" data-dec="${id}">-</button>
-            <strong data-qty-for="${id}">${qty}</strong>
-            <button class="qbtn" data-add="${id}">+</button>
-          </div>
-          <strong>${money(p.price * qty)}</strong>
-        </div>
-      </div>
-    `).join("");
-
-    body.querySelectorAll("[data-add]").forEach(b=>{
-      b.addEventListener("click", ()=>{
-        Cart.add(b.getAttribute("data-add"));
-        renderDrawer();
-      });
+    // bind +/-
+    list.querySelectorAll("[data-add]").forEach(b=>{
+      b.addEventListener("click",(e)=>{ e.stopPropagation(); add(b.getAttribute("data-add")); });
     });
-    body.querySelectorAll("[data-dec]").forEach(b=>{
-      b.addEventListener("click", ()=>{
-        Cart.dec(b.getAttribute("data-dec"));
-        renderDrawer();
-      });
-    });
-    body.querySelectorAll("[data-remove]").forEach(b=>{
-      b.addEventListener("click", ()=>{
-        Cart.remove(b.getAttribute("data-remove"));
-        renderDrawer();
-      });
+    list.querySelectorAll("[data-dec]").forEach(b=>{
+      b.addEventListener("click",(e)=>{ e.stopPropagation(); dec(b.getAttribute("data-dec")); });
     });
 
-    if(tot) tot.textContent = money(Cart.subtotal());
-    Cart.syncUI();
-  }
-
-  // ===== Liga controles de produto (+/- no card) =====
-  function bindProductControls(){
-    document.querySelectorAll("[data-add-item]").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        const id = btn.getAttribute("data-add-item");
-        Cart.add(id);
-        Cart.syncUI();
-      });
-    });
-
-    document.querySelectorAll("[data-dec-item]").forEach(btn=>{
-      btn.addEventListener("click", ()=>{
-        const id = btn.getAttribute("data-dec-item");
-        Cart.dec(id);
-        Cart.syncUI();
-      });
-    });
-
-    // clique no card também adiciona (opcional)
-    document.querySelectorAll("[data-tap-add]").forEach(card=>{
-      card.addEventListener("click", (e)=>{
-        // não dispara se clicar nos botões
+    // clique no card também adiciona 1
+    list.querySelectorAll("[data-tap]").forEach(card=>{
+      card.addEventListener("click",(e)=>{
         if(e.target.closest("button")) return;
-        Cart.add(card.getAttribute("data-tap-add"));
-        Cart.syncUI();
+        add(card.getAttribute("data-tap"));
       });
     });
+
+    syncUI();
+  };
+
+  // ===== drawer content
+  function renderDrawer(){
+    const wrap = $("#cartItems");
+    if(!wrap) return;
+
+    const m = readCart();
+    const entries = Object.entries(m).filter(([,q])=>q>0);
+
+    if(!entries.length){
+      wrap.innerHTML = `<div class="muted">Seu carrinho está vazio.</div>`;
+    }else{
+      wrap.innerHTML = entries.map(([id,q])=>{
+        const p = findProduct(id);
+        if(!p) return "";
+        return `
+          <div class="citem">
+            <div class="citem-top">
+              <div>
+                <div class="cname">${p.title}</div>
+                <div class="cdesc">${money(p.price)} cada</div>
+              </div>
+              <button class="qbtn remove" data-rm="${id}" type="button">remover</button>
+            </div>
+            <div class="ccontrols">
+              <div class="qty">
+                <button class="qbtn" data-d="${id}" type="button">-</button>
+                <strong data-qty-for="${id}">${q}</strong>
+                <button class="qbtn" data-a="${id}" type="button">+</button>
+              </div>
+              <strong>${money(p.price*q)}</strong>
+            </div>
+          </div>
+        `;
+      }).join("");
+
+      wrap.querySelectorAll("[data-a]").forEach(b=> b.addEventListener("click",()=>{ add(b.getAttribute("data-a")); renderDrawer(); }));
+      wrap.querySelectorAll("[data-d]").forEach(b=> b.addEventListener("click",()=>{ dec(b.getAttribute("data-d")); renderDrawer(); }));
+      wrap.querySelectorAll("[data-rm]").forEach(b=> b.addEventListener("click",()=>{ remove(b.getAttribute("data-rm")); renderDrawer(); }));
+    }
+
+    // totals
+    const subEl = $("#subTotal");
+    const feeEl = $("#deliveryFee");
+    const totEl = $("#grandTotal");
+    const etaEl = $("#etaText");
+
+    if(subEl) subEl.textContent = money(subtotal());
+    if(feeEl) feeEl.textContent = money(fee());
+    if(totEl) totEl.textContent = money(total());
+    if(etaEl) etaEl.textContent = CFG.eta;
   }
 
-  // ===== Init =====
-  document.addEventListener("DOMContentLoaded", ()=>{
-    ensureDrawer();
-    bindProductControls();
-    Cart.syncUI();
+  // ===== sync UI (badges, sticky, qty labels)
+  function syncUI(){
+    // qty labels
+    document.querySelectorAll("[data-qty-for]").forEach(el=>{
+      const id = el.getAttribute("data-qty-for");
+      el.textContent = String(qty(id));
+    });
 
-    // Whats float (se existir)
-    const wa = document.getElementById("waFloat");
-    if(wa){
-      wa.href = `https://wa.me/${CFG.whatsapp}?text=${encodeURIComponent("Olá! Quero fazer um pedido no " + CFG.brand + " 🍽️")}`;
+    const countEl = $("#cartCount");
+    if(countEl) countEl.textContent = String(count());
+
+    const sticky = $("#stickyCTA");
+    const ctaTotal = $("#ctaTotal");
+    if(ctaTotal) ctaTotal.textContent = money(total());
+
+    if(sticky){
+      sticky.hidden = count() === 0;
     }
-  });
 
-  // Quando navegar entre páginas e o HTML mudar, chama manual se precisar:
-  window.bindProductControls = bindProductControls;
-  window.renderDrawer = renderDrawer;
+    // drawer totals refresh if open
+    if($("#cartDrawer")?.classList.contains("open")){
+      renderDrawer();
+    }
+  }
+
+  // ===== bind base elements (Açaí ids)
+  document.addEventListener("DOMContentLoaded", ()=>{
+    // Whats float
+    const wa = $("#waFloat");
+    if(wa){
+      wa.href = `https://wa.me/${CFG.whatsapp}?text=${encodeURIComponent("Olá! Quero fazer um pedido no "+CFG.brand+" 🍽️")}`;
+    }
+
+    // open cart
+    $("#openCart")?.addEventListener("click", openDrawer);
+    $("#ctaOpenCart")?.addEventListener("click", openDrawer);
+    $("#closeCart")?.addEventListener("click", closeDrawer);
+    $("#closeCartBackdrop")?.addEventListener("click", closeDrawer);
+
+    // mode entrega/retirar
+    const btnE = $("#modeEntrega");
+    const btnR = $("#modeRetirar");
+    const applyMode = ()=>{
+      const mode = readMode();
+      btnE?.classList.toggle("active", mode==="entrega");
+      btnR?.classList.toggle("active", mode==="retirar");
+      syncUI();
+    };
+    btnE?.addEventListener("click", ()=>{ writeMode("entrega"); applyMode(); });
+    btnR?.addEventListener("click", ()=>{ writeMode("retirar"); applyMode(); });
+    applyMode();
+
+    // clear cart
+    $("#clearCart")?.addEventListener("click", ()=>{ clear(); renderDrawer(); });
+
+    // info bar (opcional)
+    const info = $("#infoBar");
+    if(info){
+      info.innerHTML = `
+        <div class="pill">🚚 <strong>Taxa:</strong> ${money(CFG.deliveryFee)}</div>
+        <div class="pill">⏱️ <strong>Tempo:</strong> ${CFG.eta}</div>
+        <div class="pill">🧾 <strong>Total:</strong> <span id="infoTotal">${money(total())}</span></div>
+      `;
+    }
+
+    syncUI();
+  });
 
 })();
