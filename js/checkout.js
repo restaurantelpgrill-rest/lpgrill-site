@@ -1,17 +1,26 @@
 (() => {
-  const STORE_CUSTOMER = "LPGRILL_CUSTOMER_V1";
-  const WHATSAPP_LOJA = "5531998064556"; // LP Grill
 
-  const $ = (s)=> document.querySelector(s);
+  const CART_KEY = window.LPGRILL_CART_KEY || "LP_CART";
+  const STORE_CUSTOMER = "LPGRILL_CUSTOMER";
+  const WHATSAPP_LOJA = "5531998064556";
 
-  const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  const money = v => Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+
+  const $ = s => document.querySelector(s);
+
+  function loadCart(){
+    try{
+      return JSON.parse(localStorage.getItem(CART_KEY) || "{}");
+    }catch{
+      return {};
+    }
+  }
 
   function loadCustomer(){
     try{
-      const raw = localStorage.getItem(STORE_CUSTOMER);
-      return raw ? JSON.parse(raw) : { name:"", phone:"", address:"", obs:"" };
+      return JSON.parse(localStorage.getItem(STORE_CUSTOMER) || "{}");
     }catch{
-      return { name:"", phone:"", address:"", obs:"" };
+      return {};
     }
   }
 
@@ -19,116 +28,98 @@
     localStorage.setItem(STORE_CUSTOMER, JSON.stringify(d));
   }
 
-  // adapte se seu cart.js usa outra chave/estrutura
-  function loadCart(){
-  try{
-    const key = window.LPGRILL_CART_KEY || "LPGRILL_CART_V1"; // fallback
-    const raw = localStorage.getItem(key);
-    return raw ? JSON.parse(raw) : { items: [], mode: "entrega", fee: 0 };
-  }catch{
-    return { items: [], mode: "entrega", fee: 0 };
+  function findProductById(id){
+    const data = window.DATA || {};
+    const all = [
+      ...(data.marmitas||[]),
+      ...(data.porcoes||[]),
+      ...(data.bebidas||[]),
+      ...(data.sobremesas||[])
+    ];
+    return all.find(p => p.id === id);
   }
-}
 
-  function cartToText(cart){
-    const items = cart.items || [];
-    if(items.length === 0) return "Carrinho vazio.";
-
+  function buildItemsText(cart){
     let subtotal = 0;
-    const lines = items.map((it)=>{
-      const q = Number(it.qty || 1);
-      const p = Number(it.price || 0);
-      subtotal += q * p;
-      return `• ${q}x ${it.title} — ${money(p)}${it.note ? ` (${it.note})` : ""}`;
+    const lines = [];
+
+    Object.keys(cart).forEach(id => {
+      const qty = cart[id];
+      const prod = findProductById(id);
+      if(!prod) return;
+
+      const price = prod.promo && prod.promoPrice ? prod.promoPrice : prod.price;
+      subtotal += qty * price;
+
+      lines.push(`• ${qty}x ${prod.title} — ${money(price)}`);
     });
 
-    const fee = Number(cart.fee || 0);
-    const total = subtotal + fee;
-
-    return [
-      `*Itens:*`,
-      ...lines,
-      ``,
-      `*Subtotal:* ${money(subtotal)}`,
-      `*Taxa:* ${money(fee)}`,
-      `*Total:* ${money(total)}`
-    ].join("\n");
+    return {
+      text: lines.join("\n"),
+      subtotal
+    };
   }
 
-  function onlyDigits(s){ return String(s||"").replace(/\D+/g,""); }
-
-  function validate({name, phone, address}, cart){
-    if(!name || name.length < 2) return "Preencha seu nome.";
-    const digits = onlyDigits(phone);
-    if(digits.length < 10) return "Preencha seu WhatsApp corretamente.";
-
-    // se modo entrega, endereço obrigatório
-    const mode = (cart.mode || "entrega");
-    if(mode === "entrega"){
-      if(!address || address.length < 8) return "Preencha o endereço completo para entrega.";
-    }
+  function validate({name, phone, address}){
+    if(!name || name.length < 2) return "Digite seu nome";
+    if(!phone || phone.replace(/\D/g,"").length < 10) return "WhatsApp inválido";
+    if(!address || address.length < 5) return "Digite o endereço";
     return null;
   }
 
-  function buildMsg(c, cart){
-    const mode = (cart.mode || "entrega");
-    const header = [
-      `Olá! Segue meu pedido no LP Grill 👋`,
-      ``,
-      `*Nome:* ${c.name}`,
-      `*WhatsApp:* ${c.phone}`,
-      `*Modo:* ${mode === "retirar" ? "Retirar" : "Entrega"}`,
-      mode === "entrega" ? `*Endereço:* ${c.address}` : null,
-      c.obs ? `*Obs:* ${c.obs}` : null,
-      ``,
-      cartToText(cart)
-    ].filter(Boolean);
-
-    return encodeURIComponent(header.join("\n"));
-  }
-
   function init(){
+
     const c = loadCustomer();
     $("#cName").value = c.name || "";
     $("#cPhone").value = c.phone || "";
     $("#cAddress").value = c.address || "";
     $("#cObs").value = c.obs || "";
 
-    // salvar automaticamente enquanto digita
-    ["cName","cPhone","cAddress","cObs"].forEach(id=>{
-      $("#"+id).addEventListener("input", ()=>{
-        saveCustomer({
-          name: $("#cName").value.trim(),
-          phone: $("#cPhone").value.trim(),
-          address: $("#cAddress").value.trim(),
-          obs: $("#cObs").value.trim()
-        });
-      });
-    });
+    $("#btnSendOrder").onclick = () => {
 
-    $("#btnSendOrder").addEventListener("click", ()=>{
       const customer = {
         name: $("#cName").value.trim(),
         phone: $("#cPhone").value.trim(),
         address: $("#cAddress").value.trim(),
         obs: $("#cObs").value.trim()
       };
-      const cart = loadCart();
 
-      const err = validate(customer, cart);
-      const msgEl = $("#checkoutMsg");
-      if(err){
-        msgEl.textContent = "❌ " + err;
+      const error = validate(customer);
+      if(error){
+        $("#checkoutMsg").textContent = "❌ " + error;
         return;
       }
 
       saveCustomer(customer);
 
-      const text = buildMsg(customer, cart);
-      window.open(`https://wa.me/${WHATSAPP_LOJA}?text=${text}`, "_blank", "noopener");
-      msgEl.textContent = "✅ Abrindo WhatsApp...";
-    });
+      const cart = loadCart();
+      if(Object.keys(cart).length === 0){
+        $("#checkoutMsg").textContent = "Carrinho vazio.";
+        return;
+      }
+
+      const {text, subtotal} = buildItemsText(cart);
+
+      const msg = encodeURIComponent(
+`Olá! Quero fazer um pedido 👋
+
+Nome: ${customer.name}
+WhatsApp: ${customer.phone}
+Endereço: ${customer.address}
+
+Pedido:
+${text}
+
+Subtotal: ${money(subtotal)}
+
+Obs: ${customer.obs || "—"}`
+      );
+
+      window.open(`https://wa.me/${WHATSAPP_LOJA}?text=${msg}`, "_blank");
+    };
+
   }
 
   window.addEventListener("DOMContentLoaded", init);
+
 })();
