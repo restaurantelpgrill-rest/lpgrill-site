@@ -1,270 +1,100 @@
-<!doctype html>
-<html lang="pt-br">
-<head>
-  <meta charset="utf-8" />
-  <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Admin — LP Grill</title>
-  <link rel="stylesheet" href="css/style.css" />
-</head>
+(() => {
+  const PASS_KEY    = "LPGRILL_ADMIN_PASS_V1";
+  const SESSION_KEY = "LPGRILL_ADMIN_UNLOCKED_V1";
 
-<body class="app">
+  const $ = (s, p=document) => p.querySelector(s);
 
-  <!-- ===== LOCK (SENHA) ===== -->
-  <section id="lockBox" class="lock" style="display:none; min-height:100vh; place-items:center; padding:24px;">
-    <div class="lock-card" style="width:min(520px, 92vw); background:#fff; border:1px solid rgba(0,0,0,.10); border-radius:16px; padding:16px;">
-      <h1 id="lockTitle" style="margin:0 0 6px;">Área restrita</h1>
-      <p id="lockHint" class="muted" style="margin:0 0 12px;"></p>
+  async function hashText(text){
+    const enc = new TextEncoder().encode(text);
+    const buf = await crypto.subtle.digest("SHA-256", enc);
+    return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
+  }
 
-      <input id="lockPass" type="password" placeholder="Senha" autocomplete="current-password"
-             style="width:100%; padding:12px; border-radius:12px; border:1px solid rgba(0,0,0,.12);">
+  function show(msg){
+    // usa alert pra não depender de #toast
+    // (se quiser, você pode estilizar depois)
+    alert(msg);
+  }
 
-      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-        <button id="btnUnlock" class="btn primary" type="button">Entrar</button>
-        <button id="btnResetPass" class="btn light" type="button">Trocar senha</button>
-        <button id="btnLogout" class="btn light" type="button">Sair</button>
-      </div>
+  function unlockUI(){
+    const box = $("#lockBox");
+    const app = $("#adminApp");
+    if(box) box.style.display = "none";
+    if(app) app.style.display = "block";
 
-      <p class="mini muted" style="margin-top:10px;">
-        *Senha serve para evitar alterações acidentais. Para segurança real, só com servidor/login.
-      </p>
-    </div>
-  </section>
+    // >>> CHAMA SEU ADMIN (o script dentro do admin.html)
+    window.startAdminApp?.();
+  }
 
-  <!-- ===== APP ADMIN (SÓ APARECE APÓS SENHA) ===== -->
-  <main id="adminApp" style="display:none;">
-    <header class="pagebar">
-      <a class="back" href="index.html">← Voltar ao Menu</a>
-      <div class="page-title">
-        <h1>Admin</h1>
-        <p>Gerenciar produtos</p>
-      </div>
-      <span></span>
-    </header>
+  async function ensureLock(){
+    const box = $("#lockBox");
+    const app = $("#adminApp");
+    if(!box || !app){
+      // se faltar algo, não trava
+      window.startAdminApp?.();
+      return;
+    }
 
-    <main class="container">
-      <div class="totals" style="margin-top:12px">
-        <div class="row">
-          <strong>Catálogo</strong>
-          <span class="muted mini">Salvo no navegador (localStorage)</span>
-        </div>
-        <div class="row" style="gap:8px; flex-wrap:wrap">
-          <button class="btn light" id="btnReset" type="button">Resetar p/ padrão</button>
-          <button class="btn light" id="btnExport" type="button">Exportar JSON</button>
-          <button class="btn light" id="btnImport" type="button">Importar JSON</button>
-          <button class="btn primary" id="btnCopyDataJs" type="button">Copiar DATA.js</button>
-        </div>
-        <div class="mini muted">
-          Dica: depois de editar, o site já lê automaticamente (se você usar o data “dinâmico”).
-          Se quiser fixar, clique em <strong>Copiar DATA.js</strong> e cole em <code>js/data.js</code>.
-        </div>
-      </div>
+    // se já está liberado nesta sessão
+    if(localStorage.getItem(SESSION_KEY) === "1"){
+      unlockUI();
+      return;
+    }
 
-      <div class="totals">
-        <div class="row">
-          <strong>Categoria</strong>
-          <select id="cat" style="padding:10px 12px;border-radius:14px;border:1px solid rgba(17,24,39,.12);background:#fff">
-            <option value="marmitas">Marmitas</option>
-            <option value="porcoes">Porções</option>
-            <option value="bebidas">Bebidas</option>
-            <option value="sobremesas">Sobremesas</option>
-          </select>
-        </div>
-        <div class="row" style="gap:10px; flex-wrap:wrap">
-          <input id="q" placeholder="Buscar por nome..." style="flex:1;min-width:240px;padding:12px;border-radius:14px;border:1px solid rgba(17,24,39,.12);background:#fff" />
-          <button class="btn primary" id="btnNew" type="button">+ Novo produto</button>
-        </div>
-      </div>
+    // trava app
+    box.style.display = "grid";
+    app.style.display = "none";
 
-      <section class="product-grid" id="list"></section>
+    const hasPass = !!localStorage.getItem(PASS_KEY);
 
-      <div class="totals" style="margin-top:12px">
-        <strong>JSON (para colar ou salvar)</strong>
-        <textarea id="jsonBox" style="width:100%;min-height:220px;margin-top:10px;padding:12px;border-radius:14px;border:1px solid rgba(17,24,39,.12);background:#fff;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;font-size:12px"></textarea>
-        <div class="mini muted" style="margin-top:8px">
-          Exportar/Importar usa esse campo. Importar substitui tudo.
-        </div>
-      </div>
-    </main>
+    $("#lockTitle").textContent = hasPass ? "Área restrita" : "Criar senha do Admin";
+    $("#lockHint").textContent  = hasPass
+      ? "Digite a senha para entrar."
+      : "Defina uma senha agora (mínimo 4 caracteres).";
 
-    <!-- precisa do DATA para o admin funcionar -->
-    <script src="js/data.js"></script>
+    $("#btnUnlock").onclick = async () => {
+      const pass = ($("#lockPass").value || "").trim();
+      if(pass.length < 4) return show("Senha muito curta (mínimo 4).");
 
-    <!-- Seu script ADMIN atual (NÃO roda até liberar senha) -->
-    <script>
-    window.startAdminApp = function(){
-      (() => {
-        const STORE_KEY = "LPGRILL_DATA_ADMIN_V1";
+      // primeira vez: cria senha
+      if(!localStorage.getItem(PASS_KEY)){
+        localStorage.setItem(PASS_KEY, await hashText(pass));
+        localStorage.setItem(SESSION_KEY, "1");
+        show("Senha criada ✅");
+        unlockUI();
+        return;
+      }
 
-        const $ = (s)=> document.querySelector(s);
-        const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+      // valida senha
+      const h = await hashText(pass);
+      if(h !== localStorage.getItem(PASS_KEY)) return show("Senha incorreta ❌");
 
-        function defaultData(){
-          return JSON.parse(JSON.stringify(window.DATA || {
-            marmitas:[], porcoes:[], bebidas:[], sobremesas:[]
-          }));
-        }
-
-        function loadData(){
-          try{
-            const raw = localStorage.getItem(STORE_KEY);
-            if(!raw) return defaultData();
-            const d = JSON.parse(raw);
-            d.marmitas ||= [];
-            d.porcoes ||= [];
-            d.bebidas ||= [];
-            d.sobremesas ||= [];
-            return d;
-          }catch(e){
-            return defaultData();
-          }
-        }
-
-        function saveData(d){
-          localStorage.setItem(STORE_KEY, JSON.stringify(d));
-        }
-
-        function slugId(prefix){
-          return prefix + Math.random().toString(36).slice(2,8);
-        }
-
-        function render(){
-          const cat = $("#cat").value;
-          const q = ($("#q").value||"").trim().toLowerCase();
-
-          const d = loadData();
-          const items = (d[cat]||[]).filter(p => (p.title||"").toLowerCase().includes(q));
-
-          const list = $("#list");
-          list.innerHTML = items.map(p => `
-            <article class="product" style="cursor:default">
-              <img class="pimg" src="${p.img||""}" alt="" onerror="this.style.display='none'">
-              <div class="pbody">
-                <div class="ptitle">
-                  <strong>${p.title||"(sem nome)"}</strong>
-                  <span class="price">${money(p.price||0)}</span>
-                </div>
-                <div class="pdesc">${p.desc||""}</div>
-                <div class="pmeta">
-                  <span class="badge">${p.tag||"LP Grill"}</span>
-                  <div style="display:flex;gap:8px">
-                    <button class="qbtn" data-edit="${p.id}" type="button">Editar</button>
-                    <button class="qbtn remove" data-del="${p.id}" type="button">Excluir</button>
-                  </div>
-                </div>
-                <div class="mini muted">id: ${p.id} • img: ${p.img||""}</div>
-              </div>
-            </article>
-          `).join("");
-
-          list.querySelectorAll("[data-edit]").forEach(btn=>{
-            btn.addEventListener("click", ()=> openEditor(btn.getAttribute("data-edit")));
-          });
-          list.querySelectorAll("[data-del]").forEach(btn=>{
-            btn.addEventListener("click", ()=> delItem(btn.getAttribute("data-del")));
-          });
-
-          $("#jsonBox").value = JSON.stringify(d, null, 2);
-        }
-
-        function openEditor(id){
-          const cat = $("#cat").value;
-          const d = loadData();
-          const arr = d[cat]||[];
-          const idx = arr.findIndex(x=>x.id===id);
-          const p = idx>=0 ? arr[idx] : { id: slugId(cat[0]), title:"", desc:"", tag:"", price:0, img:"img/mockup.png" };
-
-          const title = prompt("Nome do produto:", p.title||"");
-          if(title===null) return;
-
-          const desc = prompt("Descrição:", p.desc||"") ?? p.desc;
-          const tag  = prompt("Tag (ex: 350ml, Especial):", p.tag||"") ?? p.tag;
-
-          const priceStr = prompt("Preço (ex: 18.90):", String(p.price||0));
-          if(priceStr===null) return;
-          const price = Number(String(priceStr).replace(",", "."));
-          if(Number.isNaN(price)){
-            alert("Preço inválido.");
-            return;
-          }
-
-          const img = prompt("Imagem (ex: img/marmita_tradicional.jpg):", p.img||"img/mockup.png");
-          if(img===null) return;
-
-          const updated = { ...p, title, desc, tag, price, img };
-
-          if(idx>=0) arr[idx] = updated;
-          else arr.push(updated);
-
-          d[cat] = arr;
-          saveData(d);
-          render();
-        }
-
-        function delItem(id){
-          const cat = $("#cat").value;
-          const d = loadData();
-          d[cat] = (d[cat]||[]).filter(x=>x.id!==id);
-          saveData(d);
-          render();
-        }
-
-        $("#btnNew").addEventListener("click", ()=> openEditor(""));
-        $("#q").addEventListener("input", render);
-        $("#cat").addEventListener("change", render);
-
-        $("#btnReset").addEventListener("click", ()=>{
-          if(confirm("Resetar catálogo para o padrão do data.js?")){
-            localStorage.removeItem(STORE_KEY);
-            render();
-          }
-        });
-
-        $("#btnExport").addEventListener("click", ()=>{
-          const d = loadData();
-          $("#jsonBox").value = JSON.stringify(d, null, 2);
-          $("#jsonBox").select();
-          document.execCommand("copy");
-          alert("JSON exportado e copiado.");
-        });
-
-        $("#btnImport").addEventListener("click", ()=>{
-          try{
-            const raw = $("#jsonBox").value.trim();
-            const obj = JSON.parse(raw);
-            obj.marmitas ||= [];
-            obj.porcoes ||= [];
-            obj.bebidas ||= [];
-            obj.sobremesas ||= [];
-            saveData(obj);
-            render();
-            alert("Importado com sucesso.");
-          }catch(e){
-            alert("JSON inválido. Verifique o conteúdo.");
-          }
-        });
-
-        $("#btnCopyDataJs").addEventListener("click", ()=>{
-          const d = loadData();
-          const code = "window.DATA = " + JSON.stringify(d, null, 2) + ";\n";
-          navigator.clipboard?.writeText(code).then(()=>{
-            alert("DATA.js copiado! Agora cole em js/data.js.");
-          }).catch(()=>{
-            $("#jsonBox").value = code;
-            $("#jsonBox").select();
-            document.execCommand("copy");
-            alert("DATA.js preparado e copiado (modo compatibilidade). Cole em js/data.js.");
-          });
-        });
-
-        render();
-      })();
+      localStorage.setItem(SESSION_KEY, "1");
+      show("Bem-vindo ✅");
+      unlockUI();
     };
-    </script>
 
-  </main>
+    $("#btnResetPass").onclick = async () => {
+      if(!localStorage.getItem(PASS_KEY)) return show("Ainda não existe senha definida.");
 
-  <!-- Lock + admin avançado (o arquivo que você colou comigo) -->
-  <script src="admin.js"></script>
+      const current = ($("#lockPass").value || "").trim();
+      if(current.length < 4) return show("Digite a senha atual no campo para trocar.");
 
-</body>
-</html>
+      const h = await hashText(current);
+      if(h !== localStorage.getItem(PASS_KEY)) return show("Senha atual incorreta ❌");
+
+      const newPass = prompt("Nova senha (mínimo 4 caracteres):");
+      if(!newPass || newPass.trim().length < 4) return show("Senha inválida.");
+
+      localStorage.setItem(PASS_KEY, await hashText(newPass.trim()));
+      show("Senha alterada ✅");
+    };
+
+    $("#btnLogout").onclick = () => {
+      localStorage.removeItem(SESSION_KEY);
+      location.reload();
+    };
+  }
+
+  window.addEventListener("DOMContentLoaded", ensureLock);
+})();
