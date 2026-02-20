@@ -1,9 +1,7 @@
-// js/data.js  (LP Grill) — Dados do cardápio
+// js/data.js — LP Grill (produtos)
 window.DATA = window.DATA || {};
 
-// =====================
-// MARMITAS (com suas fotos)
-// =====================
+// ========= MARMITAS (4) =========
 window.DATA.marmitas = [
   {
     id: "marmita_tradicional",
@@ -36,28 +34,41 @@ window.DATA.marmitas = [
     price: 21.90,
     img: "img/frango_grelhado.jpg",
     tag: "Grelhado"
-  },
-  {
-    id: "pf_do_dia",
-    title: "PF do Dia",
-    desc: "Prato feito (varia conforme o dia).",
-    price: 17.90,
-    img: "img/pf-do-dia.jpg",
-    tag: "Promo"
   }
 ];
 
-// =====================
-// BEBIDAS (com suas fotos)
-// =====================
+// ========= PORÇÕES (2) =========
+// (Você não tem foto de porção ainda — usei pf-do-dia e mockup como placeholder)
+window.DATA.porcoes = [
+  {
+    id: "porcao_batata",
+    title: "Porção de Batata",
+    desc: "Crocante e bem servida.",
+    price: 19.90,
+    img: "img/pf-do-dia.jpg",
+    tag: "Compartilhar"
+  },
+  {
+    id: "porcao_frango",
+    title: "Porção de Frango",
+    desc: "Frango em pedaços + molho.",
+    price: 24.90,
+    img: "img/mockup.png",
+    tag: "Top"
+  }
+];
+
+// ========= BEBIDAS (4) =========
+// (Você tem 3 imagens de bebida; a 4ª vou repetir a água como “Água com gás”)
 window.DATA.bebidas = [
   { id:"coca_lata", title:"Coca-Cola Lata", desc:"350ml gelada.", price:6.00, img:"img/coca_lata.jpg", tag:"350ml" },
   { id:"guarana_lata", title:"Guaraná Lata", desc:"350ml gelada.", price:6.00, img:"img/guarana_lata.jpg", tag:"350ml" },
-  { id:"agua_500", title:"Água 500ml", desc:"Sem gás.", price:4.00, img:"img/agua_500.jpg", tag:"500ml" }
+  { id:"agua_500", title:"Água 500ml", desc:"Sem gás.", price:4.00, img:"img/agua_500.jpg", tag:"500ml" },
+  { id:"agua_gas", title:"Água com gás", desc:"500ml gelada.", price:5.00, img:"img/agua_500.jpg", tag:"500ml" }
 ];
 
-// Você pode ir criando as outras categorias depois:
-// window.DATA.churrasco = [...]
-// window.DATA.porcoes = [...]
-// window.DATA.lanches = [...]
-// window.DATA.sobremesas = [...]
+// ========= SOBREMESAS (1) =========
+// (sem foto doce no /img — usei mockup.png)
+window.DATA.sobremesas = [
+  { id:"pudim", title:"Pudim", desc:"Caseiro, bem cremoso.", price:8.90, img:"img/mockup.png", tag:"Doce" }
+];
