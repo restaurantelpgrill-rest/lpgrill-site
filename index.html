@@ -5,8 +5,51 @@
   <meta name="viewport" content="width=device-width,initial-scale=1" />
   <title>LP Grill — Cardápio</title>
   <link rel="stylesheet" href="css/style.css" />
+
+  <!-- Admin Gear Discreta (só pro index) -->
+  <style>
+    .admin-gear{
+      position: fixed;
+      top: 8px;
+      left: 8px;
+      width: 22px;
+      height: 22px;
+      display: grid;
+      place-items: center;
+      text-decoration: none;
+      border-radius: 999px;
+      z-index: 9999;
+      user-select: none;
+
+      /* ultra discreta */
+      font-size: 13px;
+      line-height: 1;
+      opacity: .12;
+      background: transparent;
+      color: rgba(0,0,0,.65);
+      transition: opacity .2s ease, transform .2s ease, background .2s ease;
+    }
+    .admin-gear:hover{
+      opacity: .95;
+      transform: rotate(80deg) scale(1.06);
+      background: rgba(0,0,0,.06);
+    }
+    .admin-gear:active{
+      transform: rotate(120deg) scale(.98);
+    }
+
+    /* no celular fica ainda mais discreta */
+    @media (max-width: 520px){
+      .admin-gear{ opacity:.08; top:6px; left:6px; }
+      .admin-gear:hover{ opacity:.55; }
+    }
+  </style>
 </head>
+
 <body class="app">
+
+  <!-- ⚙ Admin discreto (canto superior esquerdo) -->
+  <a href="#" id="adminGear" class="admin-gear" aria-label="Admin" title="Admin">⚙</a>
 
   <header class="pagebar">
     <div class="page-title">
@@ -14,11 +57,7 @@
       <p>Pedidos rápidos • WhatsApp</p>
     </div>
 
-    <!-- Botão Admin (abre a página admin com senha) -->
-    <a class="icon-btn" href="admin.html" aria-label="Abrir Admin" title="Admin"
-       style="margin-right:10px; text-decoration:none;">
-      ⚙️
-    </a>
+    <!-- (removido o botão admin aqui do header para ficar discreto e não chamar atenção) -->
 
     <button class="cart-btn" id="openCart" aria-label="Abrir carrinho">
       <span class="cart-ico">🛒</span><span class="cart-badge" id="cartCount">0</span>
@@ -55,9 +94,10 @@
       </a>
     </div>
 
-      <a class="wa-float" id="waFloat" href="#" aria-label="WhatsApp">
-    <img src="img/whatsapp.png" alt="WhatsApp">
-  </a>
+    <a class="wa-float" id="waFloat" href="#" aria-label="WhatsApp">
+      <img src="img/whatsapp.png" alt="WhatsApp">
+    </a>
+  </main>
 
   <div class="sticky-cta" id="stickyCTA" hidden>
     <button class="cta" id="ctaOpenCart" type="button">
@@ -98,10 +138,33 @@
     </div>
   </aside>
 
+  <!-- Script da engrenagem: abre admin com chave -->
+  <script>
+    (() => {
+      const gear = document.getElementById("adminGear");
+      if(!gear) return;
+
+      gear.addEventListener("click", (e) => {
+        e.preventDefault();
+
+        // Se o admin já foi liberado antes (você salvou no admin.js), abre sem expor chave
+        const ok = localStorage.getItem("LPGRILL_ADMIN_SECRET_OK_V1") === "1";
+        if(ok){
+          window.location.href = "admin.html";
+          return;
+        }
+
+        // Primeira vez: abre com chave
+        window.location.href = "admin.html?k=22550126";
+      });
+    })();
+  </script>
+
   <!-- Scripts (uma vez só, na ordem certa) -->
   <script src="js/data.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
   <script src="js/render.js"></script>
+
 </body>
 </html>
