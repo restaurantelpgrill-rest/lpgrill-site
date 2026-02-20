@@ -1,467 +1,66 @@
 <!doctype html>
-<html lang="pt-br">
+<html lang="pt-BR">
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <meta name="theme-color" content="#0f1115" />
-  <title>LP Grill — Pedidos</title>
-
-  <!-- ✅ Caminho CORRETO (pasta css minúscula) -->
-  <link rel="stylesheet" href="css/style.css?v=1" />
+  <title>LP Grill — Cardápio</title>
+  <meta name="theme-color" content="#16a34a" />
+  <link rel="stylesheet" href="./css/style.css" />
 </head>
+<body>
 
-<body class="app">
-  <div class="topbar">
-    <div class="inner">
+  <header class="top">
+    <div class="wrap top__bar">
       <div class="brand">
-        <div class="logo" id="logoBox" title="LP Grill">
-          <span style="font-weight:1000;color:#ffffff;letter-spacing:.8px">LP</span>
-          <img id="logoImg" alt="LP Grill logo" />
+        <div class="brand__logo">
+          <img src="./img/LOGO.png" alt="LP Grill" onerror="this.style.display='none'">
+          <span class="brand__dot" aria-hidden="true"></span>
         </div>
-        <div>
-          <h1>LP Grill</h1>
-          <p id="subtitle">Pedidos online • Rápido e prático</p>
+        <div class="brand__txt">
+          <h1 id="brandName">LP Grill</h1>
+          <p id="brandTag">Pedidos rápidos • WhatsApp</p>
         </div>
       </div>
 
-      <div class="actions">
-        <div class="pill" id="statusPill" title="Status de funcionamento">
-          <span class="dot" id="dot"></span>
-          <span id="statusText">Verificando horário…</span>
-        </div>
-
-        <button class="btn ghost" id="clearBtn" type="button" title="Limpar carrinho">
-          Limpar
-        </button>
-
-        <button class="btn primary" id="goCartBtn" type="button" title="Ir para carrinho">
-          Carrinho <span class="badge" id="cartCount">0</span>
-        </button>
-      </div>
+      <a class="iconBtn" href="./cardapio.html" title="Ver cardápio">
+        ☰
+      </a>
     </div>
-  </div>
 
-  <div class="wrap">
-    <section class="hero">
-      <div class="heroCard">
-        <div class="row">
-          <div class="search">
-            <span style="opacity:.85">🔎</span>
-            <input id="search" placeholder="Buscar no cardápio… (ex: marmita, frango, coca)" />
-          </div>
+    <div class="wrap chips" id="chips"></div>
 
-          <div class="tabs" id="tabs"></div>
-        </div>
-
-        <div class="mini" id="miniInfo"></div>
-      </div>
-    </section>
-
-    <section class="grid">
-      <div class="list">
-        <div class="card">
-          <h2 style="margin:0 0 10px;font-size:15px;font-weight:1000">Cardápio</h2>
-          <div class="list" id="menu"></div>
-          <div class="mini" style="margin-top:10px">
-            📸 Para as fotos aparecerem: os arquivos devem estar na raiz com o mesmo nome do campo <b>img</b>.
-          </div>
-        </div>
-      </div>
-
-      <aside class="card cartPanel" id="cartPanel">
-        <div class="cartHeader">
-          <h2>Seu pedido</h2>
-          <span class="pill" title="Forma de envio">WhatsApp</span>
-        </div>
-
-        <div id="statusNotice" class="notice" style="display:none"></div>
-
-        <div id="cartEmpty" class="cartEmpty">Seu carrinho está vazio. Adicione itens do cardápio 🙂</div>
-        <div class="cartList" id="cartList"></div>
-
-        <div class="totals">
-          <div class="line"><span>Subtotal</span> <strong id="subTotal">R$ 0,00</strong></div>
-          <div class="line"><span>Taxa de entrega</span> <strong id="shipFee">R$ 0,00</strong></div>
-          <div class="line"><span>Total</span> <strong id="grandTotal">R$ 0,00</strong></div>
-        </div>
-
-        <div class="divider"></div>
-
-        <div class="form">
-          <div class="two">
-            <div class="field">
-              <label>Seu nome</label>
-              <input id="custName" placeholder="Ex: Paulo" />
-            </div>
-            <div class="field">
-              <label>Telefone</label>
-              <input id="custPhone" placeholder="(31) 9xxxx-xxxx" />
-            </div>
-          </div>
-
-          <div class="two">
-            <div class="field">
-              <label>Entrega ou retirada?</label>
-              <select id="fulfillment">
-                <option value="entrega">Entrega</option>
-                <option value="retirada">Retirada</option>
-              </select>
-            </div>
-            <div class="field">
-              <label>Pagamento</label>
-              <select id="payment">
-                <option value="pix">PIX</option>
-                <option value="cartao">Cartão</option>
-                <option value="dinheiro">Dinheiro</option>
-              </select>
-            </div>
-          </div>
-
-          <div class="field">
-            <label>Endereço (se for entrega)</label>
-            <input id="address" placeholder="Rua, número, bairro, referência" />
-          </div>
-
-          <div class="field">
-            <label>Observações</label>
-            <textarea id="notes" placeholder="Sem cebola, bem passado, trocas, etc."></textarea>
-          </div>
-
-          <button class="btn primary" id="sendBtn" type="button">
-            Finalizar e enviar no WhatsApp
-          </button>
-
-          <div class="footer">
-            <span id="pixLine">PIX: —</span>
-            <span id="hoursLine">Horário: —</span>
-          </div>
-        </div>
-      </aside>
-    </section>
-  </div>
-
-  <!-- BOTÃO FIXO NO CELULAR -->
-  <div class="stickyOrder" id="stickyOrder">
-    <div class="bar">
-      <div class="left">
-        <b id="stickyTitle">Pedir agora</b>
-        <span id="stickySub">Seu carrinho está vazio</span>
-      </div>
-      <button class="btn primary" id="stickyBtn" type="button">Pedir agora</button>
+    <div class="wrap search">
+      <input id="q" type="search" placeholder="Buscar categoria..." autocomplete="off">
     </div>
-  </div>
+  </header>
 
-  <!-- BOTÃO FLUTUANTE WHATSAPP -->
-  <div class="waFloat" aria-label="Atalho WhatsApp">
-    <a id="waFloatBtn" href="#" target="_blank" rel="noopener" title="Chamar no WhatsApp">
-      <svg width="26" height="26" viewBox="0 0 32 32" aria-hidden="true">
-        <path fill="currentColor" d="M19.11 17.5c-.3-.15-1.77-.87-2.05-.97-.27-.1-.47-.15-.67.15-.2.3-.77.97-.95 1.17-.17.2-.35.22-.65.07-.3-.15-1.25-.46-2.38-1.48-.88-.78-1.48-1.75-1.65-2.05-.17-.3-.02-.46.13-.61.13-.13.3-.35.45-.52.15-.17.2-.3.3-.5.1-.2.05-.37-.02-.52-.07-.15-.67-1.62-.92-2.22-.24-.58-.48-.5-.67-.5h-.57c-.2 0-.52.07-.8.37-.27.3-1.05 1.02-1.05 2.5 0 1.47 1.08 2.9 1.23 3.1.15.2 2.12 3.23 5.13 4.53.72.31 1.28.5 1.72.64.72.23 1.37.2 1.88.12.57-.08 1.77-.72 2.02-1.42.25-.7.25-1.3.17-1.42-.08-.12-.27-.2-.57-.35z"/>
-        <path fill="currentColor" d="M16.04 3C9.4 3 4 8.4 4 15.04c0 2.34.67 4.51 1.83 6.35L4 29l7.83-1.77a12 12 0 0 0 4.2.75C22.67 27.98 28 22.66 28 16.02 28 9.38 22.68 3 16.04 3zm0 22.64c-1.4 0-2.78-.38-3.98-1.08l-.28-.16-4.64 1.05 1-4.52-.18-.29a9.6 9.6 0 0 1-1.44-5.1c0-5.3 4.31-9.6 9.6-9.6 5.3 0 9.6 4.31 9.6 9.6 0 5.3-4.31 9.6-9.6 9.6z"/>
-      </svg>
-    </a>
-  </div>
+  <main class="wrap main">
+    <section class="grid" id="cats"></section>
 
-<script>
-const CONFIG = {
-  storeName: "LP Grill",
-  cityLine: "Belo Horizonte - MG",
-  whatsappNumber: "5531998064556",
-  pixKey: "PIX: 31998064556",
-  deliveryFee: 5.00,
-  hours: [{ day: 0, open: null, close: null }],
-  logoFile: "LOGO.png",
-};
-
-(function setFloatingWhatsApp(){
-  const msg = `Olá! Vim pelo site do ${CONFIG.storeName}.`;
-  const url = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
-  const a = document.getElementById("waFloatBtn");
-  if(a) a.href = url;
-})();
-
-const MENU = [
-  { cat:"Marmitas", items:[
-    { id:"m1", name:"Marmita tradicional", desc:"Arroz, feijão, salada e mistura do dia.", price:23.00, img:"marmita-tradicional.jpg" },
-    { id:"m2", name:"Marmita frango", desc:"Frango + acompanhamentos do dia.", price:20.00, img:"marmita-frango.jpg" },
-    { id:"m3", name:"Marmita carne", desc:"Carne + acompanhamentos do dia.", price:22.00, img:"marmita-carne.jpg" },
-  ]},
-  { cat:"Porções", items:[
-    { id:"p1", name:"Prato feito (PF) do dia", desc:"PF completo com salada.", price:24.00, img:"pf-do-dia.jpg" },
-    { id:"p2", name:"Frango grelhado + acompanhamentos", desc:"Bem servido, com salada.", price:26.00, img:"frango-grelhado.jpg" },
-  ]},
-  { cat:"Bebidas", items:[
-    { id:"b1", name:"Coca-Cola lata 350ml", desc:"Gelada.", price:6.00, img:"coca-lata.jpg" },
-    { id:"b2", name:"Guaraná lata 350ml", desc:"Gelado.", price:6.00, img:"guarana-lata.jpg" },
-    { id:"b3", name:"Água 500ml", desc:"Sem gás.", price:3.00, img:"agua-500.jpg" },
-  ]},
-];
-
-const el = (id)=>document.getElementById(id);
-const money = (v)=> v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-
-const state = { cat:"Todos", q:"", cart: loadCart() };
-
-function saveCart(){ localStorage.setItem("lpgrill_cart", JSON.stringify(state.cart)); }
-function loadCart(){ try{ return JSON.parse(localStorage.getItem("lpgrill_cart")||"{}"); } catch{ return {}; } }
-
-function getAllCats(){ return ["Todos", ...MENU.map(m=>m.cat)]; }
-
-function renderTabs(){
-  const tabs = el("tabs"); tabs.innerHTML = "";
-  getAllCats().forEach(c=>{
-    const b = document.createElement("div");
-    b.className = "tab" + (state.cat===c ? " active" : "");
-    b.textContent = c;
-    b.onclick = ()=>{ state.cat=c; render(); };
-    tabs.appendChild(b);
-  });
-}
-
-function filteredItems(){
-  const q = state.q.trim().toLowerCase();
-  let sections = MENU;
-  if(state.cat !== "Todos") sections = MENU.filter(s=>s.cat===state.cat);
-  const out = [];
-  sections.forEach(sec=>{
-    sec.items.forEach(it=>{
-      const hay = (sec.cat+" "+it.name+" "+it.desc).toLowerCase();
-      if(!q || hay.includes(q)) out.push({ ...it, cat: sec.cat });
-    });
-  });
-  return out;
-}
-
-function addToCart(item, delta){
-  const cur = state.cart[item.id]?.qty || 0;
-  const next = Math.max(0, cur + delta);
-  if(next === 0) delete state.cart[item.id];
-  else state.cart[item.id] = { id:item.id, name:item.name, price:item.price, qty: next };
-  saveCart(); renderCart(); renderMenu(); updateSticky();
-}
-
-function cartItems(){ return Object.values(state.cart); }
-function calcSubtotal(){ return cartItems().reduce((s,i)=> s + i.price*i.qty, 0); }
-function calcShipping(){ return el("fulfillment").value === "retirada" ? 0 : CONFIG.deliveryFee; }
-
-function renderMenu(){
-  const container = el("menu"); container.innerHTML = "";
-  const items = filteredItems();
-  if(items.length === 0){
-    const empty = document.createElement("div");
-    empty.className = "mini";
-    empty.textContent = "Nenhum item encontrado.";
-    container.appendChild(empty);
-    return;
-  }
-
-  items.forEach(it=>{
-    const row = document.createElement("div");
-    row.className = "item";
-
-    const thumb = document.createElement("div");
-    thumb.className = "thumb";
-    if(it.img){
-      const img = document.createElement("img");
-      img.src = it.img;
-      img.alt = it.name;
-      img.onerror = ()=>{ thumb.innerHTML = `<div class="ph">🍽️</div>`; };
-      thumb.appendChild(img);
-    } else thumb.innerHTML = `<div class="ph">🍽️</div>`;
-
-    const info = document.createElement("div");
-    info.className = "info";
-    info.innerHTML = `
-      <div style="display:flex;gap:10px;align-items:center;flex-wrap:wrap">
-        <h3>${it.name}</h3>
-        <span class="pill" style="padding:6px 10px">${it.cat}</span>
-      </div>
-      <p>${it.desc}</p>
-    `;
-
-    const right = document.createElement("div");
-    right.className = "right";
-
-    const price = document.createElement("div");
-    price.className = "price";
-    price.textContent = money(it.price);
-
-    const qty = document.createElement("div");
-    qty.className = "qty";
-    const minus = document.createElement("button");
-    minus.textContent = "−";
-    minus.onclick = ()=> addToCart(it, -1);
-
-    const count = document.createElement("span");
-    count.textContent = String(state.cart[it.id]?.qty || 0);
-
-    const plus = document.createElement("button");
-    plus.textContent = "+";
-    plus.onclick = ()=> addToCart(it, +1);
-
-    qty.append(minus, count, plus);
-    right.append(price, qty);
-    row.append(thumb, info, right);
-    container.appendChild(row);
-  });
-}
-
-function renderCart(){
-  const list = el("cartList");
-  const empty = el("cartEmpty");
-  const items = cartItems();
-
-  el("cartCount").textContent = String(items.reduce((s,i)=>s+i.qty,0));
-  list.innerHTML = "";
-
-  if(items.length === 0){
-    empty.style.display = "block";
-  } else {
-    empty.style.display = "none";
-    items.forEach(i=>{
-      const row = document.createElement("div");
-      row.className = "cartRow";
-      row.innerHTML = `
-        <div>
-          <div class="name">${i.qty}x ${i.name}</div>
-          <div class="meta">${money(i.price)} • ${money(i.price*i.qty)}</div>
+    <section class="reviews">
+      <div class="reviews__head">
+        <h2>Avaliações</h2>
+        <div class="rate">
+          <span class="star">★</span>
+          <span id="rateVal">4.9</span>
+          <span class="muted">/ 5</span>
         </div>
-        <button class="rm" title="Remover" aria-label="Remover">✕</button>
-      `;
-      row.querySelector("button").onclick = ()=>{ delete state.cart[i.id]; saveCart(); render(); };
-      list.appendChild(row);
-    });
-  }
+      </div>
 
-  const sub = calcSubtotal();
-  const ship = calcShipping();
-  el("subTotal").textContent = money(sub);
-  el("shipFee").textContent = money(ship);
-  el("grandTotal").textContent = money(sub + ship);
-  updateSticky();
-}
+      <div class="reviews__grid" id="reviews"></div>
 
-function isOpenNow(){
-  const now = new Date();
-  const day = now.getDay();
-  const slot = CONFIG.hours.find(h=>h.day===day);
-  if(!slot || !slot.open || !slot.close) return { open:false };
-  const [oh, om] = slot.open.split(":").map(Number);
-  const [ch, cm] = slot.close.split(":").map(Number);
-  const openM = oh*60 + om;
-  const closeM = ch*60 + cm;
-  const curM = now.getHours()*60 + now.getMinutes();
-  return { open: curM >= openM && curM <= closeM };
-}
+      <button class="ghostBtn" id="moreReviews">Ver mais avaliações</button>
 
-function renderStatus(){
-  const s = isOpenNow();
-  el("dot").classList.toggle("open", s.open);
-  el("statusText").textContent = s.open ? "Aberto" : "Fechado";
-  const notice = el("statusNotice");
-  notice.style.display = "flex";
-  notice.className = "notice " + (s.open ? "ok" : "");
-  notice.innerHTML = s.open
-    ? `✅ <div><strong>Estamos abertos!</strong><br><small>Você pode fazer o pedido normalmente.</small></div>`
-    : `⚠️ <div><strong>Estamos fechados no momento.</strong><br><small>Você pode montar o pedido e enviar. Confirmamos assim que abrir.</small></div>`;
-}
+      <p class="adminLink">
+        Admin (para você): <a href="./admin.html">abrir painel</a>
+      </p>
+    </section>
+  </main>
 
-function formatHoursLine(){
-  const days = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
-  const parts = CONFIG.hours.filter(h=>h.open && h.close).map(h=> `${days[h.day]} ${h.open}-${h.close}`);
-  return parts.length ? parts.join(" • ") : "Horário não informado";
-}
+  <a id="waFloat" class="waFloat" href="#" target="_blank" rel="noopener">WhatsApp</a>
 
-function buildWhatsAppMessage(){
-  const items = cartItems();
-  const name = el("custName").value.trim();
-  const phone = el("custPhone").value.trim();
-  const fulfillment = el("fulfillment").value;
-  const payment = el("payment").value;
-  const address = el("address").value.trim();
-  const notes = el("notes").value.trim();
-
-  const sub = calcSubtotal();
-  const ship = calcShipping();
-  const total = sub + ship;
-  const payLabel = payment === "pix" ? "PIX" : payment === "cartao" ? "Cartão" : "Dinheiro";
-
-  let msg = `*Pedido - ${CONFIG.storeName}*\n`;
-  msg += `\n*Cliente:* ${name || "(não informado)"}`;
-  if(phone) msg += `\n*Telefone:* ${phone}`;
-  msg += `\n*Tipo:* ${fulfillment === "retirada" ? "Retirada" : "Entrega"}`;
-  msg += `\n*Pagamento:* ${payLabel}`;
-  if(fulfillment !== "retirada") msg += `\n*Endereço:* ${address || "(não informado)"}`;
-
-  msg += `\n\n*Itens:*`;
-  items.forEach(i=>{ msg += `\n- ${i.qty}x ${i.name} — ${money(i.price*i.qty)}`; });
-
-  msg += `\n\n*Subtotal:* ${money(sub)}`;
-  msg += `\n*Taxa:* ${money(ship)}`;
-  msg += `\n*Total:* *${money(total)}*`;
-
-  if(payment === "pix") msg += `\n\n*${CONFIG.pixKey}*`;
-  if(notes) msg += `\n\n*Obs:* ${notes}`;
-  msg += `\n\nObrigado!`;
-  return msg;
-}
-
-function sendWhatsApp(){
-  const items = cartItems();
-  if(items.length === 0) return alert("Seu carrinho está vazio. Adicione itens antes de enviar 🙂");
-  const fulfillment = el("fulfillment").value;
-  if(fulfillment !== "retirada" && !el("address").value.trim()){
-    if(!confirm("Você escolheu ENTREGA, mas não preencheu o endereço. Deseja enviar mesmo assim?")) return;
-  }
-  const url = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(buildWhatsAppMessage())}`;
-  window.open(url, "_blank");
-}
-
-function setMiniInfo(){
-  el("miniInfo").textContent = `${CONFIG.cityLine} • Pedido via WhatsApp • Fotos: envie os .jpg/.png para o repositório`;
-  el("pixLine").textContent = CONFIG.pixKey;
-  el("hoursLine").textContent = "Horário: " + formatHoursLine();
-  el("subtitle").textContent = `${CONFIG.cityLine} • Pedidos pelo WhatsApp`;
-}
-
-function tryLoadLogo(){
-  const img = el("logoImg");
-  img.src = CONFIG.logoFile + "?v=" + Date.now();
-  img.onload = ()=>{
-    img.style.display = "block";
-    el("logoBox").querySelector("span").style.display = "none";
-  };
-}
-
-function scrollToCart(){ el("cartPanel").scrollIntoView({behavior:"smooth", block:"start"}); }
-
-function updateSticky(){
-  const count = cartItems().reduce((s,i)=>s+i.qty,0);
-  const total = calcSubtotal() + calcShipping();
-  el("stickySub").textContent = count === 0
-    ? "Seu carrinho está vazio"
-    : `${count} item(ns) • Total ${money(total)}`;
-  el("stickyBtn").disabled = (count === 0);
-  el("stickyBtn").style.opacity = (count === 0 ? ".6" : "1");
-}
-
-el("search").addEventListener("input", (e)=>{ state.q = e.target.value; renderMenu(); });
-el("clearBtn").onclick = ()=>{ if(confirm("Limpar carrinho?")){ state.cart={}; saveCart(); render(); } };
-el("goCartBtn").onclick = scrollToCart;
-el("sendBtn").onclick = sendWhatsApp;
-el("fulfillment").addEventListener("change", ()=> renderCart());
-el("stickyBtn").onclick = ()=> scrollToCart();
-
-tryLoadLogo();
-render();
-
-function render(){
-  renderTabs();
-  renderMenu();
-  renderCart();
-  renderStatus();
-  setMiniInfo();
-  updateSticky();
-}
-</script>
+  <script src="./js/data.js"></script>
+  <script src="./js/cart.js"></script>
+  <script src="./js/app.js" defer></script>
 </body>
 </html>
