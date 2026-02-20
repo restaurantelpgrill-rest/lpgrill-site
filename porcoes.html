@@ -1,1 +1,102 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LP Grill — Porções</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
 
+<body class="app">
+  <header class="cover subinfo">
+    <div class="cover-bg"></div>
+    <div class="container">
+      <div class="topbar">
+        <a class="backlink" href="./index.html" aria-label="Voltar">←</a>
+
+        <div class="brand">
+          <img class="brand-logo" src="img/logo.png" alt="LP Grill" onerror="this.style.display='none'">
+          <div class="brand-txt">
+            <h1>Porções</h1>
+            <p class="muted">Perfeito pra compartilhar</p>
+          </div>
+        </div>
+
+        <button class="cart-btn" id="openCart" type="button" aria-label="Abrir carrinho">
+          <span class="cart-ico">🛒</span>
+          <span class="cart-badge" id="cartBadge">0</span>
+        </button>
+      </div>
+
+      <div class="cover-search" style="margin-top:12px">
+        <input id="searchItems" type="search" placeholder="Buscar item..." autocomplete="off" />
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <div class="product-grid" id="productList"></div>
+    <button class="ghost-btn" id="emptyHint" style="display:none" type="button">
+      Ainda sem itens aqui — adicione no <strong>js/data.js</strong>
+    </button>
+  </main>
+
+  <a class="wa-float" id="waFloat" href="#" target="_blank" aria-label="Chamar no WhatsApp">
+    <img src="img/whatsapp.png" alt="WhatsApp" onerror="this.outerHTML='💬'">
+  </a>
+
+  <div class="sticky-cta">
+    <button class="cta" id="ctaCart" type="button">
+      <span>Ver carrinho</span>
+      <strong id="ctaTotal">R$ 0,00</strong>
+    </button>
+    <a class="cta primary" href="./checkout.html">Finalizar</a>
+  </div>
+
+  <script src="js/data.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    (function(){
+      const KEY = "porcoes";
+      const $list = document.getElementById("productList");
+      const $search = document.getElementById("searchItems");
+      const $hint = document.getElementById("emptyHint");
+
+      function render(items){
+        if(!items || !items.length){
+          $list.innerHTML = "";
+          $hint.style.display = "block";
+          return;
+        }
+        $hint.style.display = "none";
+        $list.innerHTML = items.map(p => `
+          <div class="product">
+            <img class="pimg" src="${p.img}" alt="${p.title}" onerror="this.style.display='none'">
+            <div class="pbody">
+              <div class="ptitle">
+                <strong>${p.title}</strong>
+                <span class="price">${money(p.price)}</span>
+              </div>
+              <div class="pdesc">${p.desc || ""}</div>
+              <div class="pmeta">
+                <span class="badge">${p.tag || "LP Grill"}</span>
+                <button class="btn light" onclick="Cart.add('${p.id}')">Adicionar</button>
+              </div>
+            </div>
+          </div>
+        `).join("");
+      }
+
+      const items = (window.DATA && window.DATA[KEY]) ? window.DATA[KEY] : [];
+      render(items);
+
+      $search.addEventListener("input", ()=>{
+        const q = $search.value.trim().toLowerCase();
+        const filtered = items.filter(p => (p.title + " " + (p.desc||"")).toLowerCase().includes(q));
+        render(filtered);
+      });
+    })();
+  </script>
+</body>
+</html>
