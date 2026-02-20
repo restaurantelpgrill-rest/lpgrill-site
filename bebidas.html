@@ -10,6 +10,7 @@
 <body class="app">
   <header class="cover subinfo">
     <div class="cover-bg"></div>
+
     <div class="container">
       <div class="topbar">
         <a class="backlink" href="./index.html" aria-label="Voltar">←</a>
@@ -36,6 +37,7 @@
 
   <main class="container">
     <div class="product-grid" id="productList"></div>
+
     <button class="ghost-btn" id="emptyHint" style="display:none" type="button">
       Ainda sem itens aqui — adicione no <strong>js/data.js</strong>
     </button>
@@ -53,12 +55,11 @@
     <a class="cta primary" href="./checkout.html">Finalizar</a>
   </div>
 
+  <!-- SÓ ESTES SCRIPTS (sem app.js antigo aqui) -->
   <script src="./js/data.js"></script>
   <script src="./js/cart.js"></script>
   <script src="./js/page-products.js"></script>
-
   <script>
-    // MUDE SÓ ISSO EM CADA PÁGINA:
     renderCategoryPage("bebidas");
   </script>
 </body>
