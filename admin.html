@@ -9,8 +9,17 @@
 
 <body class="app">
 
-  <!-- ===== LOCK (SENHA) ===== -->
-  <section id="lockBox" class="lock" style="display:none; min-height:100vh; place-items:center; padding:24px;">
+  <noscript>
+    <div style="padding:16px;margin:16px;border:1px solid rgba(0,0,0,.15);border-radius:12px;background:#fff;font-family:system-ui,Arial">
+      <strong>JavaScript desativado.</strong> O painel Admin precisa de JavaScript para funcionar.
+    </div>
+  </noscript>
+
+  <!-- ===== LOCK (SENHA) =====
+       IMPORTANTE: agora ele fica VISÍVEL por padrão (display:grid),
+       assim se der erro no JS você NÃO fica com tela branca.
+  -->
+  <section id="lockBox" class="lock" style="display:grid; min-height:100vh; place-items:center; padding:24px;">
     <div class="lock-card" style="width:min(520px, 92vw); background:#fff; border:1px solid rgba(0,0,0,.10); border-radius:16px; padding:16px;">
       <h1 id="lockTitle" style="margin:0 0 6px;">Área restrita</h1>
       <p id="lockHint" class="muted" style="margin:0 0 12px;"></p>
@@ -27,6 +36,10 @@
       <p class="mini muted" style="margin-top:10px;">
         *Senha serve para evitar alterações acidentais. Para segurança real, só com servidor/login.
       </p>
+
+      <p class="mini muted" style="margin-top:6px;">
+        Dica: se você usa chave secreta, abra com <code>?k=...</code> ou <code>#k=...</code>.
+      </p>
     </div>
   </section>
 
@@ -41,7 +54,9 @@
       <span></span>
     </header>
 
-    <main class="container">
+    <!-- ⚠️ antes era <main class="container"> dentro de <main> (HTML inválido).
+         Agora é <div class="container">. -->
+    <div class="container">
       <div class="totals" style="margin-top:12px">
         <div class="row">
           <strong>Catálogo</strong>
@@ -84,186 +99,186 @@
           Exportar/Importar usa esse campo. Importar substitui tudo.
         </div>
       </div>
-    </main>
+    </div>
 
     <!-- precisa do DATA para o admin funcionar -->
     <script src="js/data.js"></script>
 
-    <!-- Seu script ADMIN atual (SÓ roda após liberar senha) -->
+    <!-- Seu script ADMIN (só roda após liberar senha) -->
     <script>
-    window.startAdminApp = function(){
-      (() => {
-        const STORE_KEY = "LPGRILL_DATA_ADMIN_V1";
-        const $ = (s)=> document.querySelector(s);
-        const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+      window.startAdminApp = function(){
+        (() => {
+          const STORE_KEY = "LPGRILL_DATA_ADMIN_V1";
+          const $ = (s)=> document.querySelector(s);
+          const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 
-        function defaultData(){
-          return JSON.parse(JSON.stringify(window.DATA || {
-            marmitas:[], porcoes:[], bebidas:[], sobremesas:[]
-          }));
-        }
-
-        function loadData(){
-          try{
-            const raw = localStorage.getItem(STORE_KEY);
-            if(!raw) return defaultData();
-            const d = JSON.parse(raw);
-            d.marmitas ||= [];
-            d.porcoes ||= [];
-            d.bebidas ||= [];
-            d.sobremesas ||= [];
-            return d;
-          }catch(e){
-            return defaultData();
+          function defaultData(){
+            return JSON.parse(JSON.stringify(window.DATA || {
+              marmitas:[], porcoes:[], bebidas:[], sobremesas:[]
+            }));
           }
-        }
 
-        function saveData(d){
-          localStorage.setItem(STORE_KEY, JSON.stringify(d));
-        }
+          function loadData(){
+            try{
+              const raw = localStorage.getItem(STORE_KEY);
+              if(!raw) return defaultData();
+              const d = JSON.parse(raw);
+              d.marmitas ||= [];
+              d.porcoes ||= [];
+              d.bebidas ||= [];
+              d.sobremesas ||= [];
+              return d;
+            }catch(e){
+              return defaultData();
+            }
+          }
 
-        function slugId(prefix){
-          return prefix + Math.random().toString(36).slice(2,8);
-        }
+          function saveData(d){
+            localStorage.setItem(STORE_KEY, JSON.stringify(d));
+          }
 
-        function render(){
-          const cat = $("#cat").value;
-          const q = ($("#q").value||"").trim().toLowerCase();
+          function slugId(prefix){
+            return prefix + Math.random().toString(36).slice(2,8);
+          }
 
-          const d = loadData();
-          const items = (d[cat]||[]).filter(p => (p.title||"").toLowerCase().includes(q));
+          function render(){
+            const cat = $("#cat").value;
+            const q = ($("#q").value||"").trim().toLowerCase();
 
-          const list = $("#list");
-          list.innerHTML = items.map(p => `
-            <article class="product" style="cursor:default">
-              <img class="pimg" src="${p.img||""}" alt="" onerror="this.style.display='none'">
-              <div class="pbody">
-                <div class="ptitle">
-                  <strong>${p.title||"(sem nome)"}</strong>
-                  <span class="price">${money(p.price||0)}</span>
-                </div>
-                <div class="pdesc">${p.desc||""}</div>
-                <div class="pmeta">
-                  <span class="badge">${p.tag||"LP Grill"}</span>
-                  <div style="display:flex;gap:8px">
-                    <button class="qbtn" data-edit="${p.id}" type="button">Editar</button>
-                    <button class="qbtn remove" data-del="${p.id}" type="button">Excluir</button>
+            const d = loadData();
+            const items = (d[cat]||[]).filter(p => (p.title||"").toLowerCase().includes(q));
+
+            const list = $("#list");
+            list.innerHTML = items.map(p => `
+              <article class="product" style="cursor:default">
+                <img class="pimg" src="${p.img||""}" alt="" onerror="this.style.display='none'">
+                <div class="pbody">
+                  <div class="ptitle">
+                    <strong>${p.title||"(sem nome)"}</strong>
+                    <span class="price">${money(p.price||0)}</span>
                   </div>
+                  <div class="pdesc">${p.desc||""}</div>
+                  <div class="pmeta">
+                    <span class="badge">${p.tag||"LP Grill"}</span>
+                    <div style="display:flex;gap:8px">
+                      <button class="qbtn" data-edit="${p.id}" type="button">Editar</button>
+                      <button class="qbtn remove" data-del="${p.id}" type="button">Excluir</button>
+                    </div>
+                  </div>
+                  <div class="mini muted">id: ${p.id} • img: ${p.img||""}</div>
                 </div>
-                <div class="mini muted">id: ${p.id} • img: ${p.img||""}</div>
-              </div>
-            </article>
-          `).join("");
+              </article>
+            `).join("");
 
-          list.querySelectorAll("[data-edit]").forEach(btn=>{
-            btn.addEventListener("click", ()=> openEditor(btn.getAttribute("data-edit")));
-          });
-          list.querySelectorAll("[data-del]").forEach(btn=>{
-            btn.addEventListener("click", ()=> delItem(btn.getAttribute("data-del")));
-          });
+            list.querySelectorAll("[data-edit]").forEach(btn=>{
+              btn.addEventListener("click", ()=> openEditor(btn.getAttribute("data-edit")));
+            });
+            list.querySelectorAll("[data-del]").forEach(btn=>{
+              btn.addEventListener("click", ()=> delItem(btn.getAttribute("data-del")));
+            });
 
-          $("#jsonBox").value = JSON.stringify(d, null, 2);
-        }
-
-        function openEditor(id){
-          const cat = $("#cat").value;
-          const d = loadData();
-          const arr = d[cat]||[];
-          const idx = arr.findIndex(x=>x.id===id);
-          const p = idx>=0 ? arr[idx] : { id: slugId(cat[0]), title:"", desc:"", tag:"", price:0, img:"img/mockup.png" };
-
-          const title = prompt("Nome do produto:", p.title||"");
-          if(title===null) return;
-
-          const desc = prompt("Descrição:", p.desc||"") ?? p.desc;
-          const tag  = prompt("Tag (ex: 350ml, Especial):", p.tag||"") ?? p.tag;
-
-          const priceStr = prompt("Preço (ex: 18.90):", String(p.price||0));
-          if(priceStr===null) return;
-          const price = Number(String(priceStr).replace(",", "."));
-          if(Number.isNaN(price)){
-            alert("Preço inválido.");
-            return;
+            $("#jsonBox").value = JSON.stringify(d, null, 2);
           }
 
-          const img = prompt("Imagem (ex: img/marmita_tradicional.jpg):", p.img||"img/mockup.png");
-          if(img===null) return;
+          function openEditor(id){
+            const cat = $("#cat").value;
+            const d = loadData();
+            const arr = d[cat]||[];
+            const idx = arr.findIndex(x=>x.id===id);
+            const p = idx>=0 ? arr[idx] : { id: slugId(cat[0]), title:"", desc:"", tag:"", price:0, img:"img/mockup.png" };
 
-          const updated = { ...p, title, desc, tag, price, img };
+            const title = prompt("Nome do produto:", p.title||"");
+            if(title===null) return;
 
-          if(idx>=0) arr[idx] = updated;
-          else arr.push(updated);
+            const desc = prompt("Descrição:", p.desc||"") ?? p.desc;
+            const tag  = prompt("Tag (ex: 350ml, Especial):", p.tag||"") ?? p.tag;
 
-          d[cat] = arr;
-          saveData(d);
-          render();
-        }
+            const priceStr = prompt("Preço (ex: 18.90):", String(p.price||0));
+            if(priceStr===null) return;
+            const price = Number(String(priceStr).replace(",", "."));
+            if(Number.isNaN(price)){
+              alert("Preço inválido.");
+              return;
+            }
 
-        function delItem(id){
-          const cat = $("#cat").value;
-          const d = loadData();
-          d[cat] = (d[cat]||[]).filter(x=>x.id!==id);
-          saveData(d);
-          render();
-        }
+            const img = prompt("Imagem (ex: img/marmita_tradicional.jpg):", p.img||"img/mockup.png");
+            if(img===null) return;
 
-        $("#btnNew").addEventListener("click", ()=> openEditor(""));
-        $("#q").addEventListener("input", render);
-        $("#cat").addEventListener("change", render);
+            const updated = { ...p, title, desc, tag, price, img };
 
-        $("#btnReset").addEventListener("click", ()=>{
-          if(confirm("Resetar catálogo para o padrão do data.js?")){
-            localStorage.removeItem(STORE_KEY);
+            if(idx>=0) arr[idx] = updated;
+            else arr.push(updated);
+
+            d[cat] = arr;
+            saveData(d);
             render();
           }
-        });
 
-        $("#btnExport").addEventListener("click", ()=>{
-          const d = loadData();
-          $("#jsonBox").value = JSON.stringify(d, null, 2);
-          $("#jsonBox").select();
-          document.execCommand("copy");
-          alert("JSON exportado e copiado.");
-        });
-
-        $("#btnImport").addEventListener("click", ()=>{
-          try{
-            const raw = $("#jsonBox").value.trim();
-            const obj = JSON.parse(raw);
-            obj.marmitas ||= [];
-            obj.porcoes ||= [];
-            obj.bebidas ||= [];
-            obj.sobremesas ||= [];
-            saveData(obj);
+          function delItem(id){
+            const cat = $("#cat").value;
+            const d = loadData();
+            d[cat] = (d[cat]||[]).filter(x=>x.id!==id);
+            saveData(d);
             render();
-            alert("Importado com sucesso.");
-          }catch(e){
-            alert("JSON inválido. Verifique o conteúdo.");
           }
-        });
 
-        $("#btnCopyDataJs").addEventListener("click", ()=>{
-          const d = loadData();
-          const code = "window.DATA = " + JSON.stringify(d, null, 2) + ";\n";
-          navigator.clipboard?.writeText(code).then(()=>{
-            alert("DATA.js copiado! Agora cole em js/data.js.");
-          }).catch(()=>{
-            $("#jsonBox").value = code;
+          $("#btnNew").addEventListener("click", ()=> openEditor(""));
+          $("#q").addEventListener("input", render);
+          $("#cat").addEventListener("change", render);
+
+          $("#btnReset").addEventListener("click", ()=>{
+            if(confirm("Resetar catálogo para o padrão do data.js?")){
+              localStorage.removeItem(STORE_KEY);
+              render();
+            }
+          });
+
+          $("#btnExport").addEventListener("click", ()=>{
+            const d = loadData();
+            $("#jsonBox").value = JSON.stringify(d, null, 2);
             $("#jsonBox").select();
             document.execCommand("copy");
-            alert("DATA.js preparado e copiado (modo compatibilidade). Cole em js/data.js.");
+            alert("JSON exportado e copiado.");
           });
-        });
 
-        render();
-      })();
-    };
+          $("#btnImport").addEventListener("click", ()=>{
+            try{
+              const raw = $("#jsonBox").value.trim();
+              const obj = JSON.parse(raw);
+              obj.marmitas ||= [];
+              obj.porcoes ||= [];
+              obj.bebidas ||= [];
+              obj.sobremesas ||= [];
+              saveData(obj);
+              render();
+              alert("Importado com sucesso.");
+            }catch(e){
+              alert("JSON inválido. Verifique o conteúdo.");
+            }
+          });
+
+          $("#btnCopyDataJs").addEventListener("click", ()=>{
+            const d = loadData();
+            const code = "window.DATA = " + JSON.stringify(d, null, 2) + ";\n";
+            navigator.clipboard?.writeText(code).then(()=>{
+              alert("DATA.js copiado! Agora cole em js/data.js.");
+            }).catch(()=>{
+              $("#jsonBox").value = code;
+              $("#jsonBox").select();
+              document.execCommand("copy");
+              alert("DATA.js preparado e copiado (modo compatibilidade). Cole em js/data.js.");
+            });
+          });
+
+          render();
+        })();
+      };
     </script>
 
   </main>
 
-  <!-- Lock (senha) -->
-  <script src="admin.js"></script>
+  <!-- Lock (senha) — caminho corrigido -->
+  <script src="js/admin.js"></script>
 
 </body>
 </html>
