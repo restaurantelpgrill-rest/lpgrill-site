@@ -1,54 +1,97 @@
-// ===== Utils =====
-window.money = window.money || function(v){
-  return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-};
+// js/cart.js — Carrinho completo (LP Grill)
+(function(){
+  const KEY = "LPGRILL_CART_V1";
 
-// ===== Carrinho simples (localStorage) =====
-const Cart = window.Cart || {};
-window.Cart = Cart;
+  const read = () => {
+    try { return JSON.parse(localStorage.getItem(KEY) || "{}"); }
+    catch { return {}; }
+  };
 
-Cart.key = "LPGRILL_CART";
+  const write = (obj) => {
+    localStorage.setItem(KEY, JSON.stringify(obj));
+  };
 
-Cart.read = function(){
-  try{ return JSON.parse(localStorage.getItem(Cart.key) || "[]"); }
-  catch(e){ return []; }
-};
-
-Cart.write = function(items){
-  localStorage.setItem(Cart.key, JSON.stringify(items));
-  Cart.syncUI();
-};
-
-Cart.add = function(id){
-  const items = Cart.read();
-  const found = items.find(x => x.id === id);
-  if(found) found.qty += 1;
-  else items.push({id, qty:1});
-  Cart.write(items);
-};
-
-Cart.count = function(){
-  return Cart.read().reduce((a,b)=> a + (b.qty||0), 0);
-};
-
-Cart.total = function(){
-  const items = Cart.read();
-  const all = [];
-  for(const k in window.DATA){
-    if(Array.isArray(window.DATA[k])) all.push(...window.DATA[k]);
+  function allProducts(){
+    const list = [];
+    if(window.DATA){
+      for(const k in window.DATA){
+        if(Array.isArray(window.DATA[k])) list.push(...window.DATA[k]);
+      }
+    }
+    return list;
   }
-  return items.reduce((sum, it)=>{
-    const p = all.find(x=>x.id===it.id);
-    return sum + (p ? (p.price*it.qty) : 0);
-  },0);
-};
 
-Cart.syncUI = function(){
-  const badge = document.getElementById("cartBadge");
-  const total = document.getElementById("ctaTotal");
-  if(badge) badge.textContent = String(Cart.count());
-  if(total) total.textContent = money(Cart.total());
-};
+  function findProduct(id){
+    return allProducts().find(p => p.id === id);
+  }
 
-// auto-sync
-document.addEventListener("DOMContentLoaded", Cart.syncUI);
+  const Cart = window.Cart || {};
+  window.Cart = Cart;
+
+  Cart.getMap = () => read();
+
+  Cart.count = () => {
+    const m = read();
+    return Object.values(m).reduce((a,b)=>a + (b||0), 0);
+  };
+
+  Cart.qty = (id) => {
+    const m = read();
+    return Number(m[id] || 0);
+  };
+
+  Cart.add = (id, n=1) => {
+    const m = read();
+    m[id] = Number(m[id] || 0) + Number(n||1);
+    if(m[id] <= 0) delete m[id];
+    write(m);
+    Cart.syncUI();
+  };
+
+  Cart.dec = (id, n=1) => {
+    Cart.add(id, -Number(n||1));
+  };
+
+  Cart.remove = (id) => {
+    const m = read();
+    delete m[id];
+    write(m);
+    Cart.syncUI();
+  };
+
+  Cart.clear = () => {
+    write({});
+    Cart.syncUI();
+  };
+
+  Cart.subtotal = () => {
+    const m = read();
+    let sum = 0;
+    for(const [id, qty] of Object.entries(m)){
+      const p = findProduct(id);
+      if(p) sum += (p.price * qty);
+    }
+    return sum;
+  };
+
+  Cart.itemsDetailed = () => {
+    const m = read();
+    return Object.entries(m).map(([id, qty]) => {
+      const p = findProduct(id);
+      return { id, qty, product: p };
+    }).filter(x => x.product);
+  };
+
+  Cart.syncUI = () => {
+    const badge = document.getElementById("cartBadge");
+    const total = document.getElementById("ctaTotal");
+    if(badge) badge.textContent = String(Cart.count());
+    if(total) total.textContent = money(Cart.subtotal());
+    // atualiza controles de quantidade em todas as páginas
+    document.querySelectorAll("[data-qty-for]").forEach(el=>{
+      const id = el.getAttribute("data-qty-for");
+      el.textContent = String(Cart.qty(id));
+    });
+  };
+
+})();
