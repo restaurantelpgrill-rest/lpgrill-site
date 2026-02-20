@@ -1,422 +1,270 @@
-(() => {
-  const STORE_KEY   = "LPGRILL_DATA_ADMIN_V1";
-  const PASS_KEY    = "LPGRILL_ADMIN_PASS_V1";      // hash da senha
-  const SESSION_KEY = "LPGRILL_ADMIN_UNLOCKED_V1";  // sessão liberada
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Admin — LP Grill</title>
+  <link rel="stylesheet" href="css/style.css" />
+</head>
 
-  // ========= util =========
-  const $  = (s, p=document) => p.querySelector(s);
-  const $$ = (s, p=document) => [...p.querySelectorAll(s)];
-  const nowISO = () => new Date().toISOString();
-  const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+<body class="app">
 
-  function safeParse(raw){
-    try { return JSON.parse(raw); } catch { return null; }
-  }
+  <!-- ===== LOCK (SENHA) ===== -->
+  <section id="lockBox" class="lock" style="display:none; min-height:100vh; place-items:center; padding:24px;">
+    <div class="lock-card" style="width:min(520px, 92vw); background:#fff; border:1px solid rgba(0,0,0,.10); border-radius:16px; padding:16px;">
+      <h1 id="lockTitle" style="margin:0 0 6px;">Área restrita</h1>
+      <p id="lockHint" class="muted" style="margin:0 0 12px;"></p>
 
-  async function hashText(text){
-    const enc = new TextEncoder().encode(text);
-    const buf = await crypto.subtle.digest("SHA-256", enc);
-    return [...new Uint8Array(buf)].map(b=>b.toString(16).padStart(2,"0")).join("");
-  }
+      <input id="lockPass" type="password" placeholder="Senha" autocomplete="current-password"
+             style="width:100%; padding:12px; border-radius:12px; border:1px solid rgba(0,0,0,.12);">
 
-  function normalizeData(d){
-    d ||= {};
-    d.marmitas ||= [];
-    d.porcoes ||= [];
-    d.bebidas ||= [];
-    d.sobremesas ||= [];
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+        <button id="btnUnlock" class="btn primary" type="button">Entrar</button>
+        <button id="btnResetPass" class="btn light" type="button">Trocar senha</button>
+        <button id="btnLogout" class="btn light" type="button">Sair</button>
+      </div>
 
-    for(const cat of ["marmitas","porcoes","bebidas","sobremesas"]){
-      d[cat] = (d[cat]||[]).map(it => ({
-        id: it.id || crypto.randomUUID(),
-        title: it.title || "Novo item",
-        desc: it.desc || "",
-        tag: it.tag || "",
-        price: Number(it.price ?? 0),
-        img: it.img || "img/mockup.png",
-        promo: Boolean(it.promo),
-        promoPrice: it.promoPrice === "" || it.promoPrice == null ? null : Number(it.promoPrice),
-        soldOut: Boolean(it.soldOut),
-        updatedAt: it.updatedAt || nowISO()
-      }));
-    }
-    return d;
-  }
+      <p class="mini muted" style="margin-top:10px;">
+        *Senha serve para evitar alterações acidentais. Para segurança real, só com servidor/login.
+      </p>
+    </div>
+  </section>
 
-  function loadData(){
-    const raw = localStorage.getItem(STORE_KEY);
-    return normalizeData(safeParse(raw) || {});
-  }
+  <!-- ===== APP ADMIN (SÓ APARECE APÓS SENHA) ===== -->
+  <main id="adminApp" style="display:none;">
+    <header class="pagebar">
+      <a class="back" href="index.html">← Voltar ao Menu</a>
+      <div class="page-title">
+        <h1>Admin</h1>
+        <p>Gerenciar produtos</p>
+      </div>
+      <span></span>
+    </header>
 
-  function saveData(d){
-    localStorage.setItem(STORE_KEY, JSON.stringify(d));
-    toast("Salvo ✅");
-  }
-
-  // ========= UI =========
-  function toast(msg){
-    const t = $("#toast");
-    if(!t) return alert(msg);
-    t.textContent = msg;
-    t.classList.add("show");
-    setTimeout(()=>t.classList.remove("show"), 1800);
-  }
-
-  function categoryLabel(cat){
-    return ({
-      marmitas:"Marmitas",
-      porcoes:"Porções",
-      bebidas:"Bebidas",
-      sobremesas:"Sobremesas"
-    })[cat] || cat;
-  }
-
-  function escapeHtml(s){
-    return String(s ?? "")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
-
-  function itemCard(it, cat){
-    const promoOn = it.promo && (it.promoPrice != null) && (Number(it.promoPrice) > 0);
-    const finalPrice = promoOn ? Number(it.promoPrice) : Number(it.price);
-
-    return `
-      <div class="adm-card" data-cat="${cat}" data-id="${it.id}">
-        <div class="adm-img">
-          <img src="${it.img}" alt="">
-          ${it.soldOut ? `<span class="badge soldout">ESGOTADO</span>` : ``}
-          ${promoOn ? `<span class="badge promo">PROMO</span>` : ``}
+    <main class="container">
+      <div class="totals" style="margin-top:12px">
+        <div class="row">
+          <strong>Catálogo</strong>
+          <span class="muted mini">Salvo no navegador (localStorage)</span>
         </div>
-
-        <div class="adm-fields">
-          <label>Título
-            <input type="text" class="f-title" value="${escapeHtml(it.title)}">
-          </label>
-
-          <label>Descrição
-            <textarea class="f-desc" rows="2">${escapeHtml(it.desc)}</textarea>
-          </label>
-
-          <div class="row2">
-            <label>Tag
-              <input type="text" class="f-tag" value="${escapeHtml(it.tag)}">
-            </label>
-
-            <label>Preço
-              <input type="number" step="0.01" class="f-price" value="${Number(it.price).toFixed(2)}">
-            </label>
-          </div>
-
-          <div class="row2">
-            <label class="inline">
-              <input type="checkbox" class="f-soldout" ${it.soldOut ? "checked":""}>
-              Marcar como esgotado
-            </label>
-
-            <label class="inline">
-              <input type="checkbox" class="f-promo" ${it.promo ? "checked":""}>
-              Ativar promoção
-            </label>
-          </div>
-
-          <div class="row2">
-            <label>Preço promo
-              <input type="number" step="0.01" class="f-promoprice"
-                     value="${it.promoPrice==null?"":Number(it.promoPrice).toFixed(2)}"
-                     placeholder="ex: 19.90">
-            </label>
-
-            <label>Imagem (URL)
-              <input type="text" class="f-img" value="${escapeHtml(it.img)}"
-                     placeholder="img/arquivo.jpg ou https://...">
-            </label>
-          </div>
-
-          <div class="row2">
-            <label>Upload de imagem
-              <input type="file" class="f-upload" accept="image/*">
-              <small>Salva no navegador (base64). Ideal para fotos leves.</small>
-            </label>
-
-            <div class="preview">
-              <div><strong>Preço exibido:</strong> ${money(finalPrice)}</div>
-              <div class="muted"><strong>Atualizado:</strong> ${new Date(it.updatedAt).toLocaleString("pt-BR")}</div>
-            </div>
-          </div>
-
-          <div class="actions">
-            <button class="btn danger js-remove" type="button">Remover</button>
-            <button class="btn js-save-one" type="button">Salvar item</button>
-          </div>
+        <div class="row" style="gap:8px; flex-wrap:wrap">
+          <button class="btn light" id="btnReset" type="button">Resetar p/ padrão</button>
+          <button class="btn light" id="btnExport" type="button">Exportar JSON</button>
+          <button class="btn light" id="btnImport" type="button">Importar JSON</button>
+          <button class="btn primary" id="btnCopyDataJs" type="button">Copiar DATA.js</button>
+        </div>
+        <div class="mini muted">
+          Dica: depois de editar, o site já lê automaticamente (se você usar o data “dinâmico”).
+          Se quiser fixar, clique em <strong>Copiar DATA.js</strong> e cole em <code>js/data.js</code>.
         </div>
       </div>
-    `;
-  }
 
-  function render(){
-    const d = loadData();
+      <div class="totals">
+        <div class="row">
+          <strong>Categoria</strong>
+          <select id="cat" style="padding:10px 12px;border-radius:14px;border:1px solid rgba(17,24,39,.12);background:#fff">
+            <option value="marmitas">Marmitas</option>
+            <option value="porcoes">Porções</option>
+            <option value="bebidas">Bebidas</option>
+            <option value="sobremesas">Sobremesas</option>
+          </select>
+        </div>
+        <div class="row" style="gap:10px; flex-wrap:wrap">
+          <input id="q" placeholder="Buscar por nome..." style="flex:1;min-width:240px;padding:12px;border-radius:14px;border:1px solid rgba(17,24,39,.12);background:#fff" />
+          <button class="btn primary" id="btnNew" type="button">+ Novo produto</button>
+        </div>
+      </div>
 
-    for(const cat of ["marmitas","porcoes","bebidas","sobremesas"]){
-      const box = $(`[data-list="${cat}"]`);
-      if(!box) continue;
+      <section class="product-grid" id="list"></section>
 
-      const list = d[cat] || [];
-      box.innerHTML = list.length
-        ? list.map(it => itemCard(it, cat)).join("")
-        : `<div class="empty">Sem itens em ${categoryLabel(cat)}. Clique em <b>Adicionar</b>.</div>`;
-    }
+      <div class="totals" style="margin-top:12px">
+        <strong>JSON (para colar ou salvar)</strong>
+        <textarea id="jsonBox" style="width:100%;min-height:220px;margin-top:10px;padding:12px;border-radius:14px;border:1px solid rgba(17,24,39,.12);background:#fff;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;font-size:12px"></textarea>
+        <div class="mini muted" style="margin-top:8px">
+          Exportar/Importar usa esse campo. Importar substitui tudo.
+        </div>
+      </div>
+    </main>
 
-    const count = ["marmitas","porcoes","bebidas","sobremesas"]
-      .reduce((acc,cat)=> acc + ((d[cat]||[]).length), 0);
+    <!-- precisa do DATA para o admin funcionar -->
+    <script src="js/data.js"></script>
 
-    const countEl = $("#countAll");
-    if(countEl) countEl.textContent = count;
-  }
+    <!-- Seu script ADMIN atual (NÃO roda até liberar senha) -->
+    <script>
+    window.startAdminApp = function(){
+      (() => {
+        const STORE_KEY = "LPGRILL_DATA_ADMIN_V1";
 
-  function addItem(cat){
-    const d = loadData();
-    d[cat].unshift({
-      id: crypto.randomUUID(),
-      title: `Novo ${categoryLabel(cat).slice(0,-1)}`,
-      desc: "",
-      tag: "",
-      price: 0,
-      img: "img/mockup.png",
-      promo: false,
-      promoPrice: null,
-      soldOut: false,
-      updatedAt: nowISO()
-    });
-    saveData(d);
-    render();
-    toast("Item adicionado ✅");
-  }
+        const $ = (s)=> document.querySelector(s);
+        const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 
-  function readCard(el){
-    const title = $(".f-title", el).value.trim();
-    const desc  = $(".f-desc", el).value.trim();
-    const tag   = $(".f-tag", el).value.trim();
-    const price = Number($(".f-price", el).value || 0);
+        function defaultData(){
+          return JSON.parse(JSON.stringify(window.DATA || {
+            marmitas:[], porcoes:[], bebidas:[], sobremesas:[]
+          }));
+        }
 
-    const soldOut = $(".f-soldout", el).checked;
-    const promo   = $(".f-promo", el).checked;
+        function loadData(){
+          try{
+            const raw = localStorage.getItem(STORE_KEY);
+            if(!raw) return defaultData();
+            const d = JSON.parse(raw);
+            d.marmitas ||= [];
+            d.porcoes ||= [];
+            d.bebidas ||= [];
+            d.sobremesas ||= [];
+            return d;
+          }catch(e){
+            return defaultData();
+          }
+        }
 
-    const promoPriceRaw = $(".f-promoprice", el).value;
-    const promoPrice = promoPriceRaw === "" ? null : Number(promoPriceRaw);
+        function saveData(d){
+          localStorage.setItem(STORE_KEY, JSON.stringify(d));
+        }
 
-    const img = $(".f-img", el).value.trim() || "img/mockup.png";
-    return { title, desc, tag, price, soldOut, promo, promoPrice, img, updatedAt: nowISO() };
-  }
+        function slugId(prefix){
+          return prefix + Math.random().toString(36).slice(2,8);
+        }
 
-  async function uploadToBase64(file){
-    return new Promise((resolve, reject)=>{
-      const fr = new FileReader();
-      fr.onload = () => resolve(fr.result);
-      fr.onerror = reject;
-      fr.readAsDataURL(file);
-    });
-  }
+        function render(){
+          const cat = $("#cat").value;
+          const q = ($("#q").value||"").trim().toLowerCase();
 
-  // ========= backup =========
-  function downloadFile(filename, text){
-    const blob = new Blob([text], {type:"application/json"});
-    const url = URL.createObjectURL(blob);
-    const a = document.createElement("a");
-    a.href = url;
-    a.download = filename;
-    document.body.appendChild(a);
-    a.click();
-    a.remove();
-    URL.revokeObjectURL(url);
-  }
+          const d = loadData();
+          const items = (d[cat]||[]).filter(p => (p.title||"").toLowerCase().includes(q));
 
-  function exportBackup(){
-    const d = loadData();
-    const payload = { exportedAt: nowISO(), storeKey: STORE_KEY, data: d };
-    downloadFile(`lpgrill-backup-${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(payload, null, 2));
-    toast("Backup exportado ✅");
-  }
+          const list = $("#list");
+          list.innerHTML = items.map(p => `
+            <article class="product" style="cursor:default">
+              <img class="pimg" src="${p.img||""}" alt="" onerror="this.style.display='none'">
+              <div class="pbody">
+                <div class="ptitle">
+                  <strong>${p.title||"(sem nome)"}</strong>
+                  <span class="price">${money(p.price||0)}</span>
+                </div>
+                <div class="pdesc">${p.desc||""}</div>
+                <div class="pmeta">
+                  <span class="badge">${p.tag||"LP Grill"}</span>
+                  <div style="display:flex;gap:8px">
+                    <button class="qbtn" data-edit="${p.id}" type="button">Editar</button>
+                    <button class="qbtn remove" data-del="${p.id}" type="button">Excluir</button>
+                  </div>
+                </div>
+                <div class="mini muted">id: ${p.id} • img: ${p.img||""}</div>
+              </div>
+            </article>
+          `).join("");
 
-  async function importBackup(file){
-    const text = await file.text();
-    const obj = safeParse(text);
-    if(!obj || !obj.data) throw new Error("Backup inválido");
-    const d = normalizeData(obj.data);
-    saveData(d);
-    render();
-    toast("Backup restaurado ✅");
-  }
+          list.querySelectorAll("[data-edit]").forEach(btn=>{
+            btn.addEventListener("click", ()=> openEditor(btn.getAttribute("data-edit")));
+          });
+          list.querySelectorAll("[data-del]").forEach(btn=>{
+            btn.addEventListener("click", ()=> delItem(btn.getAttribute("data-del")));
+          });
 
-  // ========= LOCK (senha) =========
-  async function ensurePasswordSetup(){
-    const box = $("#lockBox");
-    const app = $("#adminApp");
-    if(!box || !app){
-      console.warn("lockBox/adminApp não encontrados no HTML.");
-      return true; // não trava se o HTML não tiver lock
-    }
+          $("#jsonBox").value = JSON.stringify(d, null, 2);
+        }
 
-    // já desbloqueado nesta sessão
-    if(localStorage.getItem(SESSION_KEY) === "1"){
-      box.style.display = "none";
-      app.style.display = "block";
-      return true;
-    }
+        function openEditor(id){
+          const cat = $("#cat").value;
+          const d = loadData();
+          const arr = d[cat]||[];
+          const idx = arr.findIndex(x=>x.id===id);
+          const p = idx>=0 ? arr[idx] : { id: slugId(cat[0]), title:"", desc:"", tag:"", price:0, img:"img/mockup.png" };
 
-    const hasPass = !!localStorage.getItem(PASS_KEY);
+          const title = prompt("Nome do produto:", p.title||"");
+          if(title===null) return;
 
-    box.style.display = "grid";
-    app.style.display = "none";
+          const desc = prompt("Descrição:", p.desc||"") ?? p.desc;
+          const tag  = prompt("Tag (ex: 350ml, Especial):", p.tag||"") ?? p.tag;
 
-    $("#lockTitle").textContent = hasPass ? "Área restrita" : "Criar senha do Admin";
-    $("#lockHint").textContent  = hasPass
-      ? "Digite a senha para entrar."
-      : "Defina uma senha agora (mínimo 4 caracteres).";
+          const priceStr = prompt("Preço (ex: 18.90):", String(p.price||0));
+          if(priceStr===null) return;
+          const price = Number(String(priceStr).replace(",", "."));
+          if(Number.isNaN(price)){
+            alert("Preço inválido.");
+            return;
+          }
 
-    $("#btnUnlock").onclick = async () => {
-      const pass = ($("#lockPass").value || "").trim();
-      if(pass.length < 4) return toast("Senha muito curta.");
+          const img = prompt("Imagem (ex: img/marmita_tradicional.jpg):", p.img||"img/mockup.png");
+          if(img===null) return;
 
-      // se ainda não existe senha, cria agora
-      if(!localStorage.getItem(PASS_KEY)){
-        localStorage.setItem(PASS_KEY, await hashText(pass));
-        localStorage.setItem(SESSION_KEY, "1");
-        toast("Senha criada ✅");
-        box.style.display = "none";
-        app.style.display = "block";
-        render();
-        return;
-      }
+          const updated = { ...p, title, desc, tag, price, img };
 
-      // valida senha
-      const h = await hashText(pass);
-      if(h !== localStorage.getItem(PASS_KEY)) return toast("Senha incorreta.");
+          if(idx>=0) arr[idx] = updated;
+          else arr.push(updated);
 
-      localStorage.setItem(SESSION_KEY, "1");
-      toast("Bem-vindo ✅");
-      box.style.display = "none";
-      app.style.display = "block";
-      render();
-    };
-
-    $("#btnResetPass").onclick = async () => {
-      const current = ($("#lockPass").value || "").trim();
-      if(!localStorage.getItem(PASS_KEY)) return toast("Ainda não há senha definida.");
-      const h = await hashText(current);
-      if(h !== localStorage.getItem(PASS_KEY)) return toast("Digite a senha atual correta.");
-
-      const newPass = prompt("Nova senha (mínimo 4 caracteres):");
-      if(!newPass || newPass.trim().length < 4) return toast("Senha inválida.");
-
-      localStorage.setItem(PASS_KEY, await hashText(newPass.trim()));
-      toast("Senha alterada ✅");
-    };
-
-    $("#btnLogout").onclick = () => {
-      localStorage.removeItem(SESSION_KEY);
-      location.reload();
-    };
-
-    return false;
-  }
-
-  // ========= eventos =========
-  function bindEvents(){
-    // botões adicionar
-    $$(".js-add").forEach(btn=>{
-      btn.addEventListener("click", ()=> addItem(btn.dataset.cat));
-    });
-
-    // export/import backup
-    $("#btnExport")?.addEventListener("click", exportBackup);
-    $("#fileImport")?.addEventListener("change", async (e)=>{
-      const f = e.target.files?.[0];
-      if(!f) return;
-      try{
-        await importBackup(f);
-      }catch(err){
-        console.error(err);
-        toast("Backup inválido ❌");
-      }finally{
-        e.target.value = "";
-      }
-    });
-
-    // delegação: salvar/remover/upload por item
-    document.addEventListener("click", (e)=>{
-      const card = e.target.closest?.(".adm-card");
-      if(!card) return;
-
-      const cat = card.dataset.cat;
-      const id  = card.dataset.id;
-
-      if(e.target.classList.contains("js-remove")){
-        if(!confirm("Remover este item?")) return;
-        const d = loadData();
-        d[cat] = (d[cat]||[]).filter(it => it.id !== id);
-        saveData(d);
-        render();
-        return;
-      }
-
-      if(e.target.classList.contains("js-save-one")){
-        const d = loadData();
-        const idx = (d[cat]||[]).findIndex(it=>it.id===id);
-        if(idx < 0) return;
-        d[cat][idx] = { ...d[cat][idx], ...readCard(card) };
-        saveData(d);
-        render();
-        return;
-      }
-    });
-
-    document.addEventListener("change", async (e)=>{
-      const card = e.target.closest?.(".adm-card");
-      if(!card) return;
-      if(!e.target.classList.contains("f-upload")) return;
-
-      const file = e.target.files?.[0];
-      if(!file) return;
-
-      const maxMB = 1.5;
-      if(file.size > maxMB * 1024 * 1024){
-        toast(`Imagem grande (${(file.size/1024/1024).toFixed(1)}MB). Tente até ${maxMB}MB.`);
-        e.target.value = "";
-        return;
-      }
-
-      const cat = card.dataset.cat;
-      const id  = card.dataset.id;
-
-      try{
-        const dataUrl = await uploadToBase64(file);
-        $(".f-img", card).value = dataUrl;
-
-        const d = loadData();
-        const idx = (d[cat]||[]).findIndex(it=>it.id===id);
-        if(idx >= 0){
-          d[cat][idx] = { ...d[cat][idx], ...readCard(card), img: dataUrl };
+          d[cat] = arr;
           saveData(d);
           render();
-          toast("Imagem enviada ✅");
         }
-      }catch(err){
-        console.error(err);
-        toast("Falha no upload ❌");
-      }finally{
-        e.target.value = "";
-      }
-    });
-  }
 
-  // ========= init =========
-  window.addEventListener("DOMContentLoaded", async ()=>{
-    const unlocked = await ensurePasswordSetup();
-    bindEvents();
-    if(unlocked) render();
-  });
-})();
+        function delItem(id){
+          const cat = $("#cat").value;
+          const d = loadData();
+          d[cat] = (d[cat]||[]).filter(x=>x.id!==id);
+          saveData(d);
+          render();
+        }
+
+        $("#btnNew").addEventListener("click", ()=> openEditor(""));
+        $("#q").addEventListener("input", render);
+        $("#cat").addEventListener("change", render);
+
+        $("#btnReset").addEventListener("click", ()=>{
+          if(confirm("Resetar catálogo para o padrão do data.js?")){
+            localStorage.removeItem(STORE_KEY);
+            render();
+          }
+        });
+
+        $("#btnExport").addEventListener("click", ()=>{
+          const d = loadData();
+          $("#jsonBox").value = JSON.stringify(d, null, 2);
+          $("#jsonBox").select();
+          document.execCommand("copy");
+          alert("JSON exportado e copiado.");
+        });
+
+        $("#btnImport").addEventListener("click", ()=>{
+          try{
+            const raw = $("#jsonBox").value.trim();
+            const obj = JSON.parse(raw);
+            obj.marmitas ||= [];
+            obj.porcoes ||= [];
+            obj.bebidas ||= [];
+            obj.sobremesas ||= [];
+            saveData(obj);
+            render();
+            alert("Importado com sucesso.");
+          }catch(e){
+            alert("JSON inválido. Verifique o conteúdo.");
+          }
+        });
+
+        $("#btnCopyDataJs").addEventListener("click", ()=>{
+          const d = loadData();
+          const code = "window.DATA = " + JSON.stringify(d, null, 2) + ";\n";
+          navigator.clipboard?.writeText(code).then(()=>{
+            alert("DATA.js copiado! Agora cole em js/data.js.");
+          }).catch(()=>{
+            $("#jsonBox").value = code;
+            $("#jsonBox").select();
+            document.execCommand("copy");
+            alert("DATA.js preparado e copiado (modo compatibilidade). Cole em js/data.js.");
+          });
+        });
+
+        render();
+      })();
+    };
+    </script>
+
+  </main>
+
+  <!-- Lock + admin avançado (o arquivo que você colou comigo) -->
+  <script src="admin.js"></script>
+
+</body>
+</html>
