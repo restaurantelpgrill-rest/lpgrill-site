@@ -1,14 +1,25 @@
-const SECRET = "lpgrill2026"; // mude para o que você quiser
+// 🔒 PROTEÇÃO POR CHAVE SECRETA
+const SECRET_KEY = "22550126";
 
-function requireSecret(){
-  const url = new URL(location.href);
+(function requireSecret(){
+  const url = new URL(window.location.href);
   const key = url.searchParams.get("k");
-  if(key !== SECRET){
-    document.body.innerHTML = "<h2 style='font-family:Arial;padding:24px'>404</h2>";
-    throw new Error("Blocked");
+
+  if(key !== SECRET_KEY){
+    document.body.innerHTML = `
+      <div style="
+        font-family: Arial;
+        display:flex;
+        align-items:center;
+        justify-content:center;
+        height:100vh;
+        background:#fff;
+      ">
+        <h2>404</h2>
+      </div>`;
+    throw new Error("Access denied");
   }
-}
-requireSecret();
+})();
 (() => {
   const PASS_KEY    = "LPGRILL_ADMIN_PASS_V1";
   const SESSION_KEY = "LPGRILL_ADMIN_UNLOCKED_V1";
