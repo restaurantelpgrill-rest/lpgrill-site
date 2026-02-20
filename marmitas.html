@@ -3,8 +3,8 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>LP Grill — Marmitas</title>
-  <link rel="stylesheet" href="css/style.css" />
+  <title>LP Grill — Bebidas</title>
+  <link rel="stylesheet" href="./css/style.css" />
 </head>
 
 <body class="app">
@@ -15,10 +15,10 @@
         <a class="backlink" href="./index.html" aria-label="Voltar">←</a>
 
         <div class="brand">
-          <img class="brand-logo" src="img/logo.png" alt="LP Grill" onerror="this.style.display='none'">
+          <img class="brand-logo" src="./img/logo.png" alt="LP Grill" onerror="this.style.display='none'">
           <div class="brand-txt">
-            <h1>Marmitas</h1>
-            <p class="muted">Escolha sua marmita e adicione no carrinho</p>
+            <h1>Bebidas</h1>
+            <p class="muted">Geladas • do jeito certo</p>
           </div>
         </div>
 
@@ -36,10 +36,13 @@
 
   <main class="container">
     <div class="product-grid" id="productList"></div>
+    <button class="ghost-btn" id="emptyHint" style="display:none" type="button">
+      Ainda sem itens aqui — adicione no <strong>js/data.js</strong>
+    </button>
   </main>
 
   <a class="wa-float" id="waFloat" href="#" target="_blank" aria-label="Chamar no WhatsApp">
-    <img src="img/whatsapp.png" alt="WhatsApp" onerror="this.outerHTML='💬'">
+    <img src="./img/whatsapp.png" alt="WhatsApp" onerror="this.outerHTML='💬'">
   </a>
 
   <div class="sticky-cta">
@@ -50,47 +53,13 @@
     <a class="cta primary" href="./checkout.html">Finalizar</a>
   </div>
 
-  <!-- IMPORTANTE: ordem dos scripts -->
-  <script src="js/data.js"></script>
-  <script src="js/app.js"></script>
+  <script src="./js/data.js"></script>
+  <script src="./js/cart.js"></script>
+  <script src="./js/page-products.js"></script>
 
   <script>
-    // Render da categoria "marmitas"
-    (function(){
-      const $list = document.getElementById("productList");
-      const $search = document.getElementById("searchItems");
-
-      function render(items){
-        $list.innerHTML = (items||[]).map(p => `
-          <div class="product">
-            <img class="pimg" src="${p.img}" alt="${p.title}" onerror="this.style.display='none'">
-            <div class="pbody">
-              <div class="ptitle">
-                <strong>${p.title}</strong>
-                <span class="price">${money(p.price)}</span>
-              </div>
-              <div class="pdesc">${p.desc || ""}</div>
-
-              <div class="pmeta">
-                <span class="badge">${p.tag || "LP Grill"}</span>
-                <button class="btn light" onclick="Cart.add('${p.id}')">Adicionar</button>
-              </div>
-            </div>
-          </div>
-        `).join("");
-      }
-
-      // Puxa do seu DATA
-      const items = (window.DATA && window.DATA.marmitas) ? window.DATA.marmitas : [];
-      render(items);
-
-      // Busca
-      $search.addEventListener("input", ()=>{
-        const q = $search.value.trim().toLowerCase();
-        const filtered = items.filter(p => (p.title + " " + (p.desc||"")).toLowerCase().includes(q));
-        render(filtered);
-      });
-    })();
+    // MUDE SÓ ISSO EM CADA PÁGINA:
+    renderCategoryPage("bebidas");
   </script>
 </body>
 </html>
