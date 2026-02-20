@@ -1,30 +1,87 @@
 <!doctype html>
-<html>
+<html lang="pt-br">
 <head>
-<meta charset="utf-8">
-<meta name="viewport" content="width=device-width,initial-scale=1">
-<link rel="stylesheet" href="css/style.css">
-<title>Finalizar Pedido</title>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>Finalizar</title>
+  <link rel="stylesheet" href="css/style.css" />
 </head>
 <body class="app">
 
-<div class="container">
-<h2>Seu pedido</h2>
+  <header class="pagebar">
+    <a class="back" href="index.html">← Voltar ao Menu</a>
+    <div class="page-title"><h1>Finalizar</h1><p>Enviar no WhatsApp</p></div>
+    <span></span>
+  </header>
 
-<div id="items"></div>
+  <main class="container">
+    <div class="totals" style="margin-top:12px">
+      <div class="row"><span>Subtotal</span><strong id="subTotal">R$ 0,00</strong></div>
+      <div class="row"><span>Taxa</span><strong id="deliveryFee">R$ 0,00</strong></div>
+      <div class="row total"><span>Total</span><strong id="grandTotal">R$ 0,00</strong></div>
+      <div class="mini muted">⏱️ Tempo médio: <span id="etaText">30–60 min</span></div>
+    </div>
 
-<h2>Total: <span id="total">R$0,00</span></h2>
+    <div id="cartItems"></div>
 
-<button class="btn primary" onclick="sendOrder()">
-Enviar pelo WhatsApp
-</button>
-</div>
+    <div style="display:flex; gap:10px; margin-top:12px">
+      <a class="btn light" href="index.html" style="flex:1">Voltar</a>
+      <button class="btn primary" id="sendWA" style="flex:1">Enviar no WhatsApp</button>
+    </div>
+  </main>
 
-<script src="js/data.js"></script>
-<script src="js/cart.js"></script>
-<script src="js/app.js"></script>
-<script>
-renderCheckout();
-</script>
+  <script src="js/data.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/app.js"></script>
+
+  <script>
+    // reusa o drawer render do app.js sem abrir drawer
+    // hack simples: cria os totals a partir do mesmo storage
+    (function(){
+      const CART_KEY="LPGRILL_CART_V3";
+      const MODE_KEY="LPGRILL_MODE_V3";
+      const money=(v)=>Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+      const readCart=()=>{try{return JSON.parse(localStorage.getItem(CART_KEY)||"{}")}catch{return {}}};
+      const readMode=()=> (localStorage.getItem(MODE_KEY)||"entrega");
+      const fee = (readMode()==="entrega") ? 5 : 0;
+
+      const all = [];
+      for(const k in window.DATA){ if(Array.isArray(window.DATA[k])) all.push(...window.DATA[k]); }
+      const find=(id)=> all.find(p=>p.id===id);
+
+      const cart=readCart();
+      let sub=0;
+      const wrap=document.getElementById("cartItems");
+      wrap.innerHTML = Object.entries(cart).map(([id,q])=>{
+        const p=find(id); if(!p) return "";
+        sub += p.price*q;
+        return `<div class="citem">
+          <div class="citem-top">
+            <div>
+              <div class="cname">${p.title}</div>
+              <div class="cdesc">${q} × ${money(p.price)}</div>
+            </div>
+            <strong>${money(p.price*q)}</strong>
+          </div>
+        </div>`;
+      }).join("") || `<div class="muted" style="padding:10px 2px">Seu carrinho está vazio.</div>`;
+
+      document.getElementById("subTotal").textContent = money(sub);
+      document.getElementById("deliveryFee").textContent = money(fee);
+      document.getElementById("grandTotal").textContent = money(sub+fee);
+      document.getElementById("etaText").textContent = "30–60 min";
+
+      document.getElementById("sendWA").addEventListener("click", ()=>{
+        if(!Object.keys(cart).length){ alert("Seu carrinho está vazio."); return; }
+        let msg="Pedido LP Grill:%0A";
+        for(const [id,q] of Object.entries(cart)){
+          const p=find(id);
+          if(p) msg += `${q}x ${p.title}%0A`;
+        }
+        msg += `%0ATotal: ${money(sub+fee)}`;
+        window.open(`https://wa.me/5531999999999?text=${msg}`, "_blank");
+      });
+    })();
+  </script>
 </body>
 </html>
