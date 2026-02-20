@@ -1,1 +1,353 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LP Grill — Finalizar</title>
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
 
+<body class="app">
+  <header class="cover subinfo">
+    <div class="cover-bg"></div>
+    <div class="container">
+      <div class="topbar">
+        <a class="backlink" href="./index.html" aria-label="Voltar">←</a>
+
+        <div class="brand">
+          <img class="brand-logo" src="./img/logo.png" alt="LP Grill" onerror="this.style.display='none'">
+          <div class="brand-txt">
+            <h1>Finalizar pedido</h1>
+            <p class="muted">Revise, escolha entrega e envie no WhatsApp</p>
+          </div>
+        </div>
+
+        <button class="cart-btn" id="openCart" type="button" aria-label="Abrir carrinho">
+          <span class="cart-ico">🛒</span>
+          <span class="cart-badge" id="cartBadge">0</span>
+        </button>
+      </div>
+    </div>
+  </header>
+
+  <main class="container">
+    <!-- Itens -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Seu pedido</h2>
+        <p class="muted mini">Ajuste quantidades antes de enviar.</p>
+      </div>
+
+      <div class="checkout-items" id="checkoutItems" style="margin-top:12px"></div>
+
+      <div class="totals" style="margin-top:12px">
+        <div class="row"><span class="muted">Subtotal</span><strong id="subV">R$ 0,00</strong></div>
+        <div class="row"><span class="muted">Taxa</span><strong id="taxV">R$ 0,00</strong></div>
+        <div class="row total"><span>Total</span><strong id="totV">R$ 0,00</strong></div>
+      </div>
+    </section>
+
+    <!-- Entrega / Retirada -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Entrega</h2>
+        <p class="muted mini">Se for entrega, o endereço é obrigatório.</p>
+      </div>
+
+      <div class="delivery-toggle">
+        <button class="dt-btn active" id="dtEntrega" type="button">Entrega</button>
+        <button class="dt-btn" id="dtRetirada" type="button">Retirada</button>
+      </div>
+
+      <div class="note">
+        <label>Endereço</label>
+        <textarea id="addr" placeholder="Rua, número, bairro, complemento..."></textarea>
+      </div>
+
+      <div class="mini" id="warnAddr" style="display:none; color:#b91c1c; font-weight:900; margin-top:10px">
+        Coloque o endereço para enviar o pedido!!
+      </div>
+    </section>
+
+    <!-- Pagamento -->
+    <section class="panel">
+      <div class="panel-head">
+        <h2>Pagamento</h2>
+        <p class="muted mini">Se for dinheiro, informe o troco.</p>
+      </div>
+
+      <div class="field full">
+        <span>Forma de pagamento</span>
+        <select id="pay">
+          <option value="Pix">Pix</option>
+          <option value="Cartão">Cartão</option>
+          <option value="Dinheiro">Dinheiro</option>
+        </select>
+      </div>
+
+      <div class="field full" id="trocoBox" style="display:none; margin-top:10px">
+        <span>Troco para quanto?</span>
+        <input id="troco" placeholder="Ex: 50" />
+      </div>
+
+      <div class="note" style="margin-top:10px">
+        <label>Observações</label>
+        <textarea id="obs" placeholder="Sem cebola, bem passado, etc..."></textarea>
+      </div>
+    </section>
+
+    <!-- Botões -->
+    <section class="panel">
+      <div class="actions">
+        <a class="btn light" href="./index.html">Voltar</a>
+        <button class="btn primary" id="finalizarWhats" type="button">Enviar no WhatsApp</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Whats flutuante -->
+  <a class="wa-float" id="waFloat" href="#" target="_blank" aria-label="Chamar no WhatsApp">
+    <img src="./img/whatsapp.png" alt="WhatsApp" onerror="this.outerHTML='💬'">
+  </a>
+
+  <!-- Sticky CTA -->
+  <div class="sticky-cta">
+    <button class="cta" id="ctaCart" type="button">
+      <span>Ver carrinho</span>
+      <strong id="ctaTotal">R$ 0,00</strong>
+    </button>
+    <button class="cta primary" id="ctaWhats" type="button">Enviar</button>
+  </div>
+
+  <!-- Scripts (ordem certa) -->
+  <script src="./js/data.js"></script>
+  <script src="./js/cart.js"></script>
+  <script src="./js/app.js"></script>
+
+  <script>
+    // ===== CONFIG =====
+    const CFG = {
+      brand: "LP Grill",
+      taxaEntrega: 5.00,
+      whatsapp: "5531999999999" // TROQUE
+    };
+
+    // ===== Estado checkout (salva) =====
+    const SKEY = "LPGRILL_CHECKOUT_V1";
+    const readState = () => { try { return JSON.parse(localStorage.getItem(SKEY) || "{}"); } catch { return {}; } };
+    const writeState = (s) => localStorage.setItem(SKEY, JSON.stringify(s));
+
+    function allProducts(){
+      const list = [];
+      if(window.DATA){
+        for(const k in window.DATA){
+          if(Array.isArray(window.DATA[k])) list.push(...window.DATA[k]);
+        }
+      }
+      return list;
+    }
+    function findProduct(id){ return allProducts().find(p=>p.id===id); }
+
+    // ===== UI refs =====
+    const $items = document.getElementById("checkoutItems");
+    const $sub = document.getElementById("subV");
+    const $tax = document.getElementById("taxV");
+    const $tot = document.getElementById("totV");
+
+    const $dtE = document.getElementById("dtEntrega");
+    const $dtR = document.getElementById("dtRetirada");
+    const $addr = document.getElementById("addr");
+    const $warn = document.getElementById("warnAddr");
+
+    const $pay = document.getElementById("pay");
+    const $trocoBox = document.getElementById("trocoBox");
+    const $troco = document.getElementById("troco");
+    const $obs = document.getElementById("obs");
+
+    const $btnWhats = document.getElementById("finalizarWhats");
+    const $ctaWhats = document.getElementById("ctaWhats");
+
+    // ===== tipo entrega/retirada =====
+    let state = readState();
+    state.tipo = state.tipo || "entrega";
+    state.pagamento = state.pagamento || "Pix";
+    state.endereco = state.endereco || "";
+    state.troco = state.troco || "";
+    state.obs = state.obs || "";
+    writeState(state);
+
+    function setTipo(tipo){
+      state.tipo = tipo;
+      writeState(state);
+      $dtE.classList.toggle("active", tipo==="entrega");
+      $dtR.classList.toggle("active", tipo==="retirada");
+      validate();
+      renderTotals();
+    }
+
+    function toggleTroco(){
+      $trocoBox.style.display = ($pay.value === "Dinheiro") ? "block" : "none";
+    }
+
+    function renderItems(){
+      const items = Cart.itemsDetailed();
+      if(!items.length){
+        $items.innerHTML = `<div class="muted" style="padding:10px 2px">Seu carrinho está vazio.</div>`;
+        renderTotals();
+        return;
+      }
+
+      $items.innerHTML = items.map(({id, qty, product:p}) => `
+        <div class="itemline">
+          <div class="left">
+            <strong>${p.title}</strong>
+            <div class="mini muted">${money(p.price)} cada</div>
+
+            <div class="qty" style="margin-top:10px">
+              <button class="qbtn" data-dec="${id}" type="button">-</button>
+              <strong data-qty-for="${id}">${qty}</strong>
+              <button class="qbtn" data-add="${id}" type="button">+</button>
+            </div>
+          </div>
+
+          <div class="right" style="text-align:right">
+            <strong>${money(p.price * qty)}</strong>
+            <div style="height:8px"></div>
+            <button class="qbtn remove" data-rm="${id}" type="button">remover</button>
+          </div>
+        </div>
+      `).join("");
+
+      $items.querySelectorAll("[data-add]").forEach(b=>{
+        b.addEventListener("click", ()=>{
+          Cart.add(b.getAttribute("data-add"));
+          renderItems();
+        });
+      });
+      $items.querySelectorAll("[data-dec]").forEach(b=>{
+        b.addEventListener("click", ()=>{
+          Cart.dec(b.getAttribute("data-dec"));
+          renderItems();
+        });
+      });
+      $items.querySelectorAll("[data-rm]").forEach(b=>{
+        b.addEventListener("click", ()=>{
+          Cart.remove(b.getAttribute("data-rm"));
+          renderItems();
+        });
+      });
+
+      renderTotals();
+    }
+
+    function renderTotals(){
+      const sub = Cart.subtotal();
+      const taxa = (state.tipo === "entrega") ? Number(CFG.taxaEntrega||0) : 0;
+      const total = sub + taxa;
+      $sub.textContent = money(sub);
+      $tax.textContent = money(taxa);
+      $tot.textContent = money(total);
+      Cart.syncUI();
+    }
+
+    function validate(){
+      const items = Cart.itemsDetailed();
+      const needAddr = (state.tipo === "entrega");
+      const hasAddr = ($addr.value || "").trim().length >= 6;
+
+      const ok = items.length && (!needAddr || hasAddr);
+      $warn.style.display = (needAddr && !hasAddr && items.length) ? "block" : "none";
+      return ok;
+    }
+
+    function buildWhats(){
+      const items = Cart.itemsDetailed();
+      const lines = [];
+      lines.push(`*Pedido — ${CFG.brand}*`);
+      lines.push("");
+
+      if(!items.length){
+        lines.push("(Carrinho vazio)");
+        return lines.join("\n");
+      }
+
+      lines.push("*Itens:*");
+      items.forEach(({qty, product:p})=>{
+        lines.push(`- ${qty}x ${p.title} — ${money(p.price * qty)}`);
+      });
+
+      const sub = Cart.subtotal();
+      const taxa = (state.tipo === "entrega") ? Number(CFG.taxaEntrega||0) : 0;
+      const total = sub + taxa;
+
+      lines.push("");
+      lines.push(`Subtotal: *${money(sub)}*`);
+      lines.push(`Taxa: *${money(taxa)}*`);
+      lines.push(`Total: *${money(total)}*`);
+      lines.push("");
+
+      lines.push(`*${state.tipo === "entrega" ? "Entrega" : "Retirada"}*`);
+      if(state.tipo === "entrega"){
+        lines.push(`Endereço: ${($addr.value||"").trim() || "(NÃO INFORMADO)"}`);
+      }
+
+      lines.push(`Pagamento: *${$pay.value}*`);
+      if($pay.value === "Dinheiro"){
+        const t = ($troco.value||"").trim();
+        if(t) lines.push(`Troco: ${t}`);
+      }
+
+      const obs = ($obs.value||"").trim();
+      if(obs){
+        lines.push("");
+        lines.push(`Obs: ${obs}`);
+      }
+
+      return lines.join("\n");
+    }
+
+    function sendWhats(){
+      if(!validate()){
+        alert("Coloque o endereço para enviar o pedido!!");
+        return;
+      }
+      // salva estado
+      state.endereco = $addr.value;
+      state.pagamento = $pay.value;
+      state.troco = $troco.value;
+      state.obs = $obs.value;
+      writeState(state);
+
+      const text = buildWhats();
+      const url = `https://wa.me/${CFG.whatsapp}?text=${encodeURIComponent(text)}`;
+      window.open(url, "_blank");
+    }
+
+    // ===== Bind =====
+    $dtE.addEventListener("click", ()=> setTipo("entrega"));
+    $dtR.addEventListener("click", ()=> setTipo("retirada"));
+
+    $addr.value = state.endereco;
+    $pay.value = state.pagamento;
+    $troco.value = state.troco;
+    $obs.value = state.obs;
+
+    $addr.addEventListener("input", ()=>{ state.endereco = $addr.value; writeState(state); validate(); });
+    $pay.addEventListener("change", ()=>{ state.pagamento = $pay.value; writeState(state); toggleTroco(); });
+    $troco.addEventListener("input", ()=>{ state.troco = $troco.value; writeState(state); });
+    $obs.addEventListener("input", ()=>{ state.obs = $obs.value; writeState(state); });
+
+    $btnWhats.addEventListener("click", sendWhats);
+    $ctaWhats.addEventListener("click", sendWhats);
+
+    // inicial
+    setTipo(state.tipo);
+    toggleTroco();
+    renderItems();
+
+    // whats float
+    const wa = document.getElementById("waFloat");
+    wa.href = `https://wa.me/${CFG.whatsapp}?text=${encodeURIComponent("Olá! Quero fazer um pedido no " + CFG.brand + " 🍽️")}`;
+  </script>
+</body>
+</html>
