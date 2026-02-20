@@ -1,10 +1,10 @@
 (() => {
-  const STORE_KEY = "LPGRILL_DATA_ADMIN_V1";
-  const PASS_KEY  = "LPGRILL_ADMIN_PASS_V1"; // armazena um hash simples
-  const SESSION_KEY = "LPGRILL_ADMIN_UNLOCKED_V1";
+  const STORE_KEY   = "LPGRILL_DATA_ADMIN_V1";
+  const PASS_KEY    = "LPGRILL_ADMIN_PASS_V1";      // hash da senha
+  const SESSION_KEY = "LPGRILL_ADMIN_UNLOCKED_V1";  // sessão liberada
 
   // ========= util =========
-  const $ = (s, p=document) => p.querySelector(s);
+  const $  = (s, p=document) => p.querySelector(s);
   const $$ = (s, p=document) => [...p.querySelectorAll(s)];
   const nowISO = () => new Date().toISOString();
   const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
@@ -13,7 +13,6 @@
     try { return JSON.parse(raw); } catch { return null; }
   }
 
-  // hash simples (não criptografia real, mas suficiente pro "não mexer sem querer")
   async function hashText(text){
     const enc = new TextEncoder().encode(text);
     const buf = await crypto.subtle.digest("SHA-256", enc);
@@ -26,9 +25,9 @@
     d.porcoes ||= [];
     d.bebidas ||= [];
     d.sobremesas ||= [];
-    // normaliza itens
+
     for(const cat of ["marmitas","porcoes","bebidas","sobremesas"]){
-      d[cat] = d[cat].map(it => ({
+      d[cat] = (d[cat]||[]).map(it => ({
         id: it.id || crypto.randomUUID(),
         title: it.title || "Novo item",
         desc: it.desc || "",
@@ -46,8 +45,7 @@
 
   function loadData(){
     const raw = localStorage.getItem(STORE_KEY);
-    const d = normalizeData(safeParse(raw) || {});
-    return d;
+    return normalizeData(safeParse(raw) || {});
   }
 
   function saveData(d){
@@ -71,6 +69,15 @@
       bebidas:"Bebidas",
       sobremesas:"Sobremesas"
     })[cat] || cat;
+  }
+
+  function escapeHtml(s){
+    return String(s ?? "")
+      .replaceAll("&","&amp;")
+      .replaceAll("<","&lt;")
+      .replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;")
+      .replaceAll("'","&#039;");
   }
 
   function itemCard(it, cat){
@@ -118,11 +125,14 @@
 
           <div class="row2">
             <label>Preço promo
-              <input type="number" step="0.01" class="f-promoprice" value="${it.promoPrice==null?"":Number(it.promoPrice).toFixed(2)}" placeholder="ex: 19.90">
+              <input type="number" step="0.01" class="f-promoprice"
+                     value="${it.promoPrice==null?"":Number(it.promoPrice).toFixed(2)}"
+                     placeholder="ex: 19.90">
             </label>
 
             <label>Imagem (URL)
-              <input type="text" class="f-img" value="${escapeHtml(it.img)}" placeholder="img/arquivo.jpg ou https://...">
+              <input type="text" class="f-img" value="${escapeHtml(it.img)}"
+                     placeholder="img/arquivo.jpg ou https://...">
             </label>
           </div>
 
@@ -139,21 +149,12 @@
           </div>
 
           <div class="actions">
-            <button class="btn danger js-remove">Remover</button>
-            <button class="btn js-save-one">Salvar item</button>
+            <button class="btn danger js-remove" type="button">Remover</button>
+            <button class="btn js-save-one" type="button">Salvar item</button>
           </div>
         </div>
       </div>
     `;
-  }
-
-  function escapeHtml(s){
-    return String(s ?? "")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
   }
 
   function render(){
@@ -163,17 +164,17 @@
       const box = $(`[data-list="${cat}"]`);
       if(!box) continue;
 
-      const list = d[cat];
+      const list = d[cat] || [];
       box.innerHTML = list.length
         ? list.map(it => itemCard(it, cat)).join("")
         : `<div class="empty">Sem itens em ${categoryLabel(cat)}. Clique em <b>Adicionar</b>.</div>`;
     }
 
-    $("#countAll").textContent = countAll(d);
-  }
+    const count = ["marmitas","porcoes","bebidas","sobremesas"]
+      .reduce((acc,cat)=> acc + ((d[cat]||[]).length), 0);
 
-  function countAll(d){
-    return ["marmitas","porcoes","bebidas","sobremesas"].reduce((acc,cat)=> acc + (d[cat]?.length||0), 0);
+    const countEl = $("#countAll");
+    if(countEl) countEl.textContent = count;
   }
 
   function addItem(cat){
@@ -197,17 +198,17 @@
 
   function readCard(el){
     const title = $(".f-title", el).value.trim();
-    const desc = $(".f-desc", el).value.trim();
-    const tag  = $(".f-tag", el).value.trim();
+    const desc  = $(".f-desc", el).value.trim();
+    const tag   = $(".f-tag", el).value.trim();
     const price = Number($(".f-price", el).value || 0);
 
     const soldOut = $(".f-soldout", el).checked;
     const promo   = $(".f-promo", el).checked;
+
     const promoPriceRaw = $(".f-promoprice", el).value;
     const promoPrice = promoPriceRaw === "" ? null : Number(promoPriceRaw);
 
     const img = $(".f-img", el).value.trim() || "img/mockup.png";
-
     return { title, desc, tag, price, soldOut, promo, promoPrice, img, updatedAt: nowISO() };
   }
 
@@ -235,11 +236,7 @@
 
   function exportBackup(){
     const d = loadData();
-    const payload = {
-      exportedAt: nowISO(),
-      storeKey: STORE_KEY,
-      data: d
-    };
+    const payload = { exportedAt: nowISO(), storeKey: STORE_KEY, data: d };
     downloadFile(`lpgrill-backup-${new Date().toISOString().slice(0,10)}.json`, JSON.stringify(payload, null, 2));
     toast("Backup exportado ✅");
   }
@@ -254,32 +251,39 @@
     toast("Backup restaurado ✅");
   }
 
-  // ========= senha =========
+  // ========= LOCK (senha) =========
   async function ensurePasswordSetup(){
-    const hasPass = !!localStorage.getItem(PASS_KEY);
     const box = $("#lockBox");
     const app = $("#adminApp");
+    if(!box || !app){
+      console.warn("lockBox/adminApp não encontrados no HTML.");
+      return true; // não trava se o HTML não tiver lock
+    }
 
+    // já desbloqueado nesta sessão
     if(localStorage.getItem(SESSION_KEY) === "1"){
       box.style.display = "none";
       app.style.display = "block";
-      return;
+      return true;
     }
 
-    box.style.display = "block";
+    const hasPass = !!localStorage.getItem(PASS_KEY);
+
+    box.style.display = "grid";
     app.style.display = "none";
 
     $("#lockTitle").textContent = hasPass ? "Área restrita" : "Criar senha do Admin";
     $("#lockHint").textContent  = hasPass
       ? "Digite a senha para entrar."
-      : "Defina uma senha agora. (Você pode trocar depois em Configurações).";
+      : "Defina uma senha agora (mínimo 4 caracteres).";
 
     $("#btnUnlock").onclick = async () => {
-      const pass = $("#lockPass").value.trim();
+      const pass = ($("#lockPass").value || "").trim();
       if(pass.length < 4) return toast("Senha muito curta.");
-      if(!hasPass){
-        const h = await hashText(pass);
-        localStorage.setItem(PASS_KEY, h);
+
+      // se ainda não existe senha, cria agora
+      if(!localStorage.getItem(PASS_KEY)){
+        localStorage.setItem(PASS_KEY, await hashText(pass));
         localStorage.setItem(SESSION_KEY, "1");
         toast("Senha criada ✅");
         box.style.display = "none";
@@ -287,28 +291,28 @@
         render();
         return;
       }
+
+      // valida senha
       const h = await hashText(pass);
-      const saved = localStorage.getItem(PASS_KEY);
-      if(h !== saved) return toast("Senha incorreta.");
+      if(h !== localStorage.getItem(PASS_KEY)) return toast("Senha incorreta.");
+
       localStorage.setItem(SESSION_KEY, "1");
+      toast("Bem-vindo ✅");
       box.style.display = "none";
       app.style.display = "block";
       render();
-      toast("Bem-vindo ✅");
     };
 
     $("#btnResetPass").onclick = async () => {
-      const current = $("#lockPass").value.trim();
-      if(!hasPass){
-        toast("Ainda não há senha definida.");
-        return;
-      }
+      const current = ($("#lockPass").value || "").trim();
+      if(!localStorage.getItem(PASS_KEY)) return toast("Ainda não há senha definida.");
       const h = await hashText(current);
-      if(h !== localStorage.getItem(PASS_KEY)) return toast("Digite a senha atual correta para redefinir.");
+      if(h !== localStorage.getItem(PASS_KEY)) return toast("Digite a senha atual correta.");
+
       const newPass = prompt("Nova senha (mínimo 4 caracteres):");
       if(!newPass || newPass.trim().length < 4) return toast("Senha inválida.");
-      const nh = await hashText(newPass.trim());
-      localStorage.setItem(PASS_KEY, nh);
+
+      localStorage.setItem(PASS_KEY, await hashText(newPass.trim()));
       toast("Senha alterada ✅");
     };
 
@@ -316,6 +320,8 @@
       localStorage.removeItem(SESSION_KEY);
       location.reload();
     };
+
+    return false;
   }
 
   // ========= eventos =========
@@ -323,15 +329,6 @@
     // botões adicionar
     $$(".js-add").forEach(btn=>{
       btn.addEventListener("click", ()=> addItem(btn.dataset.cat));
-    });
-
-    // salvar tudo
-    $("#btnSaveAll")?.addEventListener("click", ()=>{
-      // aqui só re-salva o que já está salvo (caso você queira).
-      // Mantive um botão para "forçar salvar" caso você adicione ajustes depois.
-      const d = loadData();
-      saveData(d);
-      toast("Tudo salvo ✅");
     });
 
     // export/import backup
@@ -360,7 +357,7 @@
       if(e.target.classList.contains("js-remove")){
         if(!confirm("Remover este item?")) return;
         const d = loadData();
-        d[cat] = d[cat].filter(it => it.id !== id);
+        d[cat] = (d[cat]||[]).filter(it => it.id !== id);
         saveData(d);
         render();
         return;
@@ -368,7 +365,7 @@
 
       if(e.target.classList.contains("js-save-one")){
         const d = loadData();
-        const idx = d[cat].findIndex(it=>it.id===id);
+        const idx = (d[cat]||[]).findIndex(it=>it.id===id);
         if(idx < 0) return;
         d[cat][idx] = { ...d[cat][idx], ...readCard(card) };
         saveData(d);
@@ -385,7 +382,6 @@
       const file = e.target.files?.[0];
       if(!file) return;
 
-      // dica: limite pra evitar storage gigante
       const maxMB = 1.5;
       if(file.size > maxMB * 1024 * 1024){
         toast(`Imagem grande (${(file.size/1024/1024).toFixed(1)}MB). Tente até ${maxMB}MB.`);
@@ -398,10 +394,10 @@
 
       try{
         const dataUrl = await uploadToBase64(file);
-        $(".f-img", card).value = dataUrl; // coloca no campo imagem
-        // salva
+        $(".f-img", card).value = dataUrl;
+
         const d = loadData();
-        const idx = d[cat].findIndex(it=>it.id===id);
+        const idx = (d[cat]||[]).findIndex(it=>it.id===id);
         if(idx >= 0){
           d[cat][idx] = { ...d[cat][idx], ...readCard(card), img: dataUrl };
           saveData(d);
@@ -419,9 +415,8 @@
 
   // ========= init =========
   window.addEventListener("DOMContentLoaded", async ()=>{
-    await ensurePasswordSetup();
+    const unlocked = await ensurePasswordSetup();
     bindEvents();
-    // render só depois de liberar
-    if(localStorage.getItem(SESSION_KEY) === "1") render();
+    if(unlocked) render();
   });
 })();
