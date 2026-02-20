@@ -427,19 +427,20 @@
   <!-- QRCode (obrigatório) -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
-  <!-- PIX QR automático + aviso confirmado -->
+  <!-- PIX QR automático + aviso confirmado + VALOR AUTOMÁTICO -->
   <script>
     /* =========================
        PIX QR AUTOMÁTICO + CONFIRMAÇÃO
+       + valor automático do carrinho
     ========================= */
 
     /* >>> CONFIGURE AQUI <<< */
     const PIX = {
-      key: "SEU_PIX_AQUI",            // chave pix (cpf/cnpj/email/telefone/aleatória)
-      merchantName: "LP GRILL",       // nome que aparece no pix
-      merchantCity: "BELO HORIZONTE", // cidade (sem acento funciona melhor)
-      txid: "LPGRILL01",              // identificador (pode ser fixo ou por pedido)
-      amount: 0                       // 0 = sem valor fixo (cliente digita no banco). Ex fixo: 39.90
+      key: "e02484b0-c924-4d38-9af9-79af9ad97c3e",
+      merchantName: "LP GRILL",
+      merchantCity: "BELO HORIZONTE",
+      txid: "LPGRILL01",
+      amount: null // dinâmico
     };
 
     function emv(id, value){
@@ -518,16 +519,48 @@
       }
     }
 
-    (function initPix(){
+    function parseBRL(text){
+      if(!text) return 0;
+      const n = String(text)
+        .replace(/\s/g,"")
+        .replace("R$","")
+        .replace(/\./g,"")
+        .replace(",",".")
+        .replace(/[^\d.]/g,"");
+      return Number(n || 0);
+    }
+
+    function getCartTotal(){
+      // 1) DOM (mais certo no seu layout)
+      const gt = $("#grandTotal");
+      if(gt){
+        const v = parseBRL(gt.textContent);
+        if(v > 0) return v;
+      }
+      const ct = $("#ctaTotal");
+      if(ct){
+        const v = parseBRL(ct.textContent);
+        if(v > 0) return v;
+      }
+      return 0;
+    }
+
+    let __lastAmount = -1;
+
+    function refreshPix(){
       const payloadEl = $("#pixPayload");
       const canvas = $("#pixCanvas");
+      if(!payloadEl || !canvas) return;
 
-      if(!payloadEl || !canvas){
-        console.warn("Bloco PIX não encontrado no DOM.");
-        return;
-      }
+      const total = getCartTotal();
+      if(total === __lastAmount) return;
+      __lastAmount = total;
 
-      const payload = buildPixPayload(PIX);
+      const payload = buildPixPayload({
+        ...PIX,
+        amount: total > 0 ? total : 0
+      });
+
       payloadEl.textContent = payload;
 
       if(typeof QRCode === "undefined"){
@@ -535,52 +568,73 @@
         return;
       }
 
+      const ctx = canvas.getContext("2d");
+      ctx.clearRect(0,0,canvas.width,canvas.height);
+
       QRCode.toCanvas(canvas, payload, { margin: 1, scale: 6 }, function (error) {
         if (error) {
           payloadEl.textContent = "Erro ao gerar QR. Verifique a chave Pix.";
           console.error(error);
         }
       });
+    }
 
+    (function initPix(){
+      const payloadEl = $("#pixPayload");
+      const canvas = $("#pixCanvas");
+      if(!payloadEl || !canvas){
+        console.warn("Bloco PIX não encontrado no DOM.");
+        return;
+      }
+
+      // status salvo
       const paid = localStorage.getItem("LPGRILL_PIX_PAID_V1") === "1";
       setPaidUI(paid);
 
+      // primeira geração
+      refreshPix();
+
+      // auto refresh (robusto)
+      setInterval(refreshPix, 600);
+
+      // força refresh quando abrir carrinho
+      $("#openCart")?.addEventListener("click", refreshPix);
+      $("#ctaOpenCart")?.addEventListener("click", refreshPix);
+
+      // botões
       const btnCopy = $("#btnCopyPix");
       const btnPaid = $("#btnPaid");
       const btnReset = $("#btnResetPay");
 
-      if(btnCopy){
-        btnCopy.addEventListener("click", async ()=>{
-          try{
-            await navigator.clipboard.writeText(payload);
-            toast("Pix copiado ✅");
-          }catch(e){
-            const t = document.createElement("textarea");
-            t.value = payload;
-            document.body.appendChild(t);
-            t.select();
-            document.execCommand("copy");
-            document.body.removeChild(t);
-            toast("Pix copiado ✅");
-          }
-        });
-      }
+      btnCopy?.addEventListener("click", async ()=>{
+        const payload = $("#pixPayload")?.textContent || "";
+        if(!payload || payload.includes("Gerando") || payload.includes("Erro")) return;
 
-      if(btnPaid){
-        btnPaid.addEventListener("click", ()=>{
-          localStorage.setItem("LPGRILL_PIX_PAID_V1", "1");
-          setPaidUI(true);
-          toast("Pagamento confirmado ✅");
-        });
-      }
+        try{
+          await navigator.clipboard.writeText(payload);
+          toast("Pix copiado ✅");
+        }catch(e){
+          const t = document.createElement("textarea");
+          t.value = payload;
+          document.body.appendChild(t);
+          t.select();
+          document.execCommand("copy");
+          document.body.removeChild(t);
+          toast("Pix copiado ✅");
+        }
+      });
 
-      if(btnReset){
-        btnReset.addEventListener("click", ()=>{
-          localStorage.removeItem("LPGRILL_PIX_PAID_V1");
-          setPaidUI(false);
-          toast("Status resetado.");
-        });
-      }
+      btnPaid?.addEventListener("click", ()=>{
+        localStorage.setItem("LPGRILL_PIX_PAID_V1", "1");
+        setPaidUI(true);
+        toast("Pagamento confirmado ✅");
+      });
+
+      btnReset?.addEventListener("click", ()=>{
+        localStorage.removeItem("LPGRILL_PIX_PAID_V1");
+        setPaidUI(false);
+        toast("Status resetado.");
+      });
     })();
   </script>
 
