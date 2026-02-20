@@ -19,7 +19,8 @@ const SECRET_KEY = "22550126";
       </div>`;
     throw new Error("Access denied");
   }
-})();
+})(); // ✅ FECHA A FUNÇÃO E TERMINA COM ;
+
 (() => {
   const PASS_KEY    = "LPGRILL_ADMIN_PASS_V1";
   const SESSION_KEY = "LPGRILL_ADMIN_UNLOCKED_V1";
@@ -33,8 +34,6 @@ const SECRET_KEY = "22550126";
   }
 
   function show(msg){
-    // usa alert pra não depender de #toast
-    // (se quiser, você pode estilizar depois)
     alert(msg);
   }
 
@@ -51,8 +50,9 @@ const SECRET_KEY = "22550126";
   async function ensureLock(){
     const box = $("#lockBox");
     const app = $("#adminApp");
+
+    // se faltar algo, não trava (abre o admin)
     if(!box || !app){
-      // se faltar algo, não trava
       window.startAdminApp?.();
       return;
     }
