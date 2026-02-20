@@ -6,256 +6,264 @@
   <title>Admin — LP Grill</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
-<body section id="lockBox" class="lock" style="display:none;">
-  <div class="lock-card">
-    <h1 id="lockTitle">Área restrita</h1>
-    <p id="lockHint" class="muted"></p>
-    <input id="lockPass" type="password" placeholder="Senha" autocomplete="current-password">
-    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
-      <button id="btnUnlock" class="btn primary" type="button">Entrar</button>
-      <button id="btnResetPass" class="btn" type="button">Trocar senha</button>
-      <button id="btnLogout" class="btn" type="button">Sair</button>
+
+<body class="app">
+
+  <!-- ===== LOCK (SENHA) ===== -->
+  <section id="lockBox" class="lock" style="display:none; min-height:100vh; place-items:center; padding:24px;">
+    <div class="lock-card" style="width:min(520px, 92vw); background:#fff; border:1px solid rgba(0,0,0,.10); border-radius:16px; padding:16px;">
+      <h1 id="lockTitle" style="margin:0 0 6px;">Área restrita</h1>
+      <p id="lockHint" class="muted" style="margin:0 0 12px;"></p>
+
+      <input id="lockPass" type="password" placeholder="Senha" autocomplete="current-password"
+             style="width:100%; padding:12px; border-radius:12px; border:1px solid rgba(0,0,0,.12);">
+
+      <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+        <button id="btnUnlock" class="btn primary" type="button">Entrar</button>
+        <button id="btnResetPass" class="btn light" type="button">Trocar senha</button>
+        <button id="btnLogout" class="btn light" type="button">Sair</button>
+      </div>
+
+      <p class="mini muted" style="margin-top:10px;">
+        *Senha serve para evitar alterações acidentais. Para segurança real, só com servidor/login.
+      </p>
     </div>
-  </div>
-</section>
+  </section>
 
-<main id="adminApp" style="display:none;">
-  <!-- TODO: aqui fica TODO o seu admin atual -->
-</main>class="app">
+  <!-- ===== APP ADMIN (SÓ APARECE APÓS SENHA) ===== -->
+  <main id="adminApp" style="display:none;">
+    <header class="pagebar">
+      <a class="back" href="index.html">← Voltar ao Menu</a>
+      <div class="page-title">
+        <h1>Admin</h1>
+        <p>Gerenciar produtos</p>
+      </div>
+      <span></span>
+    </header>
 
-  <header class="pagebar">
-    <a class="back" href="index.html">← Voltar ao Menu</a>
-    <div class="page-title">
-      <h1>Admin</h1>
-      <p>Gerenciar produtos</p>
-    </div>
-    <span></span>
-  </header>
+    <main class="container">
+      <div class="totals" style="margin-top:12px">
+        <div class="row">
+          <strong>Catálogo</strong>
+          <span class="muted mini">Salvo no navegador (localStorage)</span>
+        </div>
+        <div class="row" style="gap:8px; flex-wrap:wrap">
+          <button class="btn light" id="btnReset" type="button">Resetar p/ padrão</button>
+          <button class="btn light" id="btnExport" type="button">Exportar JSON</button>
+          <button class="btn light" id="btnImport" type="button">Importar JSON</button>
+          <button class="btn primary" id="btnCopyDataJs" type="button">Copiar DATA.js</button>
+        </div>
+        <div class="mini muted">
+          Dica: depois de editar, o site já lê automaticamente (se você usar o data “dinâmico”).
+          Se quiser fixar, clique em <strong>Copiar DATA.js</strong> e cole em <code>js/data.js</code>.
+        </div>
+      </div>
 
-  <main class="container">
-    <div class="totals" style="margin-top:12px">
-      <div class="row">
-        <strong>Catálogo</strong>
-        <span class="muted mini">Salvo no navegador (localStorage)</span>
+      <div class="totals">
+        <div class="row">
+          <strong>Categoria</strong>
+          <select id="cat" style="padding:10px 12px;border-radius:14px;border:1px solid rgba(17,24,39,.12);background:#fff">
+            <option value="marmitas">Marmitas</option>
+            <option value="porcoes">Porções</option>
+            <option value="bebidas">Bebidas</option>
+            <option value="sobremesas">Sobremesas</option>
+          </select>
+        </div>
+        <div class="row" style="gap:10px; flex-wrap:wrap">
+          <input id="q" placeholder="Buscar por nome..." style="flex:1;min-width:240px;padding:12px;border-radius:14px;border:1px solid rgba(17,24,39,.12);background:#fff" />
+          <button class="btn primary" id="btnNew" type="button">+ Novo produto</button>
+        </div>
       </div>
-      <div class="row" style="gap:8px; flex-wrap:wrap">
-        <button class="btn light" id="btnReset" type="button">Resetar p/ padrão</button>
-        <button class="btn light" id="btnExport" type="button">Exportar JSON</button>
-        <button class="btn light" id="btnImport" type="button">Importar JSON</button>
-        <button class="btn primary" id="btnCopyDataJs" type="button">Copiar DATA.js</button>
-      </div>
-      <div class="mini muted">
-        Dica: depois de editar, o site já lê automaticamente (se você usar o data “dinâmico”).
-        Se quiser fixar, clique em <strong>Copiar DATA.js</strong> e cole em <code>js/data.js</code>.
-      </div>
-    </div>
 
-    <div class="totals">
-      <div class="row">
-        <strong>Categoria</strong>
-        <select id="cat" style="padding:10px 12px;border-radius:14px;border:1px solid rgba(17,24,39,.12);background:#fff">
-          <option value="marmitas">Marmitas</option>
-          <option value="porcoes">Porções</option>
-          <option value="bebidas">Bebidas</option>
-          <option value="sobremesas">Sobremesas</option>
-        </select>
-      </div>
-      <div class="row" style="gap:10px; flex-wrap:wrap">
-        <input id="q" placeholder="Buscar por nome..." style="flex:1;min-width:240px;padding:12px;border-radius:14px;border:1px solid rgba(17,24,39,.12);background:#fff" />
-        <button class="btn primary" id="btnNew" type="button">+ Novo produto</button>
-      </div>
-    </div>
+      <section class="product-grid" id="list"></section>
 
-    <section class="product-grid" id="list"></section>
-
-    <div class="totals" style="margin-top:12px">
-      <strong>JSON (para colar ou salvar)</strong>
-      <textarea id="jsonBox" style="width:100%;min-height:220px;margin-top:10px;padding:12px;border-radius:14px;border:1px solid rgba(17,24,39,.12);background:#fff;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;font-size:12px"></textarea>
-      <div class="mini muted" style="margin-top:8px">
-        Exportar/Importar usa esse campo. Importar substitui tudo.
+      <div class="totals" style="margin-top:12px">
+        <strong>JSON (para colar ou salvar)</strong>
+        <textarea id="jsonBox" style="width:100%;min-height:220px;margin-top:10px;padding:12px;border-radius:14px;border:1px solid rgba(17,24,39,.12);background:#fff;font-family:ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;font-size:12px"></textarea>
+        <div class="mini muted" style="margin-top:8px">
+          Exportar/Importar usa esse campo. Importar substitui tudo.
+        </div>
       </div>
-    </div>
+    </main>
+
+    <!-- precisa do DATA para o admin funcionar -->
+    <script src="js/data.js"></script>
+
+    <!-- Seu script ADMIN atual (SÓ roda após liberar senha) -->
+    <script>
+    window.startAdminApp = function(){
+      (() => {
+        const STORE_KEY = "LPGRILL_DATA_ADMIN_V1";
+        const $ = (s)=> document.querySelector(s);
+        const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+
+        function defaultData(){
+          return JSON.parse(JSON.stringify(window.DATA || {
+            marmitas:[], porcoes:[], bebidas:[], sobremesas:[]
+          }));
+        }
+
+        function loadData(){
+          try{
+            const raw = localStorage.getItem(STORE_KEY);
+            if(!raw) return defaultData();
+            const d = JSON.parse(raw);
+            d.marmitas ||= [];
+            d.porcoes ||= [];
+            d.bebidas ||= [];
+            d.sobremesas ||= [];
+            return d;
+          }catch(e){
+            return defaultData();
+          }
+        }
+
+        function saveData(d){
+          localStorage.setItem(STORE_KEY, JSON.stringify(d));
+        }
+
+        function slugId(prefix){
+          return prefix + Math.random().toString(36).slice(2,8);
+        }
+
+        function render(){
+          const cat = $("#cat").value;
+          const q = ($("#q").value||"").trim().toLowerCase();
+
+          const d = loadData();
+          const items = (d[cat]||[]).filter(p => (p.title||"").toLowerCase().includes(q));
+
+          const list = $("#list");
+          list.innerHTML = items.map(p => `
+            <article class="product" style="cursor:default">
+              <img class="pimg" src="${p.img||""}" alt="" onerror="this.style.display='none'">
+              <div class="pbody">
+                <div class="ptitle">
+                  <strong>${p.title||"(sem nome)"}</strong>
+                  <span class="price">${money(p.price||0)}</span>
+                </div>
+                <div class="pdesc">${p.desc||""}</div>
+                <div class="pmeta">
+                  <span class="badge">${p.tag||"LP Grill"}</span>
+                  <div style="display:flex;gap:8px">
+                    <button class="qbtn" data-edit="${p.id}" type="button">Editar</button>
+                    <button class="qbtn remove" data-del="${p.id}" type="button">Excluir</button>
+                  </div>
+                </div>
+                <div class="mini muted">id: ${p.id} • img: ${p.img||""}</div>
+              </div>
+            </article>
+          `).join("");
+
+          list.querySelectorAll("[data-edit]").forEach(btn=>{
+            btn.addEventListener("click", ()=> openEditor(btn.getAttribute("data-edit")));
+          });
+          list.querySelectorAll("[data-del]").forEach(btn=>{
+            btn.addEventListener("click", ()=> delItem(btn.getAttribute("data-del")));
+          });
+
+          $("#jsonBox").value = JSON.stringify(d, null, 2);
+        }
+
+        function openEditor(id){
+          const cat = $("#cat").value;
+          const d = loadData();
+          const arr = d[cat]||[];
+          const idx = arr.findIndex(x=>x.id===id);
+          const p = idx>=0 ? arr[idx] : { id: slugId(cat[0]), title:"", desc:"", tag:"", price:0, img:"img/mockup.png" };
+
+          const title = prompt("Nome do produto:", p.title||"");
+          if(title===null) return;
+
+          const desc = prompt("Descrição:", p.desc||"") ?? p.desc;
+          const tag  = prompt("Tag (ex: 350ml, Especial):", p.tag||"") ?? p.tag;
+
+          const priceStr = prompt("Preço (ex: 18.90):", String(p.price||0));
+          if(priceStr===null) return;
+          const price = Number(String(priceStr).replace(",", "."));
+          if(Number.isNaN(price)){
+            alert("Preço inválido.");
+            return;
+          }
+
+          const img = prompt("Imagem (ex: img/marmita_tradicional.jpg):", p.img||"img/mockup.png");
+          if(img===null) return;
+
+          const updated = { ...p, title, desc, tag, price, img };
+
+          if(idx>=0) arr[idx] = updated;
+          else arr.push(updated);
+
+          d[cat] = arr;
+          saveData(d);
+          render();
+        }
+
+        function delItem(id){
+          const cat = $("#cat").value;
+          const d = loadData();
+          d[cat] = (d[cat]||[]).filter(x=>x.id!==id);
+          saveData(d);
+          render();
+        }
+
+        $("#btnNew").addEventListener("click", ()=> openEditor(""));
+        $("#q").addEventListener("input", render);
+        $("#cat").addEventListener("change", render);
+
+        $("#btnReset").addEventListener("click", ()=>{
+          if(confirm("Resetar catálogo para o padrão do data.js?")){
+            localStorage.removeItem(STORE_KEY);
+            render();
+          }
+        });
+
+        $("#btnExport").addEventListener("click", ()=>{
+          const d = loadData();
+          $("#jsonBox").value = JSON.stringify(d, null, 2);
+          $("#jsonBox").select();
+          document.execCommand("copy");
+          alert("JSON exportado e copiado.");
+        });
+
+        $("#btnImport").addEventListener("click", ()=>{
+          try{
+            const raw = $("#jsonBox").value.trim();
+            const obj = JSON.parse(raw);
+            obj.marmitas ||= [];
+            obj.porcoes ||= [];
+            obj.bebidas ||= [];
+            obj.sobremesas ||= [];
+            saveData(obj);
+            render();
+            alert("Importado com sucesso.");
+          }catch(e){
+            alert("JSON inválido. Verifique o conteúdo.");
+          }
+        });
+
+        $("#btnCopyDataJs").addEventListener("click", ()=>{
+          const d = loadData();
+          const code = "window.DATA = " + JSON.stringify(d, null, 2) + ";\n";
+          navigator.clipboard?.writeText(code).then(()=>{
+            alert("DATA.js copiado! Agora cole em js/data.js.");
+          }).catch(()=>{
+            $("#jsonBox").value = code;
+            $("#jsonBox").select();
+            document.execCommand("copy");
+            alert("DATA.js preparado e copiado (modo compatibilidade). Cole em js/data.js.");
+          });
+        });
+
+        render();
+      })();
+    };
+    </script>
+
   </main>
 
-  <script src="js/data.js"></script>
+  <!-- Lock (senha) -->
+  <script src="admin.js"></script>
 
-  <script>
-  (() => {
-    const STORE_KEY = "LPGRILL_DATA_ADMIN_V1";
-
-    const $ = (s)=> document.querySelector(s);
-    const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-
-    // ===== default (o data.js atual) =====
-    function defaultData(){
-      // window.DATA existe porque carregamos js/data.js acima
-      return JSON.parse(JSON.stringify(window.DATA || {
-        marmitas:[], porcoes:[], bebidas:[], sobremesas:[]
-      }));
-    }
-
-    function loadData(){
-      try{
-        const raw = localStorage.getItem(STORE_KEY);
-        if(!raw) return defaultData();
-        const d = JSON.parse(raw);
-        // garante chaves
-        d.marmitas ||= [];
-        d.porcoes ||= [];
-        d.bebidas ||= [];
-        d.sobremesas ||= [];
-        return d;
-      }catch(e){
-        return defaultData();
-      }
-    }
-
-    function saveData(d){
-      localStorage.setItem(STORE_KEY, JSON.stringify(d));
-    }
-
-    function slugId(prefix){
-      return prefix + Math.random().toString(36).slice(2,8);
-    }
-
-    function render(){
-      const cat = $("#cat").value;
-      const q = ($("#q").value||"").trim().toLowerCase();
-
-      const d = loadData();
-      const items = (d[cat]||[]).filter(p => (p.title||"").toLowerCase().includes(q));
-
-      const list = $("#list");
-      list.innerHTML = items.map(p => `
-        <article class="product" style="cursor:default">
-          <img class="pimg" src="${p.img||""}" alt="" onerror="this.style.display='none'">
-          <div class="pbody">
-            <div class="ptitle">
-              <strong>${p.title||"(sem nome)"}</strong>
-              <span class="price">${money(p.price||0)}</span>
-            </div>
-            <div class="pdesc">${p.desc||""}</div>
-            <div class="pmeta">
-              <span class="badge">${p.tag||"LP Grill"}</span>
-              <div style="display:flex;gap:8px">
-                <button class="qbtn" data-edit="${p.id}" type="button">Editar</button>
-                <button class="qbtn remove" data-del="${p.id}" type="button">Excluir</button>
-              </div>
-            </div>
-            <div class="mini muted">id: ${p.id} • img: ${p.img||""}</div>
-          </div>
-        </article>
-      `).join("");
-
-      // handlers
-      list.querySelectorAll("[data-edit]").forEach(btn=>{
-        btn.addEventListener("click", ()=> openEditor(btn.getAttribute("data-edit")));
-      });
-      list.querySelectorAll("[data-del]").forEach(btn=>{
-        btn.addEventListener("click", ()=> delItem(btn.getAttribute("data-del")));
-      });
-
-      // atualiza jsonBox (visão completa)
-      $("#jsonBox").value = JSON.stringify(d, null, 2);
-    }
-
-    function openEditor(id){
-      const cat = $("#cat").value;
-      const d = loadData();
-      const arr = d[cat]||[];
-      const idx = arr.findIndex(x=>x.id===id);
-      const p = idx>=0 ? arr[idx] : { id: slugId(cat[0]), title:"", desc:"", tag:"", price:0, img:"img/mockup.png" };
-
-      const title = prompt("Nome do produto:", p.title||"");
-      if(title===null) return;
-
-      const desc = prompt("Descrição:", p.desc||"") ?? p.desc;
-      const tag  = prompt("Tag (ex: 350ml, Especial):", p.tag||"") ?? p.tag;
-
-      const priceStr = prompt("Preço (ex: 18.90):", String(p.price||0));
-      if(priceStr===null) return;
-      const price = Number(String(priceStr).replace(",", "."));
-      if(Number.isNaN(price)){
-        alert("Preço inválido.");
-        return;
-      }
-
-      const img = prompt("Imagem (ex: img/marmita_tradicional.jpg):", p.img||"img/mockup.png");
-      if(img===null) return;
-
-      const updated = { ...p, title, desc, tag, price, img };
-
-      if(idx>=0) arr[idx] = updated;
-      else arr.push(updated);
-
-      d[cat] = arr;
-      saveData(d);
-      render();
-    }
-
-    function delItem(id){
-      const cat = $("#cat").value;
-      const d = loadData();
-      d[cat] = (d[cat]||[]).filter(x=>x.id!==id);
-      saveData(d);
-      render();
-    }
-
-    // ===== Buttons =====
-    $("#btnNew").addEventListener("click", ()=>{
-      openEditor(""); // cria novo
-    });
-
-    $("#q").addEventListener("input", render);
-    $("#cat").addEventListener("change", render);
-
-    $("#btnReset").addEventListener("click", ()=>{
-      if(confirm("Resetar catálogo para o padrão do data.js?")){
-        localStorage.removeItem(STORE_KEY);
-        render();
-      }
-    });
-
-    $("#btnExport").addEventListener("click", ()=>{
-      const d = loadData();
-      $("#jsonBox").value = JSON.stringify(d, null, 2);
-      $("#jsonBox").select();
-      document.execCommand("copy");
-      alert("JSON exportado e copiado.");
-    });
-
-    $("#btnImport").addEventListener("click", ()=>{
-      try{
-        const raw = $("#jsonBox").value.trim();
-        const obj = JSON.parse(raw);
-        obj.marmitas ||= [];
-        obj.porcoes ||= [];
-        obj.bebidas ||= [];
-        obj.sobremesas ||= [];
-        saveData(obj);
-        render();
-        alert("Importado com sucesso.");
-      }catch(e){
-        alert("JSON inválido. Verifique o conteúdo.");
-      }
-    });
-
-    $("#btnCopyDataJs").addEventListener("click", ()=>{
-      const d = loadData();
-      const code = "window.DATA = " + JSON.stringify(d, null, 2) + ";\n";
-      navigator.clipboard?.writeText(code).then(()=>{
-        alert("DATA.js copiado! Agora cole em js/data.js.");
-      }).catch(()=>{
-        $("#jsonBox").value = code;
-        $("#jsonBox").select();
-        document.execCommand("copy");
-        alert("DATA.js preparado e copiado (modo compatibilidade). Cole em js/data.js.");
-      });
-    });
-
-    render();
-  })();
-  </script>
 </body>
 </html>
-<script src="admin.js"></script>
