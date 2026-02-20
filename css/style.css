@@ -226,6 +226,7 @@ body.app{padding-bottom:110px}
   border-color: rgba(127,29,29,.35);
   color:#fff;
 }
+
 /* ===== Drawer ===== */
 .drawer{position:fixed; inset:0; z-index:80; display:none}
 .drawer.open{display:block}
@@ -295,6 +296,8 @@ body.app{padding-bottom:110px}
 .cname{font-weight:900}
 .cdesc{font-size:12px; color:var(--muted); margin-top:4px; line-height:1.35}
 .ccontrols{margin-top:10px; display:flex; align-items:center; justify-content:space-between; gap:10px}
+
+/* (seus estilos adicionais existentes) */
 .lp-grid{display:grid; gap:14px; grid-template-columns:repeat(4,1fr);}
 @media (max-width:1100px){.lp-grid{grid-template-columns:repeat(2,1fr);}}
 @media (max-width:640px){.lp-grid{grid-template-columns:1fr;}}
@@ -320,6 +323,7 @@ body.app{padding-bottom:110px}
 .lp-btn:hover{filter:brightness(1.08);}
 .lp-btn.lp-btn-disabled{background:#9ca3af; cursor:not-allowed;}
 .lp-empty{padding:14px; border:1px dashed rgba(0,0,0,.18); border-radius:14px; opacity:.7;}
+
 .checkout-form{
   margin-top:18px;
   padding:14px;
@@ -351,3 +355,98 @@ body.app{padding-bottom:110px}
   font-weight:900;
 }
 #checkoutMsg{margin-top:8px;}
+
+/* ============================================================
+   ✅ ADD-ONS PREMIUM (NÃO MUDA MENU — SÓ ADICIONA VISUAL)
+============================================================ */
+
+/* Fundo gastronômico premium (pattern leve + texturas) */
+body::after{
+  content:"";
+  position:fixed;
+  inset:0;
+  z-index:-2;
+  pointer-events:none;
+  background-image:
+    radial-gradient(1200px 520px at 10% 0%, rgba(127,29,29,.10), transparent 60%),
+    radial-gradient(900px 520px at 90% 0%, rgba(239,68,68,.07), transparent 62%),
+    radial-gradient(700px 460px at 35% 100%, rgba(17,24,39,.05), transparent 65%);
+  background-repeat:no-repeat;
+  opacity:1;
+}
+
+/* Logo grande, redonda, canto esquerdo */
+body::before{
+  content:"";
+  position:fixed;
+  top:70px;
+  left:-54px;
+  width:240px;
+  height:240px;
+  border-radius:50%;
+  z-index:-1;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(255,255,255,.75), rgba(255,255,255,0) 55%),
+    url("../img/logo.png") center/contain no-repeat;
+  opacity:.10;
+  filter: saturate(1.05);
+}
+
+/* “Fumaça” sutil no topo (vapor) */
+.pagebar::after{
+  content:"";
+  position:absolute;
+  left:-40px;
+  right:-40px;
+  bottom:-18px;
+  height:56px;
+  pointer-events:none;
+  z-index:-1;
+  background:
+    radial-gradient(ellipse at 20% 60%, rgba(17,24,39,.10), transparent 65%),
+    radial-gradient(ellipse at 55% 30%, rgba(17,24,39,.07), transparent 70%),
+    radial-gradient(ellipse at 85% 55%, rgba(17,24,39,.08), transparent 66%);
+  filter: blur(10px);
+  opacity:.35;
+}
+
+/* Vida nos tiles (sem alterar conteúdo) */
+.tile::after{
+  content:"";
+  position:absolute;
+  right:12px;
+  bottom:10px;
+  width:36px;
+  height:36px;
+  border-radius:999px;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(127,29,29,.18), rgba(127,29,29,0) 60%),
+    radial-gradient(circle at 70% 70%, rgba(239,68,68,.12), rgba(239,68,68,0) 62%);
+  opacity:.45;
+}
+
+/* Imagens dos produtos mais “fotografia” */
+.pimg{
+  box-shadow: 0 8px 22px rgba(17,24,39,.12);
+  transition: transform .18s ease, filter .18s ease;
+}
+.product:hover .pimg{
+  transform: scale(1.05);
+  filter: contrast(1.02) saturate(1.04);
+}
+
+/* Glass sutil nos cards (não muda layout) */
+.product{
+  backdrop-filter: blur(6px);
+  background: rgba(255,255,255,.95);
+}
+
+/* Admin gear opacidade (pedido) */
+.admin-gear{
+  opacity: 0.15;
+}
+.admin-gear:hover{
+  opacity: 1;
+}
