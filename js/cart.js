@@ -1,91 +1,54 @@
-(() => {
-  const KEY = "LPGRILL_CART_V3";
-  const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
-  const read = () => { try { return JSON.parse(localStorage.getItem(KEY) || "[]"); } catch { return []; } };
-  const write = (arr) => localStorage.setItem(KEY, JSON.stringify(arr));
-  const findItem = (id) => (window.SITE?.items || []).find(x => x.id === id);
+// ===== Utils =====
+window.money = window.money || function(v){
+  return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+};
 
-  function add(id, qty=1){
-    const item = findItem(id);
-    if(!item) return;
-    const cart = read();
-    const i = cart.findIndex(x => x.id === id);
-    if(i >= 0) cart[i].qty += qty;
-    else cart.push({ id, qty });
-    write(cart); notify();
+// ===== Carrinho simples (localStorage) =====
+const Cart = window.Cart || {};
+window.Cart = Cart;
+
+Cart.key = "LPGRILL_CART";
+
+Cart.read = function(){
+  try{ return JSON.parse(localStorage.getItem(Cart.key) || "[]"); }
+  catch(e){ return []; }
+};
+
+Cart.write = function(items){
+  localStorage.setItem(Cart.key, JSON.stringify(items));
+  Cart.syncUI();
+};
+
+Cart.add = function(id){
+  const items = Cart.read();
+  const found = items.find(x => x.id === id);
+  if(found) found.qty += 1;
+  else items.push({id, qty:1});
+  Cart.write(items);
+};
+
+Cart.count = function(){
+  return Cart.read().reduce((a,b)=> a + (b.qty||0), 0);
+};
+
+Cart.total = function(){
+  const items = Cart.read();
+  const all = [];
+  for(const k in window.DATA){
+    if(Array.isArray(window.DATA[k])) all.push(...window.DATA[k]);
   }
+  return items.reduce((sum, it)=>{
+    const p = all.find(x=>x.id===it.id);
+    return sum + (p ? (p.price*it.qty) : 0);
+  },0);
+};
 
-  function sub(id, qty=1){
-    const cart = read();
-    const i = cart.findIndex(x => x.id === id);
-    if(i < 0) return;
-    cart[i].qty -= qty;
-    if(cart[i].qty <= 0) cart.splice(i, 1);
-    write(cart); notify();
-  }
+Cart.syncUI = function(){
+  const badge = document.getElementById("cartBadge");
+  const total = document.getElementById("ctaTotal");
+  if(badge) badge.textContent = String(Cart.count());
+  if(total) total.textContent = money(Cart.total());
+};
 
-  function clear(){ write([]); notify(); }
-
-  function summary(){
-    const cart = read();
-    let count = 0, total = 0;
-    const lines = cart.map(row => {
-      const item = findItem(row.id);
-      if(!item) return null;
-      count += row.qty;
-      total += item.price * row.qty;
-      return { ...row, item, lineTotal: item.price * row.qty };
-    }).filter(Boolean);
-    return { count, total, lines };
-  }
-
-  function waMessage(payload = {}){
-    const { name="", address="", pay="Pix", mode="Entrega", troco="", obs="" } = payload;
-    const { lines, total } = summary();
-
-    const taxa = Number(window.SITE?.meta?.taxa || 0);
-    const brand = window.SITE?.brand || "Pedido";
-    const tempo = window.SITE?.meta?.tempo || "";
-    const horario = window.SITE?.meta?.horario || "";
-    const totalFinal = total + taxa;
-
-    const txtLines = lines.map(l => `• ${l.qty}x ${l.item.name} — ${money(l.item.price)} = ${money(l.lineTotal)}`);
-
-    const extraPay = (pay === "Dinheiro" && troco.trim())
-      ? `\n*Troco para:* ${troco.trim()}`
-      : "";
-
-    const obsBlock = obs.trim()
-      ? `\n\n*Observações:* ${obs.trim()}`
-      : "";
-
-    const addrLine = (mode === "Retirada") ? "Retirada no local" : (address || "-");
-
-    return `*${brand} — Pedido*
-${txtLines.join("\n")}
-
-Subtotal: *${money(total)}*
-Taxa: *${money(taxa)}*
-Total: *${money(totalFinal)}*
-
-Tempo estimado: ${tempo}
-Horário: ${horario}
-
-*Tipo:* ${mode}
-*Nome:* ${name || "-"}
-*Endereço:* ${addrLine}
-*Pagamento:* ${pay}${extraPay}${obsBlock}`;
-  }
-
-  function waLink(payload){
-    const w = window.SITE?.contact?.whatsapp || "";
-    const msg = encodeURIComponent(waMessage(payload));
-    return `https://wa.me/${w}?text=${msg}`;
-  }
-
-  const listeners = new Set();
-  function onChange(fn){ listeners.add(fn); fn(summary()); return () => listeners.delete(fn); }
-  function notify(){ listeners.forEach(fn => fn(summary())); }
-
-  window.CART = { add, sub, clear, summary, onChange, waLink, money };
-})();
+// auto-sync
+document.addEventListener("DOMContentLoaded", Cart.syncUI);
