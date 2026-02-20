@@ -6,7 +6,22 @@
   <title>Admin — LP Grill</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
-<body class="app">
+<body section id="lockBox" class="lock" style="display:none;">
+  <div class="lock-card">
+    <h1 id="lockTitle">Área restrita</h1>
+    <p id="lockHint" class="muted"></p>
+    <input id="lockPass" type="password" placeholder="Senha" autocomplete="current-password">
+    <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;">
+      <button id="btnUnlock" class="btn primary" type="button">Entrar</button>
+      <button id="btnResetPass" class="btn" type="button">Trocar senha</button>
+      <button id="btnLogout" class="btn" type="button">Sair</button>
+    </div>
+  </div>
+</section>
+
+<main id="adminApp" style="display:none;">
+  <!-- TODO: aqui fica TODO o seu admin atual -->
+</main>class="app">
 
   <header class="pagebar">
     <a class="back" href="index.html">← Voltar ao Menu</a>
