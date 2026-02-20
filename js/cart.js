@@ -1,5 +1,5 @@
 (() => {
-  const KEY = "LPGRILL_CART_V1";
+  const KEY = "LPGRILL_CART_V2";
   const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 
   const read = () => {
@@ -52,11 +52,10 @@
       return { ...row, item, lineTotal: item.price * row.qty };
     }).filter(Boolean);
 
-    // taxa opcional (se quiser somar no total final, mude aqui)
     return { count, total, lines };
   }
 
-  function waMessage(){
+  function waMessage({name="", address="", pay="Pix"} = {}){
     const { lines, total } = summary();
     const taxa = Number(window.SITE?.meta?.taxa || 0);
     const brand = window.SITE?.brand || "Pedido";
@@ -64,27 +63,29 @@
     const horario = window.SITE?.meta?.horario || "";
 
     const txtLines = lines.map(l => `• ${l.qty}x ${l.item.name} — ${money(l.item.price)} = ${money(l.lineTotal)}`);
+    const totalFinal = total + taxa;
+
     const msg =
 `*${brand} — Pedido*
 ${txtLines.join("\n")}
 
 Subtotal: *${money(total)}*
 Taxa: *${money(taxa)}*
-Total: *${money(total + taxa)}*
+Total: *${money(totalFinal)}*
 
 Tempo estimado: ${tempo}
 Horário: ${horario}
 
-*Nome:*
-*Endereço:*
-*Forma de pagamento:*`;
+*Nome:* ${name || "-"}
+*Endereço:* ${address || "-"}
+*Pagamento:* ${pay || "-"}`;
 
     return msg;
   }
 
-  function waLink(){
+  function waLink(payload){
     const w = window.SITE?.contact?.whatsapp || "";
-    const msg = encodeURIComponent(waMessage());
+    const msg = encodeURIComponent(waMessage(payload));
     return `https://wa.me/${w}?text=${msg}`;
   }
 
