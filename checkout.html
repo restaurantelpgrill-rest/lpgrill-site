@@ -28,8 +28,29 @@
       <a class="btn light" href="index.html" style="flex:1">Voltar</a>
       <button class="btn primary" id="sendWA" style="flex:1">Enviar no WhatsApp</button>
     </div>
-  </main>
+  </main><section class="checkout-form">
+  <h2>Dados para entrega/retirada</h2>
 
+  <label>Nome
+    <input id="cName" type="text" placeholder="Seu nome" required>
+  </label>
+
+  <label>WhatsApp (cliente)
+    <input id="cPhone" type="tel" placeholder="(31) 9xxxx-xxxx" required>
+  </label>
+
+  <label>Endereço completo (obrigatório para entrega)
+    <input id="cAddress" type="text" placeholder="Rua, número, bairro, referência" required>
+  </label>
+
+  <label>Observações
+    <textarea id="cObs" rows="3" placeholder="Sem cebola, ponto da carne, etc."></textarea>
+  </label>
+
+  <button class="btn primary" id="btnSendOrder" type="button">Enviar pedido no WhatsApp</button>
+  <p class="muted" id="checkoutMsg"></p>
+  
+</section>
   <script src="js/data.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
