@@ -226,7 +226,6 @@ body.app{padding-bottom:110px}
   border-color: rgba(127,29,29,.35);
   color:#fff;
 }
-
 /* ===== Drawer ===== */
 .drawer{position:fixed; inset:0; z-index:80; display:none}
 .drawer.open{display:block}
@@ -321,3 +320,34 @@ body.app{padding-bottom:110px}
 .lp-btn:hover{filter:brightness(1.08);}
 .lp-btn.lp-btn-disabled{background:#9ca3af; cursor:not-allowed;}
 .lp-empty{padding:14px; border:1px dashed rgba(0,0,0,.18); border-radius:14px; opacity:.7;}
+.checkout-form{
+  margin-top:18px;
+  padding:14px;
+  border:1px solid rgba(0,0,0,.10);
+  border-radius:16px;
+  background:#fff;
+}
+.checkout-form h2{margin:0 0 12px;}
+.checkout-form label{
+  display:grid;
+  gap:6px;
+  font-weight:700;
+  font-size:13px;
+  margin-bottom:10px;
+}
+.checkout-form input, .checkout-form textarea{
+  width:100%;
+  padding:12px;
+  border-radius:12px;
+  border:1px solid rgba(0,0,0,.12);
+  outline:none;
+}
+.checkout-form textarea{resize:vertical; min-height:90px;}
+.checkout-form .btn.primary{
+  width:100%;
+  margin-top:8px;
+  border-radius:14px;
+  padding:14px;
+  font-weight:900;
+}
+#checkoutMsg{margin-top:8px;}
