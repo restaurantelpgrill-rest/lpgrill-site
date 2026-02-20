@@ -1,0 +1,72 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LP Grill — Cardápio</title>
+  <meta name="theme-color" content="#16a34a" />
+  <link rel="stylesheet" href="./css/style.css" />
+</head>
+<body>
+
+  <header class="top">
+    <div class="wrap top__bar">
+      <a class="iconBtn" href="./index.html" title="Voltar">←</a>
+
+      <div class="brand brand--mini">
+        <div class="brand__txt">
+          <h1 id="pageTitle">Cardápio</h1>
+          <p id="pageSub" class="muted">Escolha seus itens</p>
+        </div>
+      </div>
+
+      <button class="iconBtn" id="openCart" title="Carrinho">🛒</button>
+    </div>
+
+    <div class="wrap search">
+      <input id="qItems" type="search" placeholder="Buscar item..." autocomplete="off">
+    </div>
+
+    <div class="wrap chips chips--sub" id="catChips"></div>
+  </header>
+
+  <main class="wrap main">
+    <section class="items" id="items"></section>
+  </main>
+
+  <!-- Drawer do carrinho -->
+  <aside class="drawer" id="drawer" aria-hidden="true">
+    <div class="drawer__backdrop" id="closeCart"></div>
+    <div class="drawer__panel">
+      <div class="drawer__head">
+        <h3>Seu pedido</h3>
+        <button class="iconBtn" id="closeCart2">✕</button>
+      </div>
+
+      <div class="drawer__body" id="cartList"></div>
+
+      <div class="drawer__foot">
+        <div class="tot">
+          <span>Total</span>
+          <strong id="cartTotal">R$ 0,00</strong>
+        </div>
+        <button class="btn btn--wa" id="finishBtn">Finalizar no WhatsApp</button>
+        <button class="ghostBtn" id="clearBtn">Limpar carrinho</button>
+      </div>
+    </div>
+  </aside>
+
+  <!-- Barra fixa inferior -->
+  <div class="bottomBar" id="bottomBar" hidden>
+    <div class="bottomBar__left">
+      <strong id="bbTotal">R$ 0,00</strong>
+      <span class="muted" id="bbCount">0 itens</span>
+    </div>
+    <button class="btn btn--primary" id="bbOpen">Finalizar</button>
+  </div>
+
+  <script src="./js/data.js"></script>
+  <script src="./js/cart.js"></script>
+  <script src="./js/app.js" defer></script>
+</body>
+</html>
