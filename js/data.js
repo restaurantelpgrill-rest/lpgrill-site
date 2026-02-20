@@ -1,49 +1,63 @@
-window.SITE = {
-  brand: "LP Grill",
-  tagline: "Cardápio rápido • Pedido no WhatsApp",
+// js/data.js  (LP Grill) — Dados do cardápio
+window.DATA = window.DATA || {};
 
-  meta: {
-    taxa: 5.00,
-    tempo: "30–60 min",
-    horario: "segunda a sábado até 00:00",
-    cidade: "Belo Horizonte • Entrega & Retirada"
+// =====================
+// MARMITAS (com suas fotos)
+// =====================
+window.DATA.marmitas = [
+  {
+    id: "marmita_tradicional",
+    title: "Marmita Tradicional",
+    desc: "Arroz, feijão, carne e salada.",
+    price: 18.90,
+    img: "img/marmita-tradicional.jpg",
+    tag: "Mais pedida"
   },
-
-  contact: {
-    whatsapp: "5531998832407"
+  {
+    id: "marmita_frango",
+    title: "Marmita Frango",
+    desc: "Frango + acompanhamentos.",
+    price: 21.90,
+    img: "img/marmita-frango.jpg",
+    tag: "Leve"
   },
+  {
+    id: "marmita_carne",
+    title: "Marmita Carne",
+    desc: "Carne acebolada + acompanhamentos.",
+    price: 23.90,
+    img: "img/marmita-carne.jpg",
+    tag: "Top"
+  },
+  {
+    id: "frango_grelhado",
+    title: "Frango Grelhado",
+    desc: "Opção grelhada com acompanhamentos.",
+    price: 21.90,
+    img: "img/frango_grelhado.jpg",
+    tag: "Grelhado"
+  },
+  {
+    id: "pf_do_dia",
+    title: "PF do Dia",
+    desc: "Prato feito (varia conforme o dia).",
+    price: 17.90,
+    img: "img/pf-do-dia.jpg",
+    tag: "Promo"
+  }
+];
 
-  categories: [
-    { id:"marmitas",  title:"Marmitas",  icon:"🍱", desc:"Prontas e bem servidas", img:"./img/marmita-tradicional.jpg" },
-    { id:"churrasco", title:"Churrasco", icon:"🔥", desc:"Carnes na brasa",       img:"./img/frango-grelhado.jpg" },
-    { id:"porcoes",   title:"Porções",   icon:"🍟", desc:"Para compartilhar",    img:"./img/batata.jpg" },
-    { id:"lanches",   title:"Lanches",   icon:"🍔", desc:"Artesanais",           img:"./img/burger.jpg" },
-    { id:"bebidas",   title:"Bebidas",   icon:"🥤", desc:"Bem geladas",          img:"./img/coca-lata.jpg" },
-    { id:"sobremesas",title:"Sobremesas",icon:"🍰", desc:"Doces",                img:"./img/pudim.jpg" }
-  ],
+// =====================
+// BEBIDAS (com suas fotos)
+// =====================
+window.DATA.bebidas = [
+  { id:"coca_lata", title:"Coca-Cola Lata", desc:"350ml gelada.", price:6.00, img:"img/coca_lata.jpg", tag:"350ml" },
+  { id:"guarana_lata", title:"Guaraná Lata", desc:"350ml gelada.", price:6.00, img:"img/guarana_lata.jpg", tag:"350ml" },
+  { id:"agua_500", title:"Água 500ml", desc:"Sem gás.", price:4.00, img:"img/agua_500.jpg", tag:"500ml" }
+];
 
-  items: [
-    { id:"m1", cat:"marmitas", name:"Marmita Tradicional", desc:"Arroz, feijão, carne e salada.", price: 18.90, img:"./img/marmita-tradicional.jpg" },
-    { id:"m2", cat:"marmitas", name:"Marmita Frango Grelhado", desc:"Frango grelhado + acompanhamentos.", price: 21.90, img:"./img/marmita-frango.jpg" },
-    { id:"m3", cat:"marmitas", name:"Marmita Carne", desc:"Carne acebolada + acompanhamentos.", price: 23.90, img:"./img/marmita-carne.jpg" },
-
-    { id:"c1", cat:"churrasco", name:"Frango Grelhado", desc:"Porção individual.", price: 24.90, img:"./img/frango-grelhado.jpg" },
-    { id:"c2", cat:"churrasco", name:"Picanha (200g)", desc:"Acompanha farofa e vinagrete.", price: 39.90, img:"./img/pf-do-dia.jpg" },
-
-    { id:"p1", cat:"porcoes", name:"Batata Frita", desc:"Crocante e sequinha.", price: 19.90, img:"./img/batata.jpg" },
-    { id:"p2", cat:"porcoes", name:"Calabresa Acebolada", desc:"Porção completa.", price: 24.90, img:"./img/calabresa.jpg" },
-
-    { id:"l1", cat:"lanches", name:"Burger LP", desc:"Hambúrguer + queijo + molho especial.", price: 27.90, img:"./img/burger.jpg" },
-
-    { id:"b1", cat:"bebidas", name:"Coca-Cola lata", desc:"350ml", price: 6.00, img:"./img/coca-lata.jpg" },
-    { id:"b2", cat:"bebidas", name:"Guaraná lata", desc:"350ml", price: 6.00, img:"./img/guarana-lata.jpg" },
-
-    { id:"s1", cat:"sobremesas", name:"Pudim", desc:"Fatia generosa.", price: 9.90, img:"./img/pudim.jpg" }
-  ],
-
-  reviews: [
-    { name:"Mariana S.", when:"hoje", text:"Chegou rápido e bem embalado. Marmita top!" },
-    { name:"João P.", when:"ontem", text:"Carne no ponto certo. Vou pedir sempre." },
-    { name:"Aline R.", when:"esta semana", text:"Porções bem servidas. Atendimento excelente." }
-  ]
-};
+// Você pode ir criando as outras categorias depois:
+// window.DATA.churrasco = [...]
+// window.DATA.porcoes = [...]
+// window.DATA.lanches = [...]
+// window.DATA.sobremesas = [...]
