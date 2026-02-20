@@ -21,13 +21,14 @@
 
   // adapte se seu cart.js usa outra chave/estrutura
   function loadCart(){
-    try{
-      const raw = localStorage.getItem("LPGRILL_CART_V1");
-      return raw ? JSON.parse(raw) : { items: [], mode: "entrega", fee: 0 };
-    }catch{
-      return { items: [], mode: "entrega", fee: 0 };
-    }
+  try{
+    const key = window.LPGRILL_CART_KEY || "LPGRILL_CART_V1"; // fallback
+    const raw = localStorage.getItem(key);
+    return raw ? JSON.parse(raw) : { items: [], mode: "entrega", fee: 0 };
+  }catch{
+    return { items: [], mode: "entrega", fee: 0 };
   }
+}
 
   function cartToText(cart){
     const items = cart.items || [];
