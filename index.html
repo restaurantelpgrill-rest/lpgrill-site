@@ -6,8 +6,8 @@
   <meta name="theme-color" content="#0f1115" />
   <title>LP Grill — Pedidos</title>
 
-  <!-- ✅ CSS EXTERNO (ligado ao arquivo) -->
-  <link rel="stylesheet" href="CSS/style.css?v=1" />
+  <!-- ✅ Caminho CORRETO (pasta css minúscula) -->
+  <link rel="stylesheet" href="css/style.css?v=1" />
 </head>
 
 <body class="app">
@@ -63,7 +63,7 @@
           <h2 style="margin:0 0 10px;font-size:15px;font-weight:1000">Cardápio</h2>
           <div class="list" id="menu"></div>
           <div class="mini" style="margin-top:10px">
-            📸 Para as fotos aparecerem: envie as imagens para o repositório e coloque o nome igual ao do campo <b>img</b> do item (ex: <b>marmita-tradicional.jpg</b>).
+            📸 Para as fotos aparecerem: os arquivos devem estar na raiz com o mesmo nome do campo <b>img</b>.
           </div>
         </div>
       </div>
@@ -161,23 +161,17 @@
     </a>
   </div>
 
-  <script>
-/** =========================
- *  CONFIG (EDITE AQUI)
- *  ========================= */
+<script>
 const CONFIG = {
   storeName: "LP Grill",
   cityLine: "Belo Horizonte - MG",
   whatsappNumber: "5531998064556",
   pixKey: "PIX: 31998064556",
   deliveryFee: 5.00,
-  hours: [
-    { day: 0, open: null, close: null },
-  ],
+  hours: [{ day: 0, open: null, close: null }],
   logoFile: "LOGO.png",
 };
 
-/** link do botão flutuante */
 (function setFloatingWhatsApp(){
   const msg = `Olá! Vim pelo site do ${CONFIG.storeName}.`;
   const url = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(msg)}`;
@@ -185,58 +179,35 @@ const CONFIG = {
   if(a) a.href = url;
 })();
 
-/** =========================
- *  CARDÁPIO (EDITE AQUI)
- *  ========================= */
 const MENU = [
-  {
-    cat: "Marmitas",
-    items: [
-      { id:"m1", name:"Marmita tradicional", desc:"Arroz, feijão, salada e mistura do dia.", price: 23.00, img:"marmita-tradicional.jpg" },
-      { id:"m2", name:"Marmita frango", desc:"Frango + acompanhamentos do dia.", price: 20.00, img:"marmita-frango.jpg" },
-      { id:"m3", name:"Marmita carne", desc:"Carne + acompanhamentos do dia.", price: 22.00, img:"marmita-carne.jpg" },
-    ]
-  },
-  {
-    cat: "Porções",
-    items: [
-      { id:"p1", name:"Prato feito (PF) do dia", desc:"PF completo com salada.", price: 24.00, img:"pf-do-dia.jpg" },
-      { id:"p2", name:"Frango grelhado + acompanhamentos", desc:"Bem servido, com salada.", price: 26.00, img:"frango-grelhado.jpg" },
-    ]
-  },
-  {
-    cat: "Bebidas",
-    items: [
-      { id:"b1", name:"Coca-Cola lata 350ml", desc:"Gelada.", price: 6.00, img:"coca-lata.jpg" },
-      { id:"b2", name:"Guaraná lata 350ml", desc:"Gelado.", price: 6.00, img:"guarana-lata.jpg" },
-      { id:"b3", name:"Água 500ml", desc:"Sem gás.", price: 3.00, img:"agua-500.jpg" },
-    ]
-  },
+  { cat:"Marmitas", items:[
+    { id:"m1", name:"Marmita tradicional", desc:"Arroz, feijão, salada e mistura do dia.", price:23.00, img:"marmita-tradicional.jpg" },
+    { id:"m2", name:"Marmita frango", desc:"Frango + acompanhamentos do dia.", price:20.00, img:"marmita-frango.jpg" },
+    { id:"m3", name:"Marmita carne", desc:"Carne + acompanhamentos do dia.", price:22.00, img:"marmita-carne.jpg" },
+  ]},
+  { cat:"Porções", items:[
+    { id:"p1", name:"Prato feito (PF) do dia", desc:"PF completo com salada.", price:24.00, img:"pf-do-dia.jpg" },
+    { id:"p2", name:"Frango grelhado + acompanhamentos", desc:"Bem servido, com salada.", price:26.00, img:"frango-grelhado.jpg" },
+  ]},
+  { cat:"Bebidas", items:[
+    { id:"b1", name:"Coca-Cola lata 350ml", desc:"Gelada.", price:6.00, img:"coca-lata.jpg" },
+    { id:"b2", name:"Guaraná lata 350ml", desc:"Gelado.", price:6.00, img:"guarana-lata.jpg" },
+    { id:"b3", name:"Água 500ml", desc:"Sem gás.", price:3.00, img:"agua-500.jpg" },
+  ]},
 ];
 
-/** =========================
- *  LÓGICA DO SITE
- *  ========================= */
 const el = (id)=>document.getElementById(id);
 const money = (v)=> v.toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 
-const state = {
-  cat: "Todos",
-  q: "",
-  cart: loadCart(),
-};
+const state = { cat:"Todos", q:"", cart: loadCart() };
 
 function saveCart(){ localStorage.setItem("lpgrill_cart", JSON.stringify(state.cart)); }
-function loadCart(){
-  try{ return JSON.parse(localStorage.getItem("lpgrill_cart") || "{}"); }
-  catch{ return {}; }
-}
+function loadCart(){ try{ return JSON.parse(localStorage.getItem("lpgrill_cart")||"{}"); } catch{ return {}; } }
 
 function getAllCats(){ return ["Todos", ...MENU.map(m=>m.cat)]; }
 
 function renderTabs(){
-  const tabs = el("tabs");
-  tabs.innerHTML = "";
+  const tabs = el("tabs"); tabs.innerHTML = "";
   getAllCats().forEach(c=>{
     const b = document.createElement("div");
     b.className = "tab" + (state.cat===c ? " active" : "");
@@ -250,7 +221,6 @@ function filteredItems(){
   const q = state.q.trim().toLowerCase();
   let sections = MENU;
   if(state.cat !== "Todos") sections = MENU.filter(s=>s.cat===state.cat);
-
   const out = [];
   sections.forEach(sec=>{
     sec.items.forEach(it=>{
@@ -264,29 +234,18 @@ function filteredItems(){
 function addToCart(item, delta){
   const cur = state.cart[item.id]?.qty || 0;
   const next = Math.max(0, cur + delta);
-
   if(next === 0) delete state.cart[item.id];
   else state.cart[item.id] = { id:item.id, name:item.name, price:item.price, qty: next };
-
-  saveCart();
-  renderCart();
-  renderMenu();
-  updateSticky();
+  saveCart(); renderCart(); renderMenu(); updateSticky();
 }
 
 function cartItems(){ return Object.values(state.cart); }
 function calcSubtotal(){ return cartItems().reduce((s,i)=> s + i.price*i.qty, 0); }
-function calcShipping(){
-  const fulfillment = el("fulfillment").value;
-  if(fulfillment === "retirada") return 0;
-  return CONFIG.deliveryFee;
-}
+function calcShipping(){ return el("fulfillment").value === "retirada" ? 0 : CONFIG.deliveryFee; }
 
 function renderMenu(){
-  const container = el("menu");
-  container.innerHTML = "";
+  const container = el("menu"); container.innerHTML = "";
   const items = filteredItems();
-
   if(items.length === 0){
     const empty = document.createElement("div");
     empty.className = "mini";
@@ -307,9 +266,7 @@ function renderMenu(){
       img.alt = it.name;
       img.onerror = ()=>{ thumb.innerHTML = `<div class="ph">🍽️</div>`; };
       thumb.appendChild(img);
-    } else {
-      thumb.innerHTML = `<div class="ph">🍽️</div>`;
-    }
+    } else thumb.innerHTML = `<div class="ph">🍽️</div>`;
 
     const info = document.createElement("div");
     info.className = "info";
@@ -342,9 +299,7 @@ function renderMenu(){
     plus.onclick = ()=> addToCart(it, +1);
 
     qty.append(minus, count, plus);
-
     right.append(price, qty);
-
     row.append(thumb, info, right);
     container.appendChild(row);
   });
@@ -372,11 +327,7 @@ function renderCart(){
         </div>
         <button class="rm" title="Remover" aria-label="Remover">✕</button>
       `;
-      row.querySelector("button").onclick = ()=>{
-        delete state.cart[i.id];
-        saveCart();
-        render();
-      };
+      row.querySelector("button").onclick = ()=>{ delete state.cart[i.id]; saveCart(); render(); };
       list.appendChild(row);
     });
   }
@@ -394,21 +345,18 @@ function isOpenNow(){
   const day = now.getDay();
   const slot = CONFIG.hours.find(h=>h.day===day);
   if(!slot || !slot.open || !slot.close) return { open:false };
-
   const [oh, om] = slot.open.split(":").map(Number);
   const [ch, cm] = slot.close.split(":").map(Number);
   const openM = oh*60 + om;
   const closeM = ch*60 + cm;
   const curM = now.getHours()*60 + now.getMinutes();
-  const ok = curM >= openM && curM <= closeM;
-  return { open: ok };
+  return { open: curM >= openM && curM <= closeM };
 }
 
 function renderStatus(){
   const s = isOpenNow();
   el("dot").classList.toggle("open", s.open);
   el("statusText").textContent = s.open ? "Aberto" : "Fechado";
-
   const notice = el("statusNotice");
   notice.style.display = "flex";
   notice.className = "notice " + (s.open ? "ok" : "");
@@ -419,9 +367,7 @@ function renderStatus(){
 
 function formatHoursLine(){
   const days = ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"];
-  const parts = CONFIG.hours
-    .filter(h=>h.open && h.close)
-    .map(h=> `${days[h.day]} ${h.open}-${h.close}`);
+  const parts = CONFIG.hours.filter(h=>h.open && h.close).map(h=> `${days[h.day]} ${h.open}-${h.close}`);
   return parts.length ? parts.join(" • ") : "Horário não informado";
 }
 
@@ -437,7 +383,6 @@ function buildWhatsAppMessage(){
   const sub = calcSubtotal();
   const ship = calcShipping();
   const total = sub + ship;
-
   const payLabel = payment === "pix" ? "PIX" : payment === "cartao" ? "Cartão" : "Dinheiro";
 
   let msg = `*Pedido - ${CONFIG.storeName}*\n`;
@@ -462,16 +407,12 @@ function buildWhatsAppMessage(){
 
 function sendWhatsApp(){
   const items = cartItems();
-  if(items.length === 0){
-    alert("Seu carrinho está vazio. Adicione itens antes de enviar 🙂");
-    return;
-  }
+  if(items.length === 0) return alert("Seu carrinho está vazio. Adicione itens antes de enviar 🙂");
   const fulfillment = el("fulfillment").value;
   if(fulfillment !== "retirada" && !el("address").value.trim()){
     if(!confirm("Você escolheu ENTREGA, mas não preencheu o endereço. Deseja enviar mesmo assim?")) return;
   }
-  const message = buildWhatsAppMessage();
-  const url = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(message)}`;
+  const url = `https://wa.me/${CONFIG.whatsappNumber}?text=${encodeURIComponent(buildWhatsAppMessage())}`;
   window.open(url, "_blank");
 }
 
@@ -491,9 +432,7 @@ function tryLoadLogo(){
   };
 }
 
-function scrollToCart(){
-  el("cartPanel").scrollIntoView({behavior:"smooth", block:"start"});
-}
+function scrollToCart(){ el("cartPanel").scrollIntoView({behavior:"smooth", block:"start"}); }
 
 function updateSticky(){
   const count = cartItems().reduce((s,i)=>s+i.qty,0);
@@ -505,21 +444,13 @@ function updateSticky(){
   el("stickyBtn").style.opacity = (count === 0 ? ".6" : "1");
 }
 
-/** Events */
 el("search").addEventListener("input", (e)=>{ state.q = e.target.value; renderMenu(); });
-el("clearBtn").onclick = ()=>{
-  if(confirm("Limpar carrinho?")){
-    state.cart = {};
-    localStorage.setItem("lpgrill_cart", JSON.stringify(state.cart));
-    render();
-  }
-};
+el("clearBtn").onclick = ()=>{ if(confirm("Limpar carrinho?")){ state.cart={}; saveCart(); render(); } };
 el("goCartBtn").onclick = scrollToCart;
 el("sendBtn").onclick = sendWhatsApp;
 el("fulfillment").addEventListener("change", ()=> renderCart());
-el("stickyBtn").onclick = ()=>{ scrollToCart(); };
+el("stickyBtn").onclick = ()=> scrollToCart();
 
-/** Start */
 tryLoadLogo();
 render();
 
@@ -531,6 +462,6 @@ function render(){
   setMiniInfo();
   updateSticky();
 }
-  </script>
+</script>
 </body>
 </html>
