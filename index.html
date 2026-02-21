@@ -400,6 +400,15 @@
             <div class="ck-field">
               <label class="ck-lbl">Nome</label>
               <input id="ckName" class="ck-inp" placeholder="Seu nome" autocomplete="name" />
+              
+              <div class="ck-field">
+  <label class="ck-lbl">Bairro (até 10 km)</label>
+  <input id="ckBairro" class="ck-inp" list="ckBairroList"
+         placeholder="Comece a digitar (ex: Maria Teresa)"
+         autocomplete="off" />
+  <datalist id="ckBairroList"></datalist>
+  <div class="ck-hint" id="ckBairroHint">Digite para ver opções próximas (até 10 km).</div>
+</div>
             </div>
             <div class="ck-field">
               <label class="ck-lbl">Telefone</label>
