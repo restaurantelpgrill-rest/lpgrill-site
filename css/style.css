@@ -729,3 +729,46 @@ html.modal-open, body.modal-open{
   overflow: hidden !important;
   height: 100%;
 }
+/* ============================================================
+   ✅ FIX: botões não sobrepõem textos (lp-card)
+   Cole no FINAL do style.css
+============================================================ */
+
+/* garante coluna e empurra ações pro rodapé do card */
+.lp-card.card{
+  display:flex;
+  flex-direction:column;
+}
+.lp-body{
+  display:flex;
+  flex-direction:column;
+  gap:10px;
+}
+.lp-top{ align-items:flex-start; }
+.lp-desc{
+  min-height:auto; /* não força altura estranha */
+}
+
+/* ações sempre embaixo e organizadas */
+.lp-actions{
+  margin-top:auto;            /* empurra p/ baixo */
+  display:flex;
+  align-items:center;
+  justify-content:space-between; /* qty na esquerda, botão na direita */
+  gap:10px;
+  padding-top:10px;
+  border-top:1px solid rgba(17,24,39,.08);
+}
+
+/* botão nunca estoura o card */
+.lp-actions .btn,
+.lp-actions button,
+.lp-actions a{
+  max-width: 100%;
+  white-space: nowrap;
+}
+
+/* evita clique no card atrapalhar os botões */
+.lp-actions *{
+  pointer-events:auto;
+}
