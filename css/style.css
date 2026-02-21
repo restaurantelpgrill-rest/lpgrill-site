@@ -626,3 +626,37 @@ body::before{
   background:rgba(255,40,40,.12);
   font-size:13px;
 }
+/* ============================================================
+   ✅ FIX MENU SUMINDO (SEM MUDAR O VISUAL)
+   - sobe o menu acima de tudo
+   - evita menu "perder clique" por overlays invisíveis
+   - mantém sticky exatamente igual
+============================================================ */
+
+/* 1) Garante que o menu (pagebar) sempre fique acima dos cards/hero */
+.pagebar{
+  z-index: 1000;          /* antes era 30, muito baixo */
+  position: sticky;       /* mantém seu comportamento */
+  top: 0;
+  isolation: isolate;     /* cria contexto de empilhamento consistente */
+}
+
+/* 2) Se algum pseudo-elemento estiver “cobrindo” o topo (raro, mas acontece) */
+.pagebar::after{
+  pointer-events: none;   /* seu vapor continua, mas não bloqueia clique */
+}
+
+/* 3) Garante que fundos/pseudos não virem uma “camada” na frente */
+body::before,
+body::after{
+  pointer-events: none;
+}
+
+/* 4) Se algum elemento tiver transform e criar stacking estranho */
+.pagebar, .pagebar *{
+  transform: translateZ(0);
+}
+
+/* 5) Drawer e checkout overlay continuam acima quando abertos (não altera sua UX) */
+.drawer{ z-index: 5000; }        /* era 80 */
+.ck-overlay{ z-index: 9000; }    /* era 99999 (absurdo alto), mas continua acima do menu */
