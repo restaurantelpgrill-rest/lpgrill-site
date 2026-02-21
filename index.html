@@ -43,6 +43,8 @@
   <!-- =========================
        WINE PREMIUM LIGHT (HOME) + PIX
        (mais claro / menos pesado)
+       OBS: Mantive o CSS como estava (não muda o site).
+       O PIX da HOME foi removido do BODY como você pediu.
   ========================== -->
   <style>
     :root{
@@ -264,73 +266,6 @@
       </a>
     </div>
 
-    <!-- PIX (HOME) -->
-    <section class="wine-hero" aria-label="Pagamento via Pix">
-      <div class="wine-shell">
-        <div class="wine-topbar">
-          <div class="wine-badge">🍷 Pagamento via Pix</div>
-          <div id="payPill" class="pill wait">⏳ Aguardando pagamento</div>
-        </div>
-
-        <h2 class="wine-title">Pague pelo Pix (QR Code)</h2>
-        <p class="wine-sub">
-          O QR é gerado com o <b>total do carrinho</b>. Depois de pagar, toque em <b>“Já paguei”</b>.
-        </p>
-
-        <div class="wine-grid">
-          <div class="wine-card">
-            <div class="inner">
-              <div class="pix-row">
-                <div class="pix-qr">
-                  <canvas id="pixCanvas" width="168" height="168"></canvas>
-                </div>
-
-                <div class="pix-meta">
-                  <div class="pix-label">PIX Copia e Cola</div>
-                  <div id="pixPayload" class="pix-value">Gerando Pix...</div>
-
-                  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
-                    <button class="btn-wine btn-gold" id="btnCopyPix" type="button">📋 Copiar Pix</button>
-                    <button class="btn-wine" id="btnPaid" type="button">✅ Já paguei</button>
-                    <a class="btn-wine" href="pagamento/pagamento.html" style="text-decoration:none;">Abrir página de pagamento</a>
-                  </div>
-
-                  <div style="margin-top:12px; font-size:12px; color:rgba(23,17,24,.70); line-height:1.5;">
-                    *Sem servidor, a confirmação é manual (cliente paga e confirma). Para confirmação automática real, use gateway.
-                  </div>
-                </div>
-              </div>
-
-              <div style="height:12px;"></div>
-
-              <div class="pay-status">
-                <div>
-                  <div style="font-weight:900;">Status</div>
-                  <div id="payText" style="font-size:13px; color:rgba(23,17,24,.70);">
-                    Aguardando você confirmar.
-                  </div>
-                </div>
-                <button class="btn-wine" id="btnResetPay" type="button">↺ Reset</button>
-              </div>
-            </div>
-          </div>
-
-          <div class="wine-card">
-            <div class="inner">
-              <div style="font-size:16px; font-weight:900; margin-bottom:6px; color:rgba(42,14,23,.95);">
-                Aviso de pagamento
-              </div>
-              <div style="font-size:13px; color:rgba(23,17,24,.70); line-height:1.6;">
-                Ao tocar em <b>“Já paguei”</b>, o site marca como <b>Pago ✅</b>.
-                Se o carrinho mudar, você pode (e deve) pagar novamente com o total certo.
-              </div>
-            </div>
-          </div>
-
-        </div>
-      </div>
-    </section>
-
     <a class="wa-float" id="waFloat" href="#" aria-label="WhatsApp">
       <img src="img/whatsapp.png" alt="WhatsApp">
     </a>
@@ -377,6 +312,138 @@
 
   <div class="toast" id="toast"></div>
 
+  <!-- ====== CHECKOUT/PAGAMENTO (ETAPA SEPARADA) — NÃO APARECE NA HOME ====== -->
+  <div id="checkoutOverlay" class="ck-overlay" aria-hidden="true">
+    <div class="ck-sheet" role="dialog" aria-modal="true" aria-labelledby="ckTitle">
+      <div class="ck-head">
+        <div>
+          <div id="ckTitle" class="ck-title">Finalizar pedido</div>
+          <div class="ck-sub">Escolha a forma de pagamento</div>
+        </div>
+        <button class="ck-x" type="button" id="ckClose" aria-label="Fechar">✕</button>
+      </div>
+
+      <!-- ETAPA 1: PAGAMENTO -->
+      <section class="ck-step" data-step="pay">
+        <div class="ck-paygrid">
+          <button class="ck-paybtn" type="button" data-pay="pix">
+            <span class="ck-ic">⚡</span>
+            <span class="ck-paytxt">
+              <strong>PIX</strong>
+              <small>Copia e Cola + QR Code</small>
+            </span>
+          </button>
+
+          <button class="ck-paybtn" type="button" data-pay="credit">
+            <span class="ck-ic">💳</span>
+            <span class="ck-paytxt">
+              <strong>Crédito</strong>
+              <small>Prossegue para endereço</small>
+            </span>
+          </button>
+
+          <button class="ck-paybtn" type="button" data-pay="debit">
+            <span class="ck-ic">💳</span>
+            <span class="ck-paytxt">
+              <strong>Débito</strong>
+              <small>Prossegue para endereço</small>
+            </span>
+          </button>
+        </div>
+
+        <div class="ck-actions">
+          <button class="ck-back ghost" type="button" id="ckCancel">Cancelar</button>
+        </div>
+      </section>
+
+      <!-- ETAPA 2: PIX (TRAVA AQUI) -->
+      <section class="ck-step" data-step="pix" hidden>
+        <div class="ck-box">
+          <div class="ck-row">
+            <div class="ck-kv">
+              <div class="ck-k">Total do pedido</div>
+              <div class="ck-v" id="ckTotalPix">R$ 0,00</div>
+            </div>
+            <div class="ck-kv">
+              <div class="ck-k">Taxa de entrega</div>
+              <div class="ck-v" id="ckFeePix">R$ 0,00</div>
+            </div>
+          </div>
+
+          <div class="ck-qrwrap">
+            <div class="ck-qrbox">
+              <div id="ckQr" class="ck-qr"></div>
+            </div>
+
+            <div class="ck-copy">
+              <div class="ck-k">PIX Copia e Cola</div>
+              <textarea id="ckPixCode" class="ck-textarea" rows="3" readonly></textarea>
+              <button class="ck-btn" type="button" id="ckCopyPix">Copiar código PIX</button>
+            </div>
+          </div>
+
+          <div class="ck-warn">
+            <strong>Depois de pagar via PIX,</strong> envie o comprovante no WhatsApp para <strong>liberarmos seu pedido imediatamente</strong>.
+          </div>
+
+          <div class="ck-actions">
+            <button class="ck-back ghost" type="button" id="ckBackFromPix">Voltar</button>
+            <button class="ck-btn" type="button" id="ckPaidPix">Já paguei (enviar comprovante)</button>
+          </div>
+        </div>
+      </section>
+
+      <!-- ETAPA 3: ENDEREÇO (CRÉDITO/DÉBITO) -->
+      <section class="ck-step" data-step="addr" hidden>
+        <div class="ck-box">
+          <div class="ck-row2">
+            <div class="ck-field">
+              <label class="ck-lbl">Nome</label>
+              <input id="ckName" class="ck-inp" placeholder="Seu nome" autocomplete="name" />
+            </div>
+            <div class="ck-field">
+              <label class="ck-lbl">Telefone</label>
+              <input id="ckPhone" class="ck-inp" placeholder="(DDD) 99999-9999" inputmode="tel" />
+            </div>
+          </div>
+
+          <div class="ck-field">
+            <label class="ck-lbl">Endereço completo</label>
+            <input id="ckAddress" class="ck-inp" placeholder="Rua, número, bairro" autocomplete="street-address" />
+          </div>
+
+          <div class="ck-row2">
+            <div class="ck-field">
+              <label class="ck-lbl">Complemento (opcional)</label>
+              <input id="ckCompl" class="ck-inp" placeholder="Apto, bloco, referência" />
+            </div>
+            <div class="ck-field">
+              <label class="ck-lbl">Observações (opcional)</label>
+              <input id="ckObs" class="ck-inp" placeholder="Sem cebola, pouco gelo..." />
+            </div>
+          </div>
+
+          <div class="ck-loc">
+            <button class="ck-btn ghost" type="button" id="ckGetLocation">Usar minha localização (GPS) para calcular taxa</button>
+            <div class="ck-hint" id="ckKmHint">A taxa depende da distância até Maria Teresa (BH).</div>
+            <div class="ck-feeline" id="ckFeeLine" hidden>
+              Distância: <strong id="ckKm">0,0 km</strong> • Taxa: <strong id="ckFee">R$ 0,00</strong>
+            </div>
+            <div class="ck-block" id="ckBlocked" hidden>
+              Fora do raio de 10 km. Entrega indisponível para este endereço.
+            </div>
+          </div>
+
+          <div class="ck-actions">
+            <button class="ck-back ghost" type="button" id="ckBackFromAddr">Voltar</button>
+            <button class="ck-btn" type="button" id="ckConfirmOrder">Confirmar pedido</button>
+          </div>
+        </div>
+      </section>
+
+    </div>
+  </div>
+
   <!-- Admin gear -->
   <script>
     (() => {
@@ -398,345 +465,8 @@
   <script src="js/app.js"></script>
   <script src="js/render.js"></script>
 
-  <!-- QRCode -->
+  <!-- QRCode (apenas 1x) -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
-  <!-- PIX (home) + valor do carrinho -->
-  <script>
-    const PIX = {
-      key: "e02484b0-c924-4d38-9af9-79af9ad97c3e",
-      merchantName: "LP GRILL",
-      merchantCity: "BELO HORIZONTE",
-      txid: "LPGRILL01",
-      amount: null
-    };
-
-    function emv(id, value){
-      const len = String(value.length).padStart(2, "0");
-      return `${id}${len}${value}`;
-    }
-
-    function crc16(payload){
-      let crc = 0xFFFF;
-      for (let i = 0; i < payload.length; i++) {
-        crc ^= payload.charCodeAt(i) << 8;
-        for (let j = 0; j < 8; j++) {
-          crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
-          crc &= 0xFFFF;
-        }
-      }
-      return crc.toString(16).toUpperCase().padStart(4, "0");
-    }
-
-    function buildPixPayload({key, merchantName, merchantCity, txid, amount}){
-      const gui = emv("00", "br.gov.bcb.pix");
-      const keyField = emv("01", key);
-
-      const addData = emv("05", txid || "***");
-      const additionalDataFieldTemplate = emv("62", addData);
-
-      const mai = emv("26", gui + keyField);
-
-      const amt = (amount && Number(amount) > 0)
-        ? emv("54", Number(amount).toFixed(2))
-        : "";
-
-      const payloadNoCrc =
-        emv("00", "01") +
-        emv("01", "12") +
-        mai +
-        emv("52", "0000") +
-        emv("53", "986") +
-        amt +
-        emv("58", "BR") +
-        emv("59", (merchantName || "LP GRILL").substring(0, 25)) +
-        emv("60", (merchantCity || "BELO HORIZONTE").substring(0, 15)) +
-        additionalDataFieldTemplate +
-        "6304";
-
-      return payloadNoCrc + crc16(payloadNoCrc);
-    }
-
-    const $ = (s)=> document.querySelector(s);
-
-    function toast(msg){
-      const el = $("#toast");
-      if(!el) return;
-      el.textContent = msg;
-      el.style.display = "block";
-      clearTimeout(window.__t);
-      window.__t = setTimeout(()=> el.style.display = "none", 2200);
-    }
-
-    function setPaidUI(paid){
-      const pill = $("#payPill");
-      const payText = $("#payText");
-      if(!pill || !payText) return;
-
-      if(paid){
-        pill.classList.remove("wait");
-        pill.classList.add("ok");
-        pill.textContent = "✅ Pagamento confirmado";
-        payText.textContent = "Confirmado no seu navegador. Liberado para finalizar.";
-      }else{
-        pill.classList.remove("ok");
-        pill.classList.add("wait");
-        pill.textContent = "⏳ Aguardando pagamento";
-        payText.textContent = "Aguardando você confirmar.";
-      }
-    }
-
-    function parseBRL(text){
-      if(!text) return 0;
-      const n = String(text)
-        .replace(/\s/g,"")
-        .replace("R$","")
-        .replace(/\./g,"")
-        .replace(",",".")
-        .replace(/[^\d.]/g,"");
-      return Number(n || 0);
-    }
-
-    function getCartTotal(){
-      const gt = $("#grandTotal");
-      if(gt){
-        const v = parseBRL(gt.textContent);
-        if(v > 0) return v;
-      }
-      const ct = $("#ctaTotal");
-      if(ct){
-        const v = parseBRL(ct.textContent);
-        if(v > 0) return v;
-      }
-      return 0;
-    }
-
-    // pagamento (manual) compartilhado com checkout
-    const PAYMENT_KEY = "LPGRILL_PAYMENT_V1";
-    function isPaidForTotal(total){
-      try{
-        const raw = localStorage.getItem(PAYMENT_KEY);
-        if(!raw) return false;
-        const p = JSON.parse(raw);
-        if(p?.status !== "paid") return false;
-        const a = Number(p?.amount || 0);
-        if(Math.abs(a - total) > 0.009) return false;
-        const ageMs = Date.now() - Number(p?.paidAt || 0);
-        if(ageMs > 60*60*1000) return false;
-        return true;
-      }catch(e){ return false; }
-    }
-
-    let __lastAmount = -1;
-
-    function refreshPix(){
-      const payloadEl = $("#pixPayload");
-      const canvas = $("#pixCanvas");
-      if(!payloadEl || !canvas) return;
-
-      const total = getCartTotal();
-      if(total === __lastAmount) return;
-      __lastAmount = total;
-
-      const payload = buildPixPayload({ ...PIX, amount: total > 0 ? total : 0 });
-      payloadEl.textContent = payload;
-
-      if(typeof QRCode === "undefined"){
-        payloadEl.textContent = "Erro: biblioteca de QRCode não carregou.";
-        return;
-      }
-
-      const ctx = canvas.getContext("2d");
-      ctx.clearRect(0,0,canvas.width,canvas.height);
-
-      QRCode.toCanvas(canvas, payload, { margin: 1, scale: 6 }, (error) => {
-        if (error) {
-          payloadEl.textContent = "Erro ao gerar QR.";
-          console.error(error);
-        }
-      });
-
-      setPaidUI(isPaidForTotal(total));
-    }
-
-    (function initPix(){
-      refreshPix();
-      setInterval(refreshPix, 650);
-
-      $("#openCart")?.addEventListener("click", refreshPix);
-      $("#ctaOpenCart")?.addEventListener("click", refreshPix);
-
-      $("#btnCopyPix")?.addEventListener("click", async ()=>{
-        const payload = $("#pixPayload")?.textContent || "";
-        if(!payload || payload.includes("Gerando") || payload.includes("Erro")) return;
-        try{
-          await navigator.clipboard.writeText(payload);
-          toast("Pix copiado ✅");
-        }catch(e){
-          const t = document.createElement("textarea");
-          t.value = payload;
-          document.body.appendChild(t);
-          t.select();
-          document.execCommand("copy");
-          document.body.removeChild(t);
-          toast("Pix copiado ✅");
-        }
-      });
-
-      $("#btnPaid")?.addEventListener("click", ()=>{
-        const total = getCartTotal();
-        if(total <= 0){ toast("Carrinho vazio."); return; }
-        localStorage.setItem(PAYMENT_KEY, JSON.stringify({
-          status: "paid",
-          method: "pix",
-          amount: Number(total.toFixed(2)),
-          paidAt: Date.now()
-        }));
-        setPaidUI(true);
-        toast("Pagamento confirmado ✅");
-      });
-
-      $("#btnResetPay")?.addEventListener("click", ()=>{
-        localStorage.removeItem(PAYMENT_KEY);
-        setPaidUI(false);
-        toast("Status resetado.");
-      });
-    })();
-  </script>
-<!-- ====== CHECKOUT/PAGAMENTO (ETAPA SEPARADA) — NÃO MUDA SUA HOME ====== -->
-<div id="checkoutOverlay" class="ck-overlay" aria-hidden="true">
-  <div class="ck-sheet" role="dialog" aria-modal="true" aria-labelledby="ckTitle">
-    <div class="ck-head">
-      <div>
-        <div id="ckTitle" class="ck-title">Finalizar pedido</div>
-        <div class="ck-sub">Escolha a forma de pagamento</div>
-      </div>
-      <button class="ck-x" type="button" id="ckClose" aria-label="Fechar">✕</button>
-    </div>
-
-    <!-- ETAPA 1: PAGAMENTO -->
-    <section class="ck-step" data-step="pay">
-      <div class="ck-paygrid">
-        <button class="ck-paybtn" type="button" data-pay="pix">
-          <span class="ck-ic">⚡</span>
-          <span class="ck-paytxt">
-            <strong>PIX</strong>
-            <small>Copia e Cola + QR Code</small>
-          </span>
-        </button>
-
-        <button class="ck-paybtn" type="button" data-pay="credit">
-          <span class="ck-ic">💳</span>
-          <span class="ck-paytxt">
-            <strong>Crédito</strong>
-            <small>Prossegue para endereço</small>
-          </span>
-        </button>
-
-        <button class="ck-paybtn" type="button" data-pay="debit">
-          <span class="ck-ic">💳</span>
-          <span class="ck-paytxt">
-            <strong>Débito</strong>
-            <small>Prossegue para endereço</small>
-          </span>
-        </button>
-      </div>
-
-      <div class="ck-actions">
-        <button class="ck-back ghost" type="button" id="ckCancel">Cancelar</button>
-      </div>
-    </section>
-
-    <!-- ETAPA 2: PIX (TRAVA AQUI) -->
-    <section class="ck-step" data-step="pix" hidden>
-      <div class="ck-box">
-        <div class="ck-row">
-          <div class="ck-kv">
-            <div class="ck-k">Total do pedido</div>
-            <div class="ck-v" id="ckTotalPix">R$ 0,00</div>
-          </div>
-          <div class="ck-kv">
-            <div class="ck-k">Taxa de entrega</div>
-            <div class="ck-v" id="ckFeePix">R$ 0,00</div>
-          </div>
-        </div>
-
-        <div class="ck-qrwrap">
-          <div class="ck-qrbox">
-            <!-- QR code entra aqui -->
-            <div id="ckQr" class="ck-qr"></div>
-          </div>
-
-          <div class="ck-copy">
-            <div class="ck-k">PIX Copia e Cola</div>
-            <textarea id="ckPixCode" class="ck-textarea" rows="3" readonly></textarea>
-            <button class="ck-btn" type="button" id="ckCopyPix">Copiar código PIX</button>
-          </div>
-        </div>
-
-        <div class="ck-warn">
-          <strong>Depois de pagar via PIX,</strong> envie o comprovante no WhatsApp para <strong>liberarmos seu pedido imediatamente</strong>.
-        </div>
-
-        <div class="ck-actions">
-          <button class="ck-back ghost" type="button" id="ckBackFromPix">Voltar</button>
-          <button class="ck-btn" type="button" id="ckPaidPix">Já paguei (enviar comprovante)</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ETAPA 3: ENDEREÇO (CRÉDITO/DÉBITO) -->
-    <section class="ck-step" data-step="addr" hidden>
-      <div class="ck-box">
-        <div class="ck-row2">
-          <div class="ck-field">
-            <label class="ck-lbl">Nome</label>
-            <input id="ckName" class="ck-inp" placeholder="Seu nome" autocomplete="name" />
-          </div>
-          <div class="ck-field">
-            <label class="ck-lbl">Telefone</label>
-            <input id="ckPhone" class="ck-inp" placeholder="(DDD) 99999-9999" inputmode="tel" />
-          </div>
-        </div>
-
-        <div class="ck-field">
-          <label class="ck-lbl">Endereço completo</label>
-          <input id="ckAddress" class="ck-inp" placeholder="Rua, número, bairro" autocomplete="street-address" />
-        </div>
-
-        <div class="ck-row2">
-          <div class="ck-field">
-            <label class="ck-lbl">Complemento (opcional)</label>
-            <input id="ckCompl" class="ck-inp" placeholder="Apto, bloco, referência" />
-          </div>
-          <div class="ck-field">
-            <label class="ck-lbl">Observações (opcional)</label>
-            <input id="ckObs" class="ck-inp" placeholder="Sem cebola, pouco gelo..." />
-          </div>
-        </div>
-
-        <div class="ck-loc">
-          <button class="ck-btn ghost" type="button" id="ckGetLocation">Usar minha localização (GPS) para calcular taxa</button>
-          <div class="ck-hint" id="ckKmHint">A taxa depende da distância até Maria Teresa (BH).</div>
-          <div class="ck-feeline" id="ckFeeLine" hidden>
-            Distância: <strong id="ckKm">0,0 km</strong> • Taxa: <strong id="ckFee">R$ 0,00</strong>
-          </div>
-          <div class="ck-block" id="ckBlocked" hidden>
-            Fora do raio de 10 km. Entrega indisponível para este endereço.
-          </div>
-        </div>
-
-        <div class="ck-actions">
-          <button class="ck-back ghost" type="button" id="ckBackFromAddr">Voltar</button>
-          <button class="ck-btn" type="button" id="ckConfirmOrder">Confirmar pedido</button>
-        </div>
-      </div>
-    </section>
-
-  </div>
-</div>
-
-<!-- QRCode lib (leve) -->
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </body>
 </html>
