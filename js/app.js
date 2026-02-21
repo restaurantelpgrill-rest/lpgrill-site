@@ -1,4 +1,8 @@
 // js/app.js — LP Grill (Checkout Premium: endereço obrigatório + PIX QR/copia-cola + WhatsApp)
+// ✅ PIX chave configurada
+// ✅ Taxa entrega: R$ 1,00 por km (a partir Maria Tereza) com mínimo R$ 5,00
+// ✅ Valida raio 12 km (somente entrega)
+// ✅ Taxa entra no carrinho (localStorage LPGRILL_FEE_V1) e soma no total automaticamente
 (() => {
   "use strict";
 
@@ -11,36 +15,54 @@
     .replaceAll('"',"&quot;").replaceAll("'","&#039;");
 
   // =========================
-  // ✅ CONFIG (edite aqui)
+  // ✅ CONFIG (JÁ PRONTO)
   // =========================
   const CONFIG = {
-    whatsappDDI55: "5531998832407", // seu número (só números com DDI 55)
+    whatsappDDI55: "5531998832407",
     lojaNome: "LP Grill",
     lojaCidadeUF: "Belo Horizonte/MG",
 
     // PIX (obrigatório p/ QR e copia/cola)
     pix: {
-      chave: "SUA_CHAVE_PIX_AQUI",     // ex: email/telefone/cpf/cnpj/chave aleatória
-      recebedor: "LP GRILL",           // nome do recebedor
-      cidade: "BELO HORIZONTE",        // cidade do recebedor (sem acento é ok)
-      // txid pode ser fixo ou gerado. Aqui vou gerar no pedido.
+      chave: "e02484b0-c924-4d38-9af9-79af9ad97c3e",
+      recebedor: "LP GRILL",
+      cidade: "BELO HORIZONTE",
     },
 
-    // raio/entrega
     entrega: {
       maxKm: 12,
-      base: { lat: -19.818749, lng: -43.881194 }, // ponto base que você passou
-      // ✅ Lista de bairros (coloque os que você quiser)
-      // DICA: você pode ir adicionando aos poucos.
+      base: { lat: -19.818749, lng: -43.881194 }, // Maria Tereza
+      // taxa: R$ 1 por km (arredonda pra cima) e mínimo R$ 5
+      feePerKm: 1,
+      feeMin: 5,
+
       bairros: [
-        // exemplos (coloque as coords reais quando tiver)
-        { name: "Monte Azul",  lat: -19.9000, lng: -43.9500 },
-        { name: "São Gabriel", lat: -19.8600, lng: -43.9000 },
-        { name: "Belmonte",    lat: -19.8600, lng: -43.8800 },
+        { name: "Aarão Reis", lat: -19.8097, lng: -43.9143 },
+        { name: "Primeiro de Maio", lat: -19.8049, lng: -43.9056 },
+        { name: "Novo Aarão Reis", lat: -19.8065, lng: -43.9198 },
+        { name: "Heliópolis", lat: -19.8006, lng: -43.8992 },
+        { name: "São Gabriel", lat: -19.7897, lng: -43.9053 },
+        { name: "Belmonte", lat: -19.7815, lng: -43.8954 },
+        { name: "Monte Azul", lat: -19.7782, lng: -43.8887 },
+        { name: "Ribeiro de Abreu", lat: -19.7709, lng: -43.8758 },
+        { name: "Paulo VI", lat: -19.7892, lng: -43.8911 },
+        { name: "Nazaré", lat: -19.7950, lng: -43.8843 },
+        { name: "Guarani", lat: -19.7834, lng: -43.9180 },
+        { name: "Tupi", lat: -19.7768, lng: -43.9242 },
+        { name: "Floramar", lat: -19.7714, lng: -43.9136 },
+        { name: "Minaslândia", lat: -19.7647, lng: -43.9035 },
+        { name: "Jaqueline", lat: -19.7589, lng: -43.8952 },
+        { name: "Juliana", lat: -19.7560, lng: -43.9103 },
+        { name: "Jardim Felicidade", lat: -19.7688, lng: -43.9281 },
+        { name: "Copacabana", lat: -19.7525, lng: -43.9273 },
+        { name: "Serra Verde", lat: -19.7471, lng: -43.9020 },
+        { name: "Planalto", lat: -19.7402, lng: -43.9175 },
+        { name: "Capitão Eduardo", lat: -19.7309, lng: -43.8796 },
+        { name: "Itapoã", lat: -19.7652, lng: -43.9651 },
+        { name: "Venda Nova (Centro)", lat: -19.8123, lng: -43.9552 },
+        { name: "Rio Branco", lat: -19.8055, lng: -43.9648 },
+        { name: "Santa Mônica", lat: -19.7879, lng: -43.9590 }
       ],
-      // taxa (se quiser cobrar)
-      // aqui deixo 0; você pode mudar depois:
-      feeFixed: 0
     }
   };
 
@@ -50,20 +72,18 @@
     MODE: "LPGRILL_MODE_V3",
     FEE:  "LPGRILL_FEE_V1",
     ADDR: "LPGRILL_ADDR_V1",
-    PAY:  "LPGRILL_PAY_V1"
+    PAY:  "LPGRILL_PAY_V1",
+    PIX_TXID: "LPGRILL_PIX_TXID_V1"
   };
 
   // =========================
-  // ✅ Product helpers
+  // ✅ Products
   // =========================
   function allProducts(){
     const d = window.DATA || {};
     const cats = ["marmitas","porcoes","bebidas","sobremesas"];
     const out = [];
-    cats.forEach(k => {
-      const arr = Array.isArray(d[k]) ? d[k] : [];
-      arr.forEach(p => out.push(p));
-    });
+    cats.forEach(k => (Array.isArray(d[k]) ? d[k] : []).forEach(p => out.push(p)));
     return out;
   }
 
@@ -94,7 +114,7 @@
   function fee(){
     const mode = getMode();
     if(mode !== "entrega") return 0;
-    const f = Number(localStorage.getItem(LS.FEE) || CONFIG.entrega.feeFixed || 0);
+    const f = Number(localStorage.getItem(LS.FEE) || "0");
     return Number.isFinite(f) ? f : 0;
   }
 
@@ -103,7 +123,7 @@
   }
 
   // =========================
-  // ✅ Distância / raio
+  // ✅ Distância / raio / taxa
   // =========================
   function haversineKm(a, b){
     const toRad = (v)=> (v * Math.PI) / 180;
@@ -122,19 +142,57 @@
     return CONFIG.entrega.bairros.find(b => b.name.toLowerCase() === n) || null;
   }
 
+  // prioridade: começa com → contém
   function suggestBairros(prefix){
     const p = String(prefix||"").trim().toLowerCase();
     if(!p) return [];
-    return CONFIG.entrega.bairros
-      .filter(b => b.name.toLowerCase().includes(p))
-      .slice(0, 8);
+    const all = CONFIG.entrega.bairros.slice();
+    const starts = all.filter(b => b.name.toLowerCase().startsWith(p));
+    const contains = all.filter(b => !b.name.toLowerCase().startsWith(p) && b.name.toLowerCase().includes(p));
+    return [...starts, ...contains].slice(0, 8);
+  }
+
+  function calcDeliveryFeeFromKm(km){
+    // 1 real por km (arredonda pra cima) + mínimo 5
+    const perKm = Number(CONFIG.entrega.feePerKm || 1);
+    const min = Number(CONFIG.entrega.feeMin || 5);
+    const kmBill = Math.max(1, Math.ceil(Number(km || 0)));
+    const raw = kmBill * perKm;
+    return Math.max(min, raw);
+  }
+
+  function computeAndStoreFeeForBairro(bairroName){
+    const mode = getMode();
+    if(mode !== "entrega"){
+      localStorage.setItem(LS.FEE, "0");
+      window.Cart?.renderAll?.();
+      return { ok:true, km:0, fee:0 };
+    }
+
+    const b = findBairro(bairroName);
+    if(!b){
+      localStorage.setItem(LS.FEE, "0");
+      window.Cart?.renderAll?.();
+      return { ok:false, km:0, fee:0, reason:"bairro" };
+    }
+
+    const km = haversineKm(CONFIG.entrega.base, {lat:b.lat, lng:b.lng});
+    if(km > CONFIG.entrega.maxKm){
+      localStorage.setItem(LS.FEE, "0");
+      window.Cart?.renderAll?.();
+      return { ok:false, km, fee:0, reason:"raio" };
+    }
+
+    const feeV = calcDeliveryFeeFromKm(km);
+    localStorage.setItem(LS.FEE, String(feeV));
+    window.Cart?.renderAll?.(); // ✅ atualiza carrinho/sticky/total
+    return { ok:true, km, fee:feeV };
   }
 
   // =========================
   // ✅ PIX EMV (copia e cola) + CRC16
   // =========================
   function crc16(payload){
-    // CRC-16/CCITT-FALSE
     let crc = 0xFFFF;
     for(let i=0; i<payload.length; i++){
       crc ^= payload.charCodeAt(i) << 8;
@@ -154,22 +212,10 @@
   }
 
   function buildPixPayload({chave, recebedor, cidade, valor, txid}){
-    // Padrão EMV BR (Pix)
-    // 00: Payload Format Indicator
-    // 01: Point of Initiation Method (12 = dinâmico) — opcional
-    // 26: Merchant Account Info (GUI + chave)
-    // 52: MCC (0000)
-    // 53: Moeda (986 = BRL)
-    // 54: Valor (opcional mas recomendado)
-    // 58: País (BR)
-    // 59: Nome recebedor
-    // 60: Cidade
-    // 62: Additional Data Field Template (TXID)
-    // 63: CRC
     const gui = field("00", "BR.GOV.BCB.PIX") + field("01", chave);
 
     const p00 = field("00", "01");
-    const p01 = field("01", "12"); // dinâmico (pode manter)
+    const p01 = field("01", "12");
     const p26 = field("26", gui);
     const p52 = field("52", "0000");
     const p53 = field("53", "986");
@@ -186,7 +232,6 @@
   }
 
   function qrUrlFromPayload(payload){
-    // QR via Google Chart (sem depender de lib)
     const chl = encodeURIComponent(payload);
     return `https://chart.googleapis.com/chart?cht=qr&chs=220x220&chld=M|1&chl=${chl}`;
   }
@@ -281,7 +326,7 @@
           <div class="ck-box">
             <div class="ck-k">Total atual</div>
             <div class="ck-v" id="ckTotalPay">R$ 0,00</div>
-            <div class="ck-hint">Você só consegue pagar/mandar pedido depois de preencher o endereço.</div>
+            <div class="ck-hint">Preencha o endereço para liberar pagamento/envio no WhatsApp.</div>
           </div>
 
           <div style="height:12px"></div>
@@ -310,7 +355,7 @@
         <section class="ck-step" data-step="addr" hidden>
           <div class="ck-box">
             <div class="ck-k">Preencha o endereço</div>
-            <div class="ck-hint">Obrigatório para liberar o pagamento e o envio no WhatsApp.</div>
+            <div class="ck-hint">Entrega: valida raio (${CONFIG.entrega.maxKm} km) e calcula taxa (R$ 1/km, mínimo R$ 5).</div>
           </div>
 
           <div style="height:12px"></div>
@@ -340,7 +385,7 @@
             <div class="ck-lbl">Bairro (com sugestão)</div>
             <input class="ck-inp" id="addrBairro" placeholder="Digite: mon..." autocomplete="off" />
             <div id="bairroSug" style="margin-top:8px; display:none"></div>
-            <div class="ck-hint">Raio máximo: <strong>${CONFIG.entrega.maxKm} km</strong> (entrega). Retirar não tem limite.</div>
+            <div class="ck-hint" id="feePreviewText">Taxa: —</div>
           </div>
 
           <div class="ck-field">
@@ -421,7 +466,6 @@
 
     if(window.Cart?.closeDrawer) window.Cart.closeDrawer();
 
-    // total da tela
     $("#ckTotalPay") && ($("#ckTotalPay").textContent = money(total()));
     showStep(overlay, "pay");
   }
@@ -452,6 +496,11 @@
     box.textContent = msg || "";
   }
 
+  function setFeePreviewText(text){
+    const el = $("#feePreviewText");
+    if(el) el.innerHTML = text || "Taxa: —";
+  }
+
   function validateAddrAndFee(){
     const mode = getMode();
 
@@ -470,24 +519,30 @@
       return { ok:false, addr:null };
     }
 
-    // entrega: valida raio
+    // entrega: valida raio e calcula taxa por km
     if(mode === "entrega"){
       const b = findBairro(addr.bairro);
       if(!b){
-        showAddrBlock("Escolha um bairro da lista de sugestões (para validar o raio de entrega).");
+        showAddrBlock("Escolha um bairro da lista de sugestões (para validar o raio e calcular a taxa).");
         return { ok:false, addr:null };
       }
 
       const km = haversineKm(CONFIG.entrega.base, {lat:b.lat, lng:b.lng});
       if(km > CONFIG.entrega.maxKm){
         showAddrBlock(`Fora do raio de entrega (${CONFIG.entrega.maxKm} km). Selecione Retirar ou escolha outro bairro.`);
+        localStorage.setItem(LS.FEE, "0");
+        window.Cart?.renderAll?.();
         return { ok:false, addr:null };
       }
 
-      // taxa (se quiser cobrar, você pode mudar depois)
-      localStorage.setItem(LS.FEE, String(CONFIG.entrega.feeFixed || 0));
+      const feeV = calcDeliveryFeeFromKm(km);
+      localStorage.setItem(LS.FEE, String(feeV));
+      setFeePreviewText(`Taxa estimada: <strong>${money(feeV)}</strong> • Distância: <strong>${Math.ceil(km)} km</strong>`);
+      window.Cart?.renderAll?.();
     } else {
       localStorage.setItem(LS.FEE, "0");
+      setFeePreviewText(`Taxa: <strong>${money(0)}</strong> (retirada)`);
+      window.Cart?.renderAll?.();
     }
 
     showAddrBlock("");
@@ -496,7 +551,7 @@
   }
 
   // =========================
-  // ✅ Autocomplete bairro
+  // ✅ Autocomplete bairro + cálculo dinâmico de taxa
   // =========================
   function renderSug(list){
     const box = $("#bairroSug");
@@ -510,9 +565,7 @@
 
     box.style.display = "block";
     box.innerHTML = `
-      <div style="
-        display:flex; flex-wrap:wrap; gap:8px;
-      ">
+      <div style="display:flex; flex-wrap:wrap; gap:8px;">
         ${list.map(b => `
           <button type="button" data-bairro="${esc(b.name)}"
             style="
@@ -531,14 +584,39 @@
     `;
   }
 
+  function updateFeePreviewByBairroName(name){
+    const mode = getMode();
+    if(mode !== "entrega"){
+      localStorage.setItem(LS.FEE, "0");
+      setFeePreviewText(`Taxa: <strong>${money(0)}</strong> (retirada)`);
+      window.Cart?.renderAll?.();
+      return;
+    }
+
+    const r = computeAndStoreFeeForBairro(name);
+    if(!name){
+      setFeePreviewText("Taxa: —");
+      return;
+    }
+    if(!r.ok && r.reason === "bairro"){
+      setFeePreviewText(`Escolha um bairro da sugestão para calcular a taxa.`);
+      return;
+    }
+    if(!r.ok && r.reason === "raio"){
+      setFeePreviewText(`Fora do raio (<strong>${CONFIG.entrega.maxKm} km</strong>). Selecione Retirar.`);
+      return;
+    }
+    setFeePreviewText(`Taxa estimada: <strong>${money(r.fee)}</strong> • Distância: <strong>${Math.ceil(r.km)} km</strong>`);
+  }
+
   function bindBairroAutocomplete(){
     const inp = $("#addrBairro");
     const box = $("#bairroSug");
     if(!inp || !box) return;
 
     inp.addEventListener("input", ()=>{
-      const list = suggestBairros(inp.value);
-      renderSug(list);
+      renderSug(suggestBairros(inp.value));
+      updateFeePreviewByBairroName(inp.value);
     });
 
     box.addEventListener("click", (e)=>{
@@ -546,6 +624,7 @@
       if(!btn) return;
       inp.value = btn.getAttribute("data-bairro") || "";
       renderSug([]);
+      updateFeePreviewByBairroName(inp.value);
     });
   }
 
@@ -557,21 +636,14 @@
     const v = validateAddrAndFee();
     if(!v.ok) return;
 
-    if(!CONFIG.pix.chave || CONFIG.pix.chave === "SUA_CHAVE_PIX_AQUI"){
-      showAddrBlock("Falta configurar sua CHAVE PIX no app.js (CONFIG.pix.chave).");
-      return;
-    }
-
     localStorage.setItem(LS.PAY, "pix");
 
     const overlay = $("#checkoutOverlay");
     if(!overlay) return;
 
-    // total/fee
     $("#ckTotalPix") && ($("#ckTotalPix").textContent = money(total()));
     $("#ckFeeLine") && ($("#ckFeeLine").textContent = `Taxa: ${money(fee())}`);
 
-    // gera payload
     const txid = `LP${Date.now().toString().slice(-8)}`;
     const payload = buildPixPayload({
       chave: CONFIG.pix.chave,
@@ -585,8 +657,7 @@
     const qr = $("#ckQrImg");
     if(qr) qr.src = qrUrlFromPayload(payload);
 
-    // salva pra usar no whatsapp
-    localStorage.setItem("LPGRILL_PIX_TXID_V1", txid);
+    localStorage.setItem(LS.PIX_TXID, txid);
 
     showStep(overlay, "pix");
   }
@@ -611,7 +682,6 @@
     const overlay = $("#checkoutOverlay");
     if(!overlay) return;
 
-    // preencher com o que já tinha
     const a = readAddr();
     if(a){
       $("#addrNome") && ($("#addrNome").value = a.nome || "");
@@ -624,8 +694,9 @@
     }
 
     showAddrBlock("");
+    renderSug([]);
+    updateFeePreviewByBairroName($("#addrBairro")?.value || "");
     showStep(overlay, "addr");
-    renderSug([]); // limpa sugestão
   }
 
   function continueFromAddr(){
@@ -650,7 +721,7 @@
       alert("Preencha o endereço primeiro.");
       return;
     }
-    const txid = localStorage.getItem("LPGRILL_PIX_TXID_V1") || "";
+    const txid = localStorage.getItem(LS.PIX_TXID) || "";
     const text = buildOrderText(addr, "pix", { txid });
     window.location.href = waLink(text);
   }
@@ -659,7 +730,6 @@
   // ✅ Openers/Closers
   // =========================
   function bindCheckoutOpeners(){
-    // intercepta checkout.html (sticky + drawer + links)
     $$('a[href="checkout.html"], a[href="./checkout.html"]').forEach(a => {
       a.addEventListener("click", (e) => {
         e.preventDefault();
@@ -706,7 +776,7 @@
     $$(".ck-paybtn", overlay).forEach(btn => {
       btn.addEventListener("click", () => {
         const pay = btn.getAttribute("data-pay");
-        if(pay === "pix") goAddr("pix");     // ✅ endereço antes
+        if(pay === "pix")    goAddr("pix");     // endereço antes
         if(pay === "credit") goAddr("credit");
         if(pay === "debit")  goAddr("debit");
       });
@@ -724,7 +794,7 @@
   }
 
   // =========================
-  // ✅ WhatsApp flutuante (opcional)
+  // ✅ WhatsApp flutuante
   // =========================
   function bindWaFloat(){
     const wa = $("#waFloat");
@@ -742,6 +812,9 @@
     bindCheckoutClosers();
     bindPayButtons();
     bindWaFloat();
+
+    // se estiver em entrega mas sem bairro, taxa fica 0 até escolher
+    if(getMode() !== "entrega") localStorage.setItem(LS.FEE, "0");
 
     // garante UI do carrinho ok
     window.Cart?.renderAll?.();
