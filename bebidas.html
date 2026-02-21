@@ -62,9 +62,21 @@
     </div>
   </aside>
 
-  <script src="js/data.js"></script>
+    <script src="js/data.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
-  <script>window.renderCategory("bebidas","listBebidas");</script>
+
+  <script>
+    // evita rodar antes do DOM + garante que a função exista
+    document.addEventListener("DOMContentLoaded", () => {
+      if (typeof window.renderCategory !== "function") {
+        console.error("renderCategory não foi carregada. Verifique js/app.js");
+        const info = document.getElementById("infoBar");
+        if (info) info.innerHTML = '<div class="infobox error">⚠️ Erro: app.js não carregou.</div>';
+        return;
+      }
+      window.renderCategory("bebidas", "listBebidas");
+    });
+  </script>
 </body>
 </html>
