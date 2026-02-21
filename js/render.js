@@ -1,5 +1,4 @@
-// js/render.js — LP Grill (Cards com foto + seleção (qty) + adicionar no carrinho)
-// ✅ UM único render (remove duplicações)
+// js/render.js — LP Grill (Cards com foto + seleção (qty) + carrinho compatível com cart.js V3)
 (() => {
   const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
 
@@ -22,10 +21,10 @@
     return promoOn ? Number(p.promoPrice) : Number(p?.price || 0);
   }
 
+  // ✅ carrinho é objeto: {id: qty}
   function qtyInCart(id){
-    const items = window.Cart?.read?.() || [];
-    const hit = items.find(x => x.id === id);
-    return hit ? Number(hit.qty||0) : 0;
+    const c = window.Cart?.readCart?.() || {};
+    return Number(c[id] || 0);
   }
 
   function badgeHtml(p){
@@ -55,23 +54,30 @@
     return `<div class="lp-price"><span class="lp-new">${money(finalPrice)}</span></div>`;
   }
 
-  // Card padrão (foto + info + seleção qty)
+  function controlsHtml(p){
+    const q = qtyInCart(p.id);
+    const disabled = !!p.soldOut;
+
+    if(disabled){
+      return `<button class="btn light" disabled style="opacity:.6; cursor:not-allowed">Indisponível</button>`;
+    }
+
+    if(q > 0){
+      return `
+        <div class="lp-qty">
+          <button class="lp-qbtn" type="button" data-dec="${esc(p.id)}">−</button>
+          <strong class="lp-q">${q}</strong>
+          <button class="lp-qbtn" type="button" data-add="${esc(p.id)}">+</button>
+        </div>
+      `;
+    }
+
+    return `<button class="btn primary" type="button" data-add="${esc(p.id)}">Adicionar</button>`;
+  }
+
+  // Card padrão
   function cardHtml(p){
     const img = (p.img && String(p.img).trim()) ? p.img : "img/mockup.png";
-    const q = qtyInCart(p.id);
-
-    const disabled = !!p.soldOut;
-    const controls = disabled
-      ? `<button class="btn light" disabled style="opacity:.6; cursor:not-allowed">Indisponível</button>`
-      : (q > 0 ? `
-          <div class="lp-qty">
-            <button class="lp-qbtn" type="button" data-dec="${esc(p.id)}">−</button>
-            <strong class="lp-q">${q}</strong>
-            <button class="lp-qbtn" type="button" data-add="${esc(p.id)}">+</button>
-          </div>
-        ` : `
-          <button class="btn primary" type="button" data-add="${esc(p.id)}">Adicionar</button>
-        `);
 
     return `
       <article class="lp-card card" data-id="${esc(p.id)}">
@@ -85,14 +91,33 @@
             <h3 class="lp-title">${esc(p.title)}</h3>
             ${priceHtml(p)}
           </div>
+
           ${p.desc ? `<p class="lp-desc muted">${esc(p.desc)}</p>` : ``}
 
           <div class="lp-actions">
-            ${controls}
+            ${controlsHtml(p)}
           </div>
         </div>
       </article>
     `;
+  }
+
+  function allProducts(){
+    const d = normalizeData();
+    return [...d.marmitas, ...d.porcoes, ...d.bebidas, ...d.sobremesas];
+  }
+
+  function refreshCard(container, id){
+    const card = container.querySelector(`.lp-card[data-id="${CSS.escape(id)}"]`);
+    if(!card) return;
+
+    const p = allProducts().find(x => x.id === id);
+    if(!p) return;
+
+    const tmp = document.createElement("div");
+    tmp.innerHTML = cardHtml(p).trim();
+    const next = tmp.firstElementChild;
+    if(next) card.replaceWith(next);
   }
 
   function bindCardActions(container){
@@ -105,9 +130,9 @@
       if(addBtn){
         const id = addBtn.getAttribute("data-add");
         window.Cart?.add?.(id);
-        // re-render mínimo: atualiza o card
         refreshCard(container, id);
-        window.Cart?.syncUI?.();
+        // ✅ atualiza badge, sticky, drawer
+        window.Cart?.renderAll?.();
         return;
       }
 
@@ -115,30 +140,25 @@
         const id = decBtn.getAttribute("data-dec");
         window.Cart?.dec?.(id);
         refreshCard(container, id);
-        window.Cart?.syncUI?.();
+        window.Cart?.renderAll?.();
         return;
       }
     });
   }
 
-  function refreshCard(container, id){
-    const card = container.querySelector(`.lp-card[data-id="${CSS.escape(id)}"]`);
-    if(!card) return;
+  // ✅ usado pelo cart.js (quando ele quiser atualizar qty dos cards visíveis)
+  window.renderCardsQty = function(){
+    // Atualiza qualquer vitrine visível (marmitas/porções/bebidas/etc.)
+    document.querySelectorAll(".product-grid").forEach((grid)=>{
+      grid.querySelectorAll(".lp-card[data-id]").forEach((card)=>{
+        const id = card.getAttribute("data-id");
+        if(!id) return;
+        refreshCard(grid, id);
+      });
+    });
+  };
 
-    // acha o produto na DATA
-    const d = normalizeData();
-    const all = [...d.marmitas, ...d.porcoes, ...d.bebidas, ...d.sobremesas];
-    const p = all.find(x => x.id === id);
-    if(!p) return;
-
-    // substitui o HTML do card inteiro (seguro)
-    const tmp = document.createElement("div");
-    tmp.innerHTML = cardHtml(p).trim();
-    const next = tmp.firstElementChild;
-    if(next) card.replaceWith(next);
-  }
-
-  // ========== Render de categoria (página marmitas/porções/etc) ==========
+  // Render categoria
   window.renderCategory = function(categoryKey, containerId){
     const el = document.getElementById(containerId);
     if(!el) return;
@@ -148,17 +168,17 @@
 
     if(!items.length){
       el.innerHTML = `<div class="muted" style="padding:10px 2px">Sem itens nesta categoria.</div>`;
+      window.Cart?.renderAll?.();
       return;
     }
 
     el.innerHTML = items.map(cardHtml).join("");
     bindCardActions(el);
 
-    window.Cart?.syncUI?.();
+    window.Cart?.renderAll?.();
   };
 
-  // ========== (Opcional) Destaques no index ==========
-  // Use: renderHighlights("marmitas", "marmitas", 4)
+  // Highlights (index)
   window.renderHighlights = function(categoryKey, containerId, limit=4){
     const el = document.getElementById(containerId);
     if(!el) return;
@@ -168,13 +188,13 @@
 
     if(!items.length){
       el.innerHTML = `<div class="muted" style="padding:10px 2px">Sem itens.</div>`;
+      window.Cart?.renderAll?.();
       return;
     }
 
     el.innerHTML = items.slice(0, limit).map(cardHtml).join("");
     bindCardActions(el);
 
-    window.Cart?.syncUI?.();
+    window.Cart?.renderAll?.();
   };
-
 })();
