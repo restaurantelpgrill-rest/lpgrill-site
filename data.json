@@ -1,0 +1,30 @@
+(async () => {
+  const STORE_KEY = "LPGRILL_DATA_ADMIN_V1";
+  const fallback = { /* ...seu fallback... */ };
+
+  function loadAdmin(){
+    try{
+      const raw = localStorage.getItem(STORE_KEY);
+      if(!raw) return null;
+      const d = JSON.parse(raw);
+      d.marmitas ||= []; d.porcoes ||= []; d.bebidas ||= []; d.sobremesas ||= [];
+      return d;
+    }catch(e){ return null; }
+  }
+
+  async function loadPublic(){
+    try{
+      const res = await fetch("data.json", { cache: "no-store" });
+      if(!res.ok) throw new Error("no public");
+      const d = await res.json();
+      d.marmitas ||= []; d.porcoes ||= []; d.bebidas ||= []; d.sobremesas ||= [];
+      return d;
+    }catch(e){ return null; }
+  }
+
+  // prioridade:
+  // 1) admin local (você)
+  // 2) público do github (todo mundo)
+  // 3) fallback
+  window.DATA = loadAdmin() || await loadPublic() || fallback;
+})();
