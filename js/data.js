@@ -32,6 +32,21 @@
       return d;
     }catch(e){ return null; }
   }
-
+// js/data.js
+window.DATA = {
+  marmitas: [
+    { id:"m1", title:"Marmita P", desc:"Arroz, feijão e carne", price: 18.00 },
+    { id:"m2", title:"Marmita M", desc:"Bem servida", price: 22.00 }
+  ],
+  porcoes: [
+    { id:"p1", title:"Batata Frita", desc:"Crocante", price: 20.00 }
+  ],
+  bebidas: [
+    { id:"b1", title:"Refrigerante Lata", desc:"350ml", price: 6.00 }
+  ],
+  sobremesas: [
+    { id:"s1", title:"Pudim", desc:"Caseiro", price: 8.00 }
+  ]
+};
   window.DATA = loadAdmin() || fallback;
 })();
