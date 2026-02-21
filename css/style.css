@@ -725,3 +725,7 @@ body::before{
   z-index: 9999;
   max-width: calc(100vw - 28px);
 }
+html.modal-open, body.modal-open{
+  overflow: hidden !important;
+  height: 100%;
+}
