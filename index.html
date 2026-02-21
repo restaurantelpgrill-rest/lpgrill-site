@@ -520,6 +520,140 @@
 
   <!-- QRCode (apenas 1x) -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+<!-- ====== CHECKOUT/PAGAMENTO (ETAPA SEPARADA) — NÃO MUDA SUA HOME ====== -->
+<div id="checkoutOverlay" class="ck-overlay" aria-hidden="true">
+  <div class="ck-sheet" role="dialog" aria-modal="true" aria-labelledby="ckTitle">
+    <div class="ck-head">
+      <div>
+        <div id="ckTitle" class="ck-title">Finalizar pedido</div>
+        <div class="ck-sub">Escolha a forma de pagamento</div>
+      </div>
+      <button class="ck-x" type="button" id="ckClose" aria-label="Fechar">✕</button>
+    </div>
 
+    <!-- ETAPA 1: PAGAMENTO -->
+    <section class="ck-step" data-step="pay">
+      <div class="ck-paygrid">
+        <button class="ck-paybtn" type="button" data-pay="pix">
+          <span class="ck-ic">⚡</span>
+          <span class="ck-paytxt">
+            <strong>PIX</strong>
+            <small>Copia e Cola + QR Code</small>
+          </span>
+        </button>
+
+        <button class="ck-paybtn" type="button" data-pay="credit">
+          <span class="ck-ic">💳</span>
+          <span class="ck-paytxt">
+            <strong>Crédito</strong>
+            <small>Prossegue para endereço</small>
+          </span>
+        </button>
+
+        <button class="ck-paybtn" type="button" data-pay="debit">
+          <span class="ck-ic">💳</span>
+          <span class="ck-paytxt">
+            <strong>Débito</strong>
+            <small>Prossegue para endereço</small>
+          </span>
+        </button>
+      </div>
+
+      <div class="ck-actions">
+        <button class="ck-back ghost" type="button" id="ckCancel">Cancelar</button>
+      </div>
+    </section>
+
+    <!-- ETAPA 2: PIX (TRAVA AQUI) -->
+    <section class="ck-step" data-step="pix" hidden>
+      <div class="ck-box">
+        <div class="ck-row">
+          <div class="ck-kv">
+            <div class="ck-k">Total do pedido</div>
+            <div class="ck-v" id="ckTotalPix">R$ 0,00</div>
+          </div>
+          <div class="ck-kv">
+            <div class="ck-k">Taxa de entrega</div>
+            <div class="ck-v" id="ckFeePix">R$ 0,00</div>
+          </div>
+        </div>
+
+        <div class="ck-qrwrap">
+          <div class="ck-qrbox">
+            <!-- QR code entra aqui -->
+            <div id="ckQr" class="ck-qr"></div>
+          </div>
+
+          <div class="ck-copy">
+            <div class="ck-k">PIX Copia e Cola</div>
+            <textarea id="ckPixCode" class="ck-textarea" rows="3" readonly></textarea>
+            <button class="ck-btn" type="button" id="ckCopyPix">Copiar código PIX</button>
+          </div>
+        </div>
+
+        <div class="ck-warn">
+          <strong>Depois de pagar via PIX,</strong> envie o comprovante no WhatsApp para <strong>liberarmos seu pedido imediatamente</strong>.
+        </div>
+
+        <div class="ck-actions">
+          <button class="ck-back ghost" type="button" id="ckBackFromPix">Voltar</button>
+          <button class="ck-btn" type="button" id="ckPaidPix">Já paguei (enviar comprovante)</button>
+        </div>
+      </div>
+    </section>
+
+    <!-- ETAPA 3: ENDEREÇO (CRÉDITO/DÉBITO) -->
+    <section class="ck-step" data-step="addr" hidden>
+      <div class="ck-box">
+        <div class="ck-row2">
+          <div class="ck-field">
+            <label class="ck-lbl">Nome</label>
+            <input id="ckName" class="ck-inp" placeholder="Seu nome" autocomplete="name" />
+          </div>
+          <div class="ck-field">
+            <label class="ck-lbl">Telefone</label>
+            <input id="ckPhone" class="ck-inp" placeholder="(DDD) 99999-9999" inputmode="tel" />
+          </div>
+        </div>
+
+        <div class="ck-field">
+          <label class="ck-lbl">Endereço completo</label>
+          <input id="ckAddress" class="ck-inp" placeholder="Rua, número, bairro" autocomplete="street-address" />
+        </div>
+
+        <div class="ck-row2">
+          <div class="ck-field">
+            <label class="ck-lbl">Complemento (opcional)</label>
+            <input id="ckCompl" class="ck-inp" placeholder="Apto, bloco, referência" />
+          </div>
+          <div class="ck-field">
+            <label class="ck-lbl">Observações (opcional)</label>
+            <input id="ckObs" class="ck-inp" placeholder="Sem cebola, pouco gelo..." />
+          </div>
+        </div>
+
+        <div class="ck-loc">
+          <button class="ck-btn ghost" type="button" id="ckGetLocation">Usar minha localização (GPS) para calcular taxa</button>
+          <div class="ck-hint" id="ckKmHint">A taxa depende da distância até Maria Teresa (BH).</div>
+          <div class="ck-feeline" id="ckFeeLine" hidden>
+            Distância: <strong id="ckKm">0,0 km</strong> • Taxa: <strong id="ckFee">R$ 0,00</strong>
+          </div>
+          <div class="ck-block" id="ckBlocked" hidden>
+            Fora do raio de 10 km. Entrega indisponível para este endereço.
+          </div>
+        </div>
+
+        <div class="ck-actions">
+          <button class="ck-back ghost" type="button" id="ckBackFromAddr">Voltar</button>
+          <button class="ck-btn" type="button" id="ckConfirmOrder">Confirmar pedido</button>
+        </div>
+      </div>
+    </section>
+
+  </div>
+</div>
+
+<!-- QRCode lib (leve) -->
+<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </body>
 </html>
