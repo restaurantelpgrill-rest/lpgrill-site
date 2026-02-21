@@ -1,23 +1,23 @@
-/* ===== LP GRILL — Checkout Overlay (PIX: Endereço -> QR) ===== */
-(() => {
-  const CONFIG = {
-    whatsapp: "5531998064556",
-    pixKey: "e02484b0-c924-4d38-9af9-79af9ad97c3e",
-    merchantName: "LP GRILL",
-    merchantCity: "BELO HORIZONTE",
-    txid: "LPGRILL01",
-
+// js/app.js — LP Grill (produtos via window.DATA + carrinho + Checkout Overlay PIX/Cartão)
+// Mantém layout / não mexe nos cards; só adiciona overlay e taxa por distância.
+(function(){
+  // ===== Config =====
+  const CFG = {
+    brand: "LP Grill",
+    whatsapp: "5531998064556", // ✅ correto
+    // Base Maria Teresa BH
     baseLat: -19.8850878,
     baseLon: -43.9877612,
-    feeUpTo5km: 5,
-    fee5to10km: 8,
+    feeUpTo5km: 5.00,
+    fee5to10km: 8.00,
     maxKm: 10
   };
 
-  const CART_KEY = "LPGRILL_CART_V3";
-  const MODE_KEY = "LPGRILL_MODE_V3";
+  // ===== Utils =====
+  window.money = window.money || function(v){
+    return Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  };
 
-  const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
   const $ = (s, r=document)=> r.querySelector(s);
 
   function parseBRL(text){
@@ -30,28 +30,7 @@
       .replace(/[^\d.]/g,"");
     return Number(n||0);
   }
-  function getCartTotal(){
-    const gt = $("#grandTotal");
-    if(gt){
-      const v = parseBRL(gt.textContent);
-      if(v > 0) return v;
-    }
-    const ct = $("#ctaTotal");
-    if(ct){
-      const v = parseBRL(ct.textContent);
-      if(v > 0) return v;
-    }
-    return 0;
-  }
 
-  function readMode(){ return localStorage.getItem(MODE_KEY) || "entrega"; }
-  function isRetirarMode(){ return readMode() === "retirar"; }
-
-  // ====== Cupom curto (WhatsApp / impressora) ======
-  function readCart(){
-    try { return JSON.parse(localStorage.getItem(CART_KEY)||"{}"); }
-    catch { return {}; }
-  }
   function allProducts(){
     const list = [];
     if(window.DATA){
@@ -61,136 +40,72 @@
     }
     return list;
   }
-  function findProduct(id){ return allProducts().find(p=>p.id===id); }
 
-  function buildReceipt({ methodLabel, fee, km, name, phone, bairro, address, compl, obs }){
-    const cart = readCart();
-    const items = Object.entries(cart).filter(([,q])=>Number(q)>0);
-
-    const now = new Date();
-    const hh = String(now.getHours()).padStart(2,"0");
-    const mm = String(now.getMinutes()).padStart(2,"0");
-
-    let sub = 0;
-    const lines = [];
-
-    lines.push("LP GRILL");
-    lines.push(`PEDIDO ${hh}:${mm}`);
-    lines.push("--------------------");
-
-    for(const [id, qRaw] of items){
-      const q = Number(qRaw||0);
-      const p = findProduct(id);
-      if(!p) continue;
-      const itemTotal = p.price * q;
-      sub += itemTotal;
-
-      const title = String(p.title||"Item").slice(0,18);
-      lines.push(`${q}x ${title}`);
-      lines.push(`${money(itemTotal)}`);
-    }
-
-    if(!items.length) lines.push("(carrinho vazio)");
-
-    lines.push("--------------------");
-    lines.push(`SUB:  ${money(sub)}`);
-    lines.push(`TAXA: ${money(fee)}`);
-    lines.push(`TOT:  ${money(sub + fee)}`);
-    if(!isRetirarMode()) lines.push(`KM:   ${km!=null ? km.toFixed(1) : "-"}`);
-    lines.push(`PAG:  ${methodLabel}`);
-    lines.push("--------------------");
-    lines.push(`NOME: ${name}`);
-    lines.push(`TEL:  ${phone}`);
-    if(isRetirarMode()){
-      lines.push("MODO: RETIRAR");
-    }else{
-      lines.push(`BAIR: ${bairro || "-"}`);
-      lines.push(`END:  ${address}`);
-      if(compl) lines.push(`COMP:${compl}`);
-    }
-    if(obs) lines.push(`OBS:  ${String(obs).slice(0,90)}`);
-    lines.push("--------------------");
-    lines.push("PIX: comprovante acima");
-    return lines.join("\n");
+  function findProduct(id){
+    return allProducts().find(p => p.id === id);
   }
 
-  // ===== Overlay =====
-  const overlay = $("#checkoutOverlay");
-  if(!overlay) return;
+  // ===== Cart (localStorage) =====
+  const Cart = window.Cart || {};
+  window.Cart = Cart;
 
-  const steps = {
-    pay: overlay.querySelector('[data-step="pay"]'),
-    pix: overlay.querySelector('[data-step="pix"]'),
-    addr: overlay.querySelector('[data-step="addr"]')
+  Cart.key = "LPGRILL_CART";
+  Cart.stateKey = "LPGRILL_CHECKOUT";
+
+  Cart.read = function(){
+    try{ return JSON.parse(localStorage.getItem(Cart.key) || "[]"); }
+    catch(e){ return []; }
   };
 
-  const elTotalPix = $("#ckTotalPix", overlay);
-  const elFeePix   = $("#ckFeePix", overlay);
-  const elPixCode  = $("#ckPixCode", overlay);
-  const elQr       = $("#ckQr", overlay);
+  Cart.write = function(items){
+    localStorage.setItem(Cart.key, JSON.stringify(items));
+    Cart.syncUI();
+  };
 
-  const elKmHint   = $("#ckKmHint", overlay);
-  const elFeeLine  = $("#ckFeeLine", overlay);
-  const elKm       = $("#ckKm", overlay);
-  const elFee      = $("#ckFee", overlay);
-  const elBlocked  = $("#ckBlocked", overlay);
+  Cart.add = function(id){
+    const items = Cart.read();
+    const found = items.find(x => x.id === id);
+    if(found) found.qty += 1;
+    else items.push({id, qty:1});
+    Cart.write(items);
+  };
 
-  const inName   = $("#ckName", overlay);
-  const inPhone  = $("#ckPhone", overlay);
-  const inAddr   = $("#ckAddress", overlay);
-  const inCompl  = $("#ckCompl", overlay);
-  const inObs    = $("#ckObs", overlay);
+  Cart.dec = function(id){
+    const items = Cart.read();
+    const found = items.find(x => x.id === id);
+    if(!found) return;
+    found.qty -= 1;
+    const next = items.filter(x => x.qty > 0);
+    Cart.write(next);
+  };
 
-  const inBairro  = $("#ckBairro", overlay);
-  const dlBairro  = $("#ckBairroList", overlay);
-  const bairroHint = $("#ckBairroHint", overlay);
+  Cart.remove = function(id){
+    Cart.write(Cart.read().filter(x => x.id !== id));
+  };
 
-  let paymentMethod = null; // pix|credit|debit
-  let lastKm = null;
-  let lastFee = 0;
-  let lastResults = [];
-  let selectedPlace = null; // {lat, lon, km, fee, blocked, label}
+  Cart.count = function(){
+    return Cart.read().reduce((a,b)=> a + (b.qty||0), 0);
+  };
 
-  function goStep(name){
-    Object.values(steps).forEach(s => s.hidden = true);
-    steps[name].hidden = false;
-  }
-  function openOverlay(){
-    overlay.classList.add("is-open");
-    overlay.setAttribute("aria-hidden","false");
-    goStep("pay");
-    paymentMethod = null;
-    lastKm = null;
-    lastFee = 0;
-    selectedPlace = null;
-    elFeeLine.hidden = true;
-    elBlocked.hidden = true;
-    elKmHint.textContent = "A taxa depende da distância até Maria Teresa (BH).";
-    if(bairroHint) bairroHint.textContent = "Digite para ver opções próximas (até 10 km).";
-    if(inBairro) inBairro.value = "";
-  }
-  function closeOverlay(){
-    overlay.classList.remove("is-open");
-    overlay.setAttribute("aria-hidden","true");
-  }
+  Cart.subtotal = function(){
+    return Cart.read().reduce((sum, it)=>{
+      const p = findProduct(it.id);
+      return sum + (p ? (p.price*it.qty) : 0);
+    },0);
+  };
 
-  $("#ckClose", overlay)?.addEventListener("click", closeOverlay);
-  $("#ckCancel", overlay)?.addEventListener("click", closeOverlay);
-  overlay.addEventListener("click", (e)=>{ if(e.target === overlay) closeOverlay(); });
+  Cart.checkoutState = function(){
+    try{
+      return JSON.parse(localStorage.getItem(Cart.stateKey) || "{}");
+    }catch(e){ return {}; }
+  };
 
-  function interceptCheckoutLinks(){
-    const selectors = [
-      'a.tile.highlight[href="checkout.html"]',
-      '.drawer-actions a.btn.primary[href="checkout.html"]',
-      '.sticky-cta a.cta.primary[href="checkout.html"]'
-    ];
-    document.querySelectorAll(selectors.join(",")).forEach(a => {
-      a.addEventListener("click", (e)=>{
-        e.preventDefault();
-        openOverlay();
-      });
-    });
-  }
+  Cart.setCheckoutState = function(patch){
+    const cur = Cart.checkoutState();
+    const next = {...cur, ...patch};
+    localStorage.setItem(Cart.stateKey, JSON.stringify(next));
+    return next;
+  };
 
   // ===== Distância / taxa =====
   function haversineKm(lat1, lon1, lat2, lon2){
@@ -203,115 +118,330 @@
       Math.sin(dLon/2)**2;
     return 2 * R * Math.asin(Math.sqrt(a));
   }
+
   function feeByKm(km){
-    if(km > CONFIG.maxKm) return { blocked:true, fee:0 };
-    if(km <= 5) return { blocked:false, fee: CONFIG.feeUpTo5km };
-    return { blocked:false, fee: CONFIG.fee5to10km };
+    if(km > CFG.maxKm) return { blocked:true, fee:0 };
+    if(km <= 5) return { blocked:false, fee: CFG.feeUpTo5km };
+    return { blocked:false, fee: CFG.fee5to10km };
   }
+
   function calcFeeByCoords(lat, lon){
-    const km = haversineKm(CONFIG.baseLat, CONFIG.baseLon, lat, lon);
+    const km = haversineKm(CFG.baseLat, CFG.baseLon, lat, lon);
     const rule = feeByKm(km);
     return { km, ...rule };
   }
+
   function calcFeeWithGPS(){
     return new Promise((resolve, reject)=>{
       if(!navigator.geolocation) return reject(new Error("GPS não suportado."));
       navigator.geolocation.getCurrentPosition(
-        (pos)=>{
-          resolve(calcFeeByCoords(pos.coords.latitude, pos.coords.longitude));
-        },
+        (pos)=> resolve(calcFeeByCoords(pos.coords.latitude, pos.coords.longitude)),
         reject,
         { enableHighAccuracy:true, timeout:12000, maximumAge:0 }
       );
     });
   }
-  function applyFeeUI({km, fee, blocked}){
-    lastKm = km;
-    lastFee = fee;
 
-    elKm.textContent = `${km.toFixed(1)} km`;
-    elFee.textContent = money(fee);
-    elFeeLine.hidden = false;
+  // ===== Totais =====
+  Cart.fee = function(){
+    const st = Cart.checkoutState();
+    if((st.tipo || "entrega") !== "entrega") return 0;
 
-    elBlocked.hidden = !blocked;
-    elKmHint.textContent = blocked ? "Fora do raio de 10 km. Entrega indisponível." : "Taxa calculada pela distância.";
+    // taxa vem do cálculo (gps/bairro). Se não calculou ainda, 0.
+    const fee = Number(st.fee || 0);
+    return fee;
+  };
+
+  Cart.total = function(){
+    return Cart.subtotal() + Cart.fee();
+  };
+
+  Cart.syncUI = function(){
+    const badge = document.getElementById("cartBadge");
+    const total = document.getElementById("ctaTotal");
+    const gt = document.getElementById("grandTotal");
+    if(badge) badge.textContent = String(Cart.count());
+    if(total) total.textContent = money(Cart.total());
+    if(gt) gt.textContent = money(Cart.total());
+  };
+
+  // ===== Drawer (mantém seu layout) =====
+  function ensureDrawer(){
+    if(document.getElementById("cartDrawer")) return;
+
+    const wrap = document.createElement("div");
+    wrap.className = "drawer";
+    wrap.id = "cartDrawer";
+    wrap.innerHTML = `
+      <div class="drawer-backdrop" id="drawerBackdrop"></div>
+      <aside class="drawer-panel" role="dialog" aria-label="Carrinho">
+        <div class="drawer-head">
+          <div>
+            <strong style="font-size:16px">Seu carrinho</strong>
+            <div class="mini muted">Revise e finalize</div>
+          </div>
+          <button class="icon-btn" id="closeCart" type="button">✕</button>
+        </div>
+
+        <div class="drawer-body">
+          <div class="delivery-toggle">
+            <button class="dt-btn" id="dtEntrega" type="button">Entrega</button>
+            <button class="dt-btn" id="dtRetirada" type="button">Retirada</button>
+          </div>
+
+          <div class="note">
+            <label>Endereço (obrigatório se Entrega)</label>
+            <textarea id="addr" placeholder="Rua, número, bairro, complemento..."></textarea>
+          </div>
+
+          <div class="note">
+            <label>Pagamento</label>
+            <select id="pay" style="border:1px solid rgba(199,201,209,.85);border-radius:14px;padding:12px;background:rgba(255,255,255,.82);outline:none">
+              <option value="Pix">Pix</option>
+              <option value="Cartão">Cartão</option>
+              <option value="Dinheiro">Dinheiro</option>
+            </select>
+          </div>
+
+          <div class="note" id="trocoBox" style="display:none">
+            <label>Troco para quanto?</label>
+            <input id="troco" placeholder="Ex: 50" style="border:1px solid rgba(199,201,209,.85);border-radius:14px;padding:12px;background:rgba(255,255,255,.82);outline:none" />
+          </div>
+
+          <div class="note">
+            <label>Observações</label>
+            <textarea id="obs" placeholder="Sem cebola, bem passado, etc..."></textarea>
+          </div>
+
+          <div style="height:12px"></div>
+          <div id="cartItems"></div>
+        </div>
+
+        <div class="drawer-foot">
+          <div class="totals">
+            <div class="row"><span class="muted">Subtotal</span><strong id="subV">${money(0)}</strong></div>
+            <div class="row"><span class="muted">Taxa</span><strong id="taxV">${money(0)}</strong></div>
+            <div class="row total"><span>Total</span><strong id="totV">${money(0)}</strong></div>
+          </div>
+
+          <div class="drawer-actions">
+            <a class="btn primary" id="goCheckout" href="./checkout.html">Finalizar</a>
+          </div>
+
+          <div class="mini muted" id="warn" style="margin-top:10px; display:none; color:#b91c1c; font-weight:900">
+            Coloque o endereço para enviar o pedido!!
+          </div>
+        </div>
+      </aside>
+    `;
+    document.body.appendChild(wrap);
+
+    const open = ()=> { wrap.classList.add("open"); renderDrawer(); };
+    const close = ()=> wrap.classList.remove("open");
+
+    document.getElementById("openCart")?.addEventListener("click", open);
+    document.getElementById("ctaCart")?.addEventListener("click", open);
+    document.getElementById("drawerBackdrop")?.addEventListener("click", close);
+    document.getElementById("closeCart")?.addEventListener("click", close);
+
+    const st = Cart.checkoutState();
+    const tipo = st.tipo || "entrega";
+    setTipo(tipo);
+
+    document.getElementById("dtEntrega").addEventListener("click", ()=> setTipo("entrega"));
+    document.getElementById("dtRetirada").addEventListener("click", ()=> setTipo("retirada"));
+
+    const addr = document.getElementById("addr");
+    const pay = document.getElementById("pay");
+    const obs = document.getElementById("obs");
+    const troco = document.getElementById("troco");
+
+    addr.value = st.endereco || "";
+    pay.value = st.pagamento || "Pix";
+    obs.value = st.obs || "";
+    troco.value = st.troco || "";
+
+    const syncState = ()=>{
+      Cart.setCheckoutState({
+        endereco: addr.value,
+        pagamento: pay.value,
+        obs: obs.value,
+        troco: troco.value
+      });
+      toggleTroco(pay.value);
+      renderDrawer();
+    };
+
+    addr.addEventListener("input", syncState);
+    obs.addEventListener("input", syncState);
+    pay.addEventListener("change", syncState);
+    troco.addEventListener("input", syncState);
+
+    toggleTroco(pay.value);
   }
 
-  // ===== Bairros (autocomplete) =====
-  let tDebounce = null;
+  function setTipo(tipo){
+    const st = Cart.setCheckoutState({tipo});
 
-  async function searchBairros(q){
-    const url =
-      "https://nominatim.openstreetmap.org/search" +
-      `?format=jsonv2&addressdetails=1&limit=12&q=${encodeURIComponent(q + " bairro, Belo Horizonte, MG")}`;
-    const res = await fetch(url, { headers: { "Accept":"application/json" }});
-    if(!res.ok) throw new Error("Falha na busca");
-    const data = await res.json();
-
-    const list = data.map(it => ({
-      label: it.display_name,
-      lat: Number(it.lat),
-      lon: Number(it.lon)
-    })).filter(it => Number.isFinite(it.lat) && Number.isFinite(it.lon))
-      .map(it => ({ ...it, ...calcFeeByCoords(it.lat, it.lon) }))
-      .filter(it => it.km <= CONFIG.maxKm)
-      .sort((a,b)=> a.km - b.km)
-      .slice(0, 10);
-
-    return list;
-  }
-
-  function fillDatalist(list){
-    if(!dlBairro) return;
-    dlBairro.innerHTML = "";
-    list.forEach(item => {
-      const opt = document.createElement("option");
-      opt.value = item.label.split(",").slice(0,3).join(",").trim();
-      dlBairro.appendChild(opt);
-    });
-  }
-
-  function pickFromInput(){
-    if(!inBairro) return;
-    const val = inBairro.value.trim().toLowerCase();
-    selectedPlace = null;
-    if(!val) return;
-
-    const hit = lastResults.find(r => r.label.toLowerCase().includes(val) || val.includes(r.label.split(",")[0].toLowerCase()));
-    if(hit){
-      selectedPlace = hit;
-      if(bairroHint) bairroHint.textContent = `OK • ${hit.km.toFixed(1)} km • taxa ${money(hit.fee)}`;
-      if(readMode()==="entrega") applyFeeUI(hit);
+    const e = document.getElementById("dtEntrega");
+    const r = document.getElementById("dtRetirada");
+    if(e && r){
+      e.classList.toggle("active", tipo==="entrega");
+      r.classList.toggle("active", tipo==="retirada");
     }
+
+    // ao trocar tipo, zera taxa se retirada
+    if((st.tipo||"entrega") !== "entrega"){
+      Cart.setCheckoutState({ km:0, fee:0, blocked:false });
+    }
+
+    renderDrawer();
   }
 
-  if(inBairro){
-    inBairro.addEventListener("input", ()=>{
-      const q = inBairro.value.trim();
-      selectedPlace = null;
+  function toggleTroco(pay){
+    const box = document.getElementById("trocoBox");
+    if(!box) return;
+    box.style.display = (pay === "Dinheiro") ? "block" : "none";
+  }
 
-      if(tDebounce) clearTimeout(tDebounce);
-      tDebounce = setTimeout(async ()=>{
-        if(q.length < 3){
-          if(bairroHint) bairroHint.textContent = "Digite ao menos 3 letras para sugerir bairros (até 10 km).";
-          return;
-        }
-        try{
-          if(bairroHint) bairroHint.textContent = "Buscando bairros próximos...";
-          const list = await searchBairros(q);
-          lastResults = list;
-          fillDatalist(list);
-          if(bairroHint) bairroHint.textContent = list.length ? "Escolha um bairro da lista." : "Nenhum bairro (até 10 km).";
-          pickFromInput();
-        }catch{
-          if(bairroHint) bairroHint.textContent = "Não consegui buscar bairros agora. Use GPS.";
-        }
-      }, 350);
+  function renderDrawer(){
+    const items = Cart.read();
+    const $items = document.getElementById("cartItems");
+    const $sub = document.getElementById("subV");
+    const $tax = document.getElementById("taxV");
+    const $tot = document.getElementById("totV");
+    const $warn = document.getElementById("warn");
+
+    if(!$items) return;
+
+    if(!items.length){
+      $items.innerHTML = `<div class="muted" style="padding:10px 2px">Seu carrinho está vazio.</div>`;
+    }else{
+      $items.innerHTML = items.map(it=>{
+        const p = findProduct(it.id) || {title:"Item", price:0};
+        return `
+          <div class="citem">
+            <div class="citem-top">
+              <div>
+                <div class="cname">${p.title}</div>
+                <div class="cdesc">${money(p.price)} • x${it.qty}</div>
+              </div>
+              <button class="qbtn remove" onclick="Cart.remove('${it.id}')">remover</button>
+            </div>
+            <div class="ccontrols">
+              <div class="qty">
+                <button class="qbtn" onclick="Cart.dec('${it.id}')">-</button>
+                <strong>${it.qty}</strong>
+                <button class="qbtn" onclick="Cart.add('${it.id}')">+</button>
+              </div>
+              <strong>${money(p.price*it.qty)}</strong>
+            </div>
+          </div>
+        `;
+      }).join("");
+    }
+
+    const st = Cart.checkoutState();
+    const sub = Cart.subtotal();
+    const taxa = Cart.fee();
+    const tot = sub + taxa;
+
+    if($sub) $sub.textContent = money(sub);
+    if($tax) $tax.textContent = money(taxa);
+    if($tot) $tot.textContent = money(tot);
+
+    const needAddr = ((st.tipo || "entrega") === "entrega");
+    const hasAddr = (st.endereco || "").trim().length >= 6;
+    if($warn) $warn.style.display = (needAddr && !hasAddr && items.length) ? "block" : "none";
+
+    Cart.syncUI();
+  }
+
+  // ===== WhatsApp message =====
+  function buildWhatsMessage(extraLines=[]){
+    const items = Cart.read();
+    const st = Cart.checkoutState();
+    const lines = [];
+
+    lines.push(`*Pedido — ${CFG.brand}*`);
+    lines.push(``);
+
+    if(!items.length){
+      lines.push(`(Carrinho vazio)`);
+      return lines.join("\n");
+    }
+
+    lines.push(`*Itens:*`);
+    items.forEach(it=>{
+      const p = findProduct(it.id);
+      if(!p) return;
+      lines.push(`- ${it.qty}x ${p.title} — ${money(p.price*it.qty)}`);
     });
-    inBairro.addEventListener("change", pickFromInput);
+
+    const sub = Cart.subtotal();
+    const taxa = Cart.fee();
+    const total = sub + taxa;
+
+    lines.push(``);
+    lines.push(`Subtotal: *${money(sub)}*`);
+    lines.push(`Taxa: *${money(taxa)}*`);
+    lines.push(`Total: *${money(total)}*`);
+    lines.push(``);
+
+    const tipo = st.tipo || "entrega";
+    lines.push(`*${tipo === "entrega" ? "Entrega" : "Retirada"}*`);
+
+    const addr = (st.endereco || "").trim();
+    if(tipo === "entrega"){
+      lines.push(`Endereço: ${addr || "(NÃO INFORMADO)"}`);
+    }
+
+    extraLines.filter(Boolean).forEach(l=> lines.push(l));
+
+    const obs = (st.obs || "").trim();
+    if(obs){
+      lines.push(``);
+      lines.push(`Obs: ${obs}`);
+    }
+
+    return lines.join("\n");
   }
 
-  // ===== PIX EMV + CRC16 =====
+  function canFinish(){
+    const items = Cart.read();
+    if(!items.length) return {ok:false, msg:"Carrinho vazio."};
+
+    const st = Cart.checkoutState();
+    const tipo = st.tipo || "entrega";
+    if(tipo === "entrega"){
+      const addr = (st.endereco || "").trim();
+      if(addr.length < 6){
+        return {ok:false, msg:"Coloque o endereço para enviar o pedido!!"};
+      }
+      // precisa taxa calculada (para sua regra)
+      if(!Number.isFinite(Number(st.km)) || st.km == null){
+        return {ok:false, msg:"Calcule a taxa (GPS) antes de finalizar."};
+      }
+      if(Number(st.km) > CFG.maxKm){
+        return {ok:false, msg:"Fora do raio de 10 km. Entrega indisponível."};
+      }
+    }
+    return {ok:true};
+  }
+
+  function openWhats(text){
+    const url = `https://wa.me/${CFG.whatsapp}?text=${encodeURIComponent(text)}`;
+    window.open(url, "_blank");
+  }
+
+  // ===== PIX (EMV + CRC16) =====
+  const PIX = {
+    key: "e02484b0-c924-4d38-9af9-79af9ad97c3e",
+    merchantName: "LP GRILL",
+    merchantCity: "BELO HORIZONTE",
+    txid: "LPGRILL01"
+  };
+
   function crc16(payload){
     let crc = 0xFFFF;
     for(let i=0;i<payload.length;i++){
@@ -344,192 +474,362 @@
     return toCrc + crc16(toCrc);
   }
 
-  function renderPix(total, fee){
-    const grand = total + fee;
+  // ===== Checkout Overlay (precisa do HTML do overlay no index) =====
+  function initOverlay(){
+    const overlay = $("#checkoutOverlay");
+    if(!overlay) return; // se não tiver HTML, ignora
 
-    elTotalPix.textContent = money(total);
-    elFeePix.textContent = money(fee);
+    const steps = {
+      pay: overlay.querySelector('[data-step="pay"]'),
+      pix: overlay.querySelector('[data-step="pix"]'),
+      addr: overlay.querySelector('[data-step="addr"]')
+    };
 
-    const code = buildPixPayload({
-      key: CONFIG.pixKey,
-      name: CONFIG.merchantName,
-      city: CONFIG.merchantCity,
-      amount: grand,
-      txid: CONFIG.txid
-    });
+    const elTotalPix = $("#ckTotalPix", overlay);
+    const elFeePix   = $("#ckFeePix", overlay);
+    const elPixCode  = $("#ckPixCode", overlay);
+    const elQr       = $("#ckQr", overlay);
 
-    elPixCode.value = code;
+    const elKmHint   = $("#ckKmHint", overlay);
+    const elFeeLine  = $("#ckFeeLine", overlay);
+    const elKm       = $("#ckKm", overlay);
+    const elFee      = $("#ckFee", overlay);
+    const elBlocked  = $("#ckBlocked", overlay);
 
-    elQr.innerHTML = "";
-    if (typeof QRCode === "undefined") {
-      elQr.textContent = "QR Code não carregou.";
-      return;
+    const inName   = $("#ckName", overlay);
+    const inPhone  = $("#ckPhone", overlay);
+    const inAddr   = $("#ckAddress", overlay);
+    const inCompl  = $("#ckCompl", overlay);
+    const inObs    = $("#ckObs", overlay);
+
+    const inBairro  = $("#ckBairro", overlay);
+    const dlBairro  = $("#ckBairroList", overlay);
+    const bairroHint = $("#ckBairroHint", overlay);
+
+    let paymentMethod = null;
+    let lastResults = [];
+    let selectedPlace = null;
+    let tDebounce = null;
+
+    function goStep(name){
+      Object.values(steps).forEach(s => s && (s.hidden = true));
+      if(steps[name]) steps[name].hidden = false;
     }
 
-    const canvas = document.createElement("canvas");
-    canvas.width = 220;
-    canvas.height = 220;
-    elQr.appendChild(canvas);
+    function openOverlay(){
+      overlay.classList.add("is-open");
+      overlay.setAttribute("aria-hidden","false");
+      goStep("pay");
+      paymentMethod = null;
+      selectedPlace = null;
 
-    QRCode.toCanvas(canvas, code, { margin: 1, scale: 6 }, (err)=>{
-      if(err){
-        console.error(err);
-        elQr.textContent = "Erro ao gerar QR.";
+      elFeeLine && (elFeeLine.hidden = true);
+      elBlocked && (elBlocked.hidden = true);
+      elKmHint && (elKmHint.textContent = "A taxa depende da distância até Maria Teresa (BH).");
+
+      // limpa campos
+      if(inBairro) inBairro.value = "";
+      if(bairroHint) bairroHint.textContent = "Digite para ver opções próximas (até 10 km).";
+    }
+
+    function closeOverlay(){
+      overlay.classList.remove("is-open");
+      overlay.setAttribute("aria-hidden","true");
+    }
+
+    $("#ckClose", overlay)?.addEventListener("click", closeOverlay);
+    $("#ckCancel", overlay)?.addEventListener("click", closeOverlay);
+    overlay.addEventListener("click", (e)=>{ if(e.target === overlay) closeOverlay(); });
+
+    // Intercepta seus links de checkout (mantém layout)
+    const selectors = [
+      'a.tile.highlight[href="checkout.html"]',
+      '.drawer-actions a.btn.primary[href="checkout.html"]',
+      '.sticky-cta a.cta.primary[href="checkout.html"]'
+    ];
+    document.querySelectorAll(selectors.join(",")).forEach(a => {
+      a.addEventListener("click", (e)=>{
+        e.preventDefault();
+        openOverlay();
+      });
+    });
+
+    // ===== Bairros (Nominatim) =====
+    async function searchBairros(q){
+      const url =
+        "https://nominatim.openstreetmap.org/search" +
+        `?format=jsonv2&addressdetails=1&limit=12&q=${encodeURIComponent(q + " bairro, Belo Horizonte, MG")}`;
+      const res = await fetch(url, { headers: { "Accept":"application/json" }});
+      if(!res.ok) throw new Error("Falha na busca");
+      const data = await res.json();
+
+      const list = data.map(it => ({
+        label: it.display_name,
+        lat: Number(it.lat),
+        lon: Number(it.lon)
+      }))
+      .filter(it => Number.isFinite(it.lat) && Number.isFinite(it.lon))
+      .map(it => ({ ...it, ...calcFeeByCoords(it.lat, it.lon) }))
+      .filter(it => it.km <= CFG.maxKm)
+      .sort((a,b)=> a.km - b.km)
+      .slice(0, 10);
+
+      return list;
+    }
+
+    function fillDatalist(list){
+      if(!dlBairro) return;
+      dlBairro.innerHTML = "";
+      list.forEach(item => {
+        const opt = document.createElement("option");
+        opt.value = item.label.split(",").slice(0,3).join(",").trim();
+        dlBairro.appendChild(opt);
+      });
+    }
+
+    function applyFeeUI(res){
+      Cart.setCheckoutState({ km: res.km, fee: res.fee, blocked: !!res.blocked });
+
+      if(elKm) elKm.textContent = `${res.km.toFixed(1)} km`;
+      if(elFee) elFee.textContent = money(res.fee);
+      if(elFeeLine) elFeeLine.hidden = false;
+      if(elBlocked) elBlocked.hidden = !res.blocked;
+
+      if(elKmHint){
+        elKmHint.textContent = res.blocked
+          ? "Fora do raio de 10 km. Entrega indisponível."
+          : "Taxa calculada pela distância.";
+      }
+
+      renderDrawer();
+      Cart.syncUI();
+    }
+
+    function pickFromInput(){
+      if(!inBairro) return;
+      const val = inBairro.value.trim().toLowerCase();
+      selectedPlace = null;
+      if(!val) return;
+
+      const hit = lastResults.find(r =>
+        r.label.toLowerCase().includes(val) ||
+        val.includes(r.label.split(",")[0].toLowerCase())
+      );
+
+      if(hit){
+        selectedPlace = hit;
+        if(bairroHint) bairroHint.textContent = `OK • ${hit.km.toFixed(1)} km • taxa ${money(hit.fee)}`;
+        applyFeeUI(hit);
+      }
+    }
+
+    if(inBairro){
+      inBairro.addEventListener("input", ()=>{
+        const q = inBairro.value.trim();
+        selectedPlace = null;
+
+        if(tDebounce) clearTimeout(tDebounce);
+        tDebounce = setTimeout(async ()=>{
+          if(q.length < 3){
+            if(bairroHint) bairroHint.textContent = "Digite ao menos 3 letras para sugerir bairros (até 10 km).";
+            return;
+          }
+          try{
+            if(bairroHint) bairroHint.textContent = "Buscando bairros próximos...";
+            const list = await searchBairros(q);
+            lastResults = list;
+            fillDatalist(list);
+            if(bairroHint) bairroHint.textContent = list.length ? "Escolha um bairro da lista." : "Nenhum bairro (até 10 km).";
+            pickFromInput();
+          }catch{
+            if(bairroHint) bairroHint.textContent = "Não consegui buscar bairros agora. Use GPS.";
+          }
+        }, 350);
+      });
+      inBairro.addEventListener("change", pickFromInput);
+    }
+
+    // GPS calcula taxa
+    $("#ckGetLocation", overlay)?.addEventListener("click", async ()=>{
+      if(elKmHint) elKmHint.textContent = "Calculando distância...";
+      if(elFeeLine) elFeeLine.hidden = true;
+      if(elBlocked) elBlocked.hidden = true;
+
+      try{
+        const res = await calcFeeWithGPS();
+        selectedPlace = null;
+        applyFeeUI(res);
+        if(bairroHint) bairroHint.textContent = "Usando GPS para calcular taxa.";
+      }catch{
+        if(elKmHint) elKmHint.textContent = "Não consegui acessar o GPS. Escolha um bairro da lista.";
       }
     });
-  }
 
-  function openWhatsApp(msg){
-    window.open(`https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`, "_blank");
-  }
+    // ===== Render PIX (QR + copia e cola) =====
+    function renderPix(){
+      const st = Cart.checkoutState();
+      const total = Cart.subtotal() + Cart.fee();
 
-  // ===== fluxo pagamento =====
-  overlay.querySelectorAll("[data-pay]").forEach((b)=>{
-    b.addEventListener("click", ()=>{
-      paymentMethod = b.getAttribute("data-pay");
+      if(elTotalPix) elTotalPix.textContent = money(Cart.subtotal());
+      if(elFeePix) elFeePix.textContent = money(Cart.fee());
 
-      // ✅ PIX agora abre endereço primeiro
-      if(paymentMethod === "pix"){
+      const code = buildPixPayload({
+        key: PIX.key,
+        name: PIX.merchantName,
+        city: PIX.merchantCity,
+        amount: total,
+        txid: PIX.txid
+      });
+
+      if(elPixCode) elPixCode.value = code;
+
+      if(elQr){
+        elQr.innerHTML = "";
+        if (typeof QRCode === "undefined") {
+          elQr.textContent = "QR Code não carregou.";
+        } else {
+          const canvas = document.createElement("canvas");
+          canvas.width = 220;
+          canvas.height = 220;
+          elQr.appendChild(canvas);
+          QRCode.toCanvas(canvas, code, { margin: 1, scale: 6 }, (err)=>{
+            if(err){
+              console.error(err);
+              elQr.textContent = "Erro ao gerar QR.";
+            }
+          });
+        }
+      }
+    }
+
+    // ===== fluxo pagamento =====
+    overlay.querySelectorAll("[data-pay]").forEach((b)=>{
+      b.addEventListener("click", ()=>{
+        paymentMethod = b.getAttribute("data-pay"); // pix|credit|debit
+        Cart.setCheckoutState({ payMethod: paymentMethod });
+
+        // todos vão pra endereço primeiro (como seu módulo “novo”)
         goStep("addr");
+      });
+    });
+
+    // Confirmar endereço:
+    // - PIX -> vai pra tela PIX e gera QR
+    // - crédito/débito -> WhatsApp direto
+    $("#ckConfirmOrder", overlay)?.addEventListener("click", ()=>{
+      const name = (inName?.value || "").trim();
+      const phone = (inPhone?.value || "").trim();
+      const address = (inAddr?.value || "").trim();
+      const bairro = (inBairro?.value || "").trim();
+      const compl = (inCompl?.value || "").trim();
+      const obs = (inObs?.value || "").trim();
+
+      const st = Cart.checkoutState();
+      const tipo = st.tipo || "entrega";
+
+      if(!name || !phone){
+        alert("Preencha Nome e Telefone.");
         return;
       }
 
-      // crédito/débito: continua endereço
-      if(paymentMethod === "credit" || paymentMethod === "debit"){
-        goStep("addr");
+      Cart.setCheckoutState({
+        nome: name, telefone: phone,
+        endereco: address, bairro,
+        compl, obs
+      });
+
+      // Retirada: não exige taxa
+      if(tipo !== "entrega"){
+        Cart.setCheckoutState({ km:0, fee:0, blocked:false });
+      } else {
+        // Entrega: precisa taxa calculada
+        if(selectedPlace?.lat && selectedPlace?.lon){
+          applyFeeUI(selectedPlace);
+        }
+
+        const st2 = Cart.checkoutState();
+        if(!bairro){
+          alert("Selecione um bairro (até 10 km) ou use o GPS para calcular a taxa.");
+          return;
+        }
+        if(!address){
+          alert("Preencha o Endereço completo.");
+          return;
+        }
+        if(st2.km == null){
+          alert("Calcule a taxa (GPS) ou escolha um bairro válido da lista.");
+          return;
+        }
+        if(Number(st2.km) > CFG.maxKm){
+          alert("Fora do raio de 10 km do bairro Maria Teresa (BH). Entrega indisponível.");
+          return;
+        }
       }
-    });
-  });
 
-  // GPS calcula taxa
-  $("#ckGetLocation", overlay)?.addEventListener("click", async ()=>{
-    elKmHint.textContent = "Calculando distância...";
-    elFeeLine.hidden = true;
-    elBlocked.hidden = true;
-
-    try{
-      const res = await calcFeeWithGPS();
-      applyFeeUI(res);
-      selectedPlace = null;
-      if(bairroHint) bairroHint.textContent = "Usando GPS para calcular taxa.";
-    } catch {
-      elKmHint.textContent = "Não consegui acessar o GPS. Escolha um bairro da lista.";
-    }
-  });
-
-  // Confirmar no endereço:
-  // - PIX -> vai pra tela PIX e gera QR com taxa
-  // - crédito/débito -> WhatsApp direto
-  $("#ckConfirmOrder", overlay)?.addEventListener("click", ()=>{
-    const name = inName?.value.trim() || "";
-    const phone = inPhone?.value.trim() || "";
-    const address = inAddr?.value.trim() || "";
-    const bairro = inBairro?.value.trim() || "";
-    const compl = inCompl?.value.trim() || "";
-    const obs = inObs?.value.trim() || "";
-
-    if(!name || !phone){
-      alert("Preencha Nome e Telefone.");
-      return;
-    }
-
-    // Retirar: não exige bairro/endereço
-    if(isRetirarMode()){
-      lastKm = 0; lastFee = 0;
-
+      // PIX → trava no PIX
       if(paymentMethod === "pix"){
         goStep("pix");
-        renderPix(getCartTotal(), 0);
+        renderPix();
         return;
       }
 
-      const methodLabel = paymentMethod === "credit" ? "Crédito" : "Débito";
-      const msg = buildReceipt({
-        methodLabel, fee: 0, km: 0,
-        name, phone, bairro:"-", address:"-", compl, obs
-      });
-      openWhatsApp(msg);
-      return;
-    }
+      // Crédito / Débito → WhatsApp normal
+      const methodLabel = (paymentMethod === "credit") ? "Crédito" : "Débito";
+      const text = buildWhatsMessage([
+        `Pagamento: *${methodLabel}*`,
+        `Nome: ${name}`,
+        `Telefone: ${phone}`,
+        (tipo === "entrega" ? `Bairro: ${bairro}` : null),
+        (tipo === "entrega" ? `Endereço: ${address}` : null),
+        (compl ? `Compl: ${compl}` : null)
+      ]);
 
-    // Entrega: precisa taxa calculada
-    if(selectedPlace?.lat && selectedPlace?.lon){
-      applyFeeUI(selectedPlace);
-    }
-
-    if(!bairro){
-      alert("Selecione um bairro (até 10 km) ou use o GPS para calcular a taxa.");
-      return;
-    }
-    if(!address){
-      alert("Preencha o Endereço completo.");
-      return;
-    }
-    if(lastKm == null){
-      alert("Calcule a taxa (GPS) ou escolha um bairro válido da lista.");
-      return;
-    }
-    if(lastKm > CONFIG.maxKm){
-      alert("Fora do raio de 10 km do bairro Maria Teresa (BH). Entrega indisponível.");
-      return;
-    }
-
-    if(paymentMethod === "pix"){
-      goStep("pix");
-      renderPix(getCartTotal(), Number(lastFee||0));
-      return;
-    }
-
-    const methodLabel = paymentMethod === "credit" ? "Crédito" : "Débito";
-    const msg = buildReceipt({
-      methodLabel,
-      fee: Number(lastFee||0),
-      km: lastKm,
-      name, phone,
-      bairro,
-      address,
-      compl, obs
+      openWhats(text);
     });
-    openWhatsApp(msg);
-  });
 
-  // PIX: copiar
-  $("#ckCopyPix", overlay)?.addEventListener("click", async ()=>{
-    const val = elPixCode.value.trim();
-    if(!val) return;
-    try{
-      await navigator.clipboard.writeText(val);
-      $("#ckCopyPix", overlay).textContent = "Copiado ✅";
-      setTimeout(()=> $("#ckCopyPix", overlay).textContent = "Copiar código PIX", 1200);
-    } catch {
-      elPixCode.select();
-      document.execCommand("copy");
-    }
-  });
-
-  // PIX: Já paguei -> WhatsApp cupom
-  $("#ckPaidPix", overlay)?.addEventListener("click", ()=>{
-    const name = inName?.value.trim() || "";
-    const phone = inPhone?.value.trim() || "";
-    const address = inAddr?.value.trim() || "";
-    const bairro = inBairro?.value.trim() || "";
-    const compl = inCompl?.value.trim() || "";
-    const obs = inObs?.value.trim() || "";
-
-    const msg = buildReceipt({
-      methodLabel: "PIX",
-      fee: Number(lastFee||0),
-      km: lastKm,
-      name, phone,
-      bairro: isRetirarMode() ? "-" : bairro,
-      address: isRetirarMode() ? "-" : address,
-      compl, obs
+    // PIX: copiar
+    $("#ckCopyPix", overlay)?.addEventListener("click", async ()=>{
+      const val = (elPixCode?.value || "").trim();
+      if(!val) return;
+      try{
+        await navigator.clipboard.writeText(val);
+        const btn = $("#ckCopyPix", overlay);
+        if(btn){
+          btn.textContent = "Copiado ✅";
+          setTimeout(()=> btn.textContent = "Copiar código PIX", 1200);
+        }
+      } catch {
+        elPixCode?.select?.();
+        document.execCommand("copy");
+      }
     });
-    openWhatsApp(msg);
+
+    // PIX: Já paguei -> WhatsApp (comprovante)
+    $("#ckPaidPix", overlay)?.addEventListener("click", ()=>{
+      const st = Cart.checkoutState();
+      const name = (st.nome || "").trim();
+      const phone = (st.telefone || "").trim();
+      const tipo = st.tipo || "entrega";
+
+      const aviso = "✅ *PIX realizado.* Vou enviar o comprovante agora para liberar o pedido.";
+      const extra = [
+        aviso,
+        `Pagamento: *PIX*`,
+        (tipo === "entrega" ? `Distância: ${Number(st.km||0).toFixed(1)} km` : null)
+      ];
+
+      openWhats(buildWhatsMessage(extra));
+    });
+
+    $("#ckBackFromPix", overlay)?.addEventListener("click", ()=> goStep("addr"));
+  }
+
+  // ===== Bind =====
+  document.addEventListener("DOMContentLoaded", ()=>{
+    ensureDrawer();
+    renderDrawer();
+    Cart.syncUI();
+    initOverlay();
   });
 
-  $("#ckBackFromPix", overlay)?.addEventListener("click", ()=> goStep("addr"));
-
-  // INIT
-  interceptCheckoutLinks();
 })();
