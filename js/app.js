@@ -1,3 +1,31 @@
+/* ===== MENU ATIVO AUTOMÁTICO (seguro) ===== */
+__LP_READY__(() => {
+  const nav = document.querySelector(".topnav");
+  if (!nav) return;
+
+  const clean = (s) => (s || "").toLowerCase().split("?")[0].split("#")[0];
+  const file = clean(location.pathname.split("/").pop() || "index.html");
+
+  const map = {
+    "index.html":"index",
+    "marmitas.html":"marmitas",
+    "porcoes.html":"porcoes",
+    "bebidas.html":"bebidas",
+    "sobremesas.html":"sobremesas",
+    "checkout.html":"checkout",
+    "admin.html":"admin"
+  };
+
+  const key = map[file] || "index";
+
+  nav.querySelectorAll("a[data-nav]").forEach(a => {
+    const k = a.getAttribute("data-nav");
+    const active = (k === key);
+    a.classList.toggle("is-active", active);
+    if (active) a.setAttribute("aria-current", "page");
+    else a.removeAttribute("aria-current");
+  });
+});
 // js/app.js — LP Grill (produtos via window.DATA + carrinho + Checkout Overlay PIX/Cartão)
 // Mantém layout / não mexe nos cards; só adiciona overlay e taxa por distância.
 (function(){
