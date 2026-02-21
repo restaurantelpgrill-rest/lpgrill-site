@@ -103,3 +103,47 @@
 
   window.addEventListener("DOMContentLoaded", init);
 })();
+// js/render.js
+(() => {
+  const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+
+  function allProducts(){
+    const list = [];
+    if(window.DATA){
+      for(const k in window.DATA){
+        if(Array.isArray(window.DATA[k])) list.push(...window.DATA[k]);
+      }
+    }
+    return list;
+  }
+
+  window.findProduct = function(id){
+    return allProducts().find(p => p.id === id);
+  };
+
+  window.renderCategory = function(categoryKey, containerId){
+    const el = document.getElementById(containerId);
+    if(!el) return;
+
+    const items = (window.DATA && Array.isArray(window.DATA[categoryKey])) ? window.DATA[categoryKey] : [];
+    if(!items.length){
+      el.innerHTML = `<div class="muted" style="padding:10px 2px">Sem itens nesta categoria.</div>`;
+      return;
+    }
+
+    el.innerHTML = items.map(p => `
+      <article class="card">
+        <div class="card-top">
+          <h3>${p.title}</h3>
+          <strong>${money(p.price)}</strong>
+        </div>
+        ${p.desc ? `<p class="muted">${p.desc}</p>` : ``}
+        <div class="card-actions">
+          <button class="btn primary" type="button" onclick="Cart.add('${p.id}')">Adicionar</button>
+        </div>
+      </article>
+    `).join("");
+
+    window.Cart?.syncUI?.();
+  };
+})();
