@@ -468,6 +468,9 @@
 
     $("#ckTotalPay") && ($("#ckTotalPay").textContent = money(total()));
     showStep(overlay, "pay");
+
+    // ✅ garante bind após abrir (DOM já existe)
+    setTimeout(bindBairroAutocomplete, 0);
   }
 
   function closeCheckout(){
@@ -519,7 +522,6 @@
       return { ok:false, addr:null };
     }
 
-    // entrega: valida raio e calcula taxa por km
     if(mode === "entrega"){
       const b = findBairro(addr.bairro);
       if(!b){
@@ -552,38 +554,8 @@
 
   // =========================
   // ✅ Autocomplete bairro + cálculo dinâmico de taxa
+  // ✅ (blindado: funciona mesmo se o HTML do checkout mudar)
   // =========================
-  function renderSug(list){
-    const box = $("#bairroSug");
-    if(!box) return;
-
-    if(!list.length){
-      box.style.display = "none";
-      box.innerHTML = "";
-      return;
-    }
-
-    box.style.display = "block";
-    box.innerHTML = `
-      <div style="display:flex; flex-wrap:wrap; gap:8px;">
-        ${list.map(b => `
-          <button type="button" data-bairro="${esc(b.name)}"
-            style="
-              border:1px solid rgba(255,255,255,.14);
-              background:rgba(255,255,255,.06);
-              color:#fff;
-              border-radius:999px;
-              padding:8px 10px;
-              font-weight:800;
-              cursor:pointer;
-            ">
-            ${esc(b.name)}
-          </button>
-        `).join("")}
-      </div>
-    `;
-  }
-
   function updateFeePreviewByBairroName(name){
     const mode = getMode();
     if(mode !== "entrega"){
@@ -610,22 +582,86 @@
   }
 
   function bindBairroAutocomplete(){
-    const inp = $("#addrBairro");
-    const box = $("#bairroSug");
-    if(!inp || !box) return;
+    // acha o input do bairro (vários layouts)
+    const inp =
+      $("#addrBairro") ||
+      $("#bairro") ||
+      $('input[name="bairro"]') ||
+      $('input[id*="bairro" i]') ||
+      $$("input").find(i => (i.placeholder || "").toLowerCase().includes("bairro"));
 
-    inp.addEventListener("input", ()=>{
-      renderSug(suggestBairros(inp.value));
-      updateFeePreviewByBairroName(inp.value);
-    });
+    if(!inp){
+      console.warn("[bairro] input não encontrado (addrBairro/bairro/name=).");
+      return;
+    }
 
-    box.addEventListener("click", (e)=>{
+    // acha/cria o box de sugestões
+    let box =
+      $("#bairroSug") ||
+      $("#bairrosSug") ||
+      $("#bairroList") ||
+      $("#sugBairro");
+
+    if(!box){
+      box = document.createElement("div");
+      box.id = "bairroSug";
+      box.style.marginTop = "8px";
+      box.style.display = "none";
+      inp.insertAdjacentElement("afterend", box);
+    }
+
+    // evita duplicar listeners
+    if(inp.dataset.bairroBound === "1") return;
+    inp.dataset.bairroBound = "1";
+
+    function render(list){
+      if(!list.length){
+        box.style.display = "none";
+        box.innerHTML = "";
+        return;
+      }
+
+      box.style.display = "block";
+      box.innerHTML = `
+        <div style="
+          display:flex; flex-wrap:wrap; gap:8px;
+          padding:10px; border-radius:12px;
+          border:1px solid rgba(0,0,0,.12);
+          background:rgba(255,255,255,.98);
+          box-shadow:0 10px 24px rgba(0,0,0,.10);
+        ">
+          ${list.map(b => `
+            <button type="button" data-bairro="${esc(b.name)}" style="
+              border:1px solid rgba(0,0,0,.14);
+              background:#fff; color:#111;
+              border-radius:999px;
+              padding:8px 12px;
+              font-weight:900;
+              cursor:pointer;
+            ">${esc(b.name)}</button>
+          `).join("")}
+        </div>
+      `;
+    }
+
+    const onInput = () => {
+      const v = inp.value || "";
+      render(suggestBairros(v));
+      updateFeePreviewByBairroName(v);
+    };
+
+    inp.addEventListener("input", onInput);
+    inp.addEventListener("focus", onInput);
+
+    box.addEventListener("click", (e) => {
       const btn = e.target.closest("[data-bairro]");
       if(!btn) return;
       inp.value = btn.getAttribute("data-bairro") || "";
-      renderSug([]);
+      render([]);
       updateFeePreviewByBairroName(inp.value);
     });
+
+    console.log("[bairro] autocomplete ligado ✅", inp.id || inp.name || inp.placeholder);
   }
 
   // =========================
@@ -694,9 +730,11 @@
     }
 
     showAddrBlock("");
-    renderSug([]);
     updateFeePreviewByBairroName($("#addrBairro")?.value || "");
     showStep(overlay, "addr");
+
+    // ✅ garante bind ao entrar no step de endereço
+    setTimeout(bindBairroAutocomplete, 0);
   }
 
   function continueFromAddr(){
@@ -790,7 +828,8 @@
     $("#ckCopyPix", overlay)?.addEventListener("click", copyPix);
     $("#ckPaid", overlay)?.addEventListener("click", paidAndSend);
 
-    bindBairroAutocomplete();
+    // ✅ garante bind inicial também
+    setTimeout(bindBairroAutocomplete, 0);
   }
 
   // =========================
@@ -812,6 +851,9 @@
     bindCheckoutClosers();
     bindPayButtons();
     bindWaFloat();
+
+    // ✅ tenta ligar já no carregamento (caso o checkout já exista)
+    setTimeout(bindBairroAutocomplete, 0);
 
     // se estiver em entrega mas sem bairro, taxa fica 0 até escolher
     if(getMode() !== "entrega") localStorage.setItem(LS.FEE, "0");
