@@ -1,30 +1,8 @@
-const CART_KEY="LP_CART";
-
-function getCart(){
-  return JSON.parse(localStorage.getItem(CART_KEY)||"{}");
-}
-function saveCart(c){
-  localStorage.setItem(CART_KEY,JSON.stringify(c));
-}
-function addItem(id){
-  let c=getCart();
-  c[id]=(c[id]||0)+1;
-  saveCart(c);
-}
-function removeItem(id){
-  let c=getCart();
-  if(!c[id]) return;
-  c[id]--;
-  if(c[id]<=0) delete c[id];
-  saveCart(c);
-}
-function clearCart(){
-  localStorage.removeItem(CART_KEY);
-}// js/cart.js — mantido apenas para compatibilidade (carrinho está no app.js)
-// js/cart.js
+// js/cart.js — LP Grill (Carrinho V3) ✅ corrigido (sem loop infinito)
 (() => {
   const CART_KEY = "LPGRILL_CART_V3";
   const MODE_KEY = "LPGRILL_MODE_V3"; // entrega | retirar
+  const FEE_KEY  = "LPGRILL_FEE_V1";  // taxa salva pelo checkout
 
   const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
   const $ = (s, r=document)=> r.querySelector(s);
@@ -37,11 +15,12 @@ function clearCart(){
     localStorage.setItem(CART_KEY, JSON.stringify(obj || {}));
   }
 
-  function getMode(){
-    return localStorage.getItem(MODE_KEY) || "entrega";
-  }
-  function setMode(mode){
-    localStorage.setItem(MODE_KEY, mode);
+  function getMode(){ return localStorage.getItem(MODE_KEY) || "entrega"; }
+  function setMode(mode){ localStorage.setItem(MODE_KEY, mode); }
+
+  function getFee(){
+    const fee = Number(localStorage.getItem(FEE_KEY) || "0");
+    return Number.isFinite(fee) ? fee : 0;
   }
 
   function cartCount(){
@@ -59,16 +38,22 @@ function clearCart(){
     return sum;
   }
 
+  function total(){
+    const sub = subtotal();
+    const fee = (getMode()==="entrega") ? getFee() : 0;
+    return sub + fee;
+  }
+
   function clear(){
     writeCart({});
-    syncUI();
+    renderAll();
   }
 
   function add(id){
     const c = readCart();
     c[id] = Number(c[id]||0) + 1;
     writeCart(c);
-    syncUI();
+    renderAll();
   }
 
   function dec(id){
@@ -76,14 +61,14 @@ function clearCart(){
     c[id] = Number(c[id]||0) - 1;
     if(c[id] <= 0) delete c[id];
     writeCart(c);
-    syncUI();
+    renderAll();
   }
 
   function remove(id){
     const c = readCart();
     delete c[id];
     writeCart(c);
-    syncUI();
+    renderAll();
   }
 
   function openDrawer(){
@@ -101,8 +86,23 @@ function clearCart(){
     drawer.setAttribute("aria-hidden","true");
   }
 
+  function setModeActiveUI(){
+    const m = getMode();
+    $("#modeEntrega")?.classList.toggle("active", m==="entrega");
+    $("#modeRetirar")?.classList.toggle("active", m==="retirar");
+  }
+
+  function renderTopUI(){
+    const count = cartCount();
+    $("#cartCount") && ($("#cartCount").textContent = String(count));
+    $("#ctaTotal")  && ($("#ctaTotal").textContent = money(total()));
+
+    const sticky = $("#stickyCTA");
+    if(sticky) sticky.hidden = (count <= 0);
+  }
+
   function renderDrawer(){
-    const wrap = $("#cartItems");
+    const wrap  = $("#cartItems");
     const subEl = $("#subTotal");
     const feeEl = $("#deliveryFee");
     const totEl = $("#grandTotal");
@@ -121,19 +121,19 @@ function clearCart(){
         if(!p) return "";
         const line = Number(p.price||0)*Number(q||0);
         return `
-          <div class="citem">
+          <div class="citem" data-id="${id}">
             <div class="citem-top">
               <div>
                 <div class="cname">${p.title}</div>
                 <div class="cdesc">${q} × ${money(p.price)}</div>
               </div>
-              <button class="qbtn remove" onclick="Cart.remove('${id}')">remover</button>
+              <button class="qbtn remove" data-action="remove">remover</button>
             </div>
             <div class="ccontrols">
               <div class="qty">
-                <button class="qbtn" onclick="Cart.dec('${id}')">-</button>
+                <button class="qbtn" data-action="dec">-</button>
                 <strong>${q}</strong>
-                <button class="qbtn" onclick="Cart.add('${id}')">+</button>
+                <button class="qbtn" data-action="add">+</button>
               </div>
               <strong>${money(line)}</strong>
             </div>
@@ -143,28 +143,25 @@ function clearCart(){
     }
 
     const sub = subtotal();
-    // a taxa real é calculada no checkout (checkout.js) e salva em localStorage pelo overlay
-    const fee = Number(localStorage.getItem("LPGRILL_FEE_V1") || "0");
-    const mode = getMode();
-    const feeUse = (mode === "entrega") ? fee : 0;
-    const total = sub + feeUse;
+    const fee = (getMode()==="entrega") ? getFee() : 0;
+    const tot = sub + fee;
 
     if(subEl) subEl.textContent = money(sub);
-    if(feeEl) feeEl.textContent = money(feeUse);
-    if(totEl) totEl.textContent = money(total);
+    if(feeEl) feeEl.textContent = money(fee);
+    if(totEl) totEl.textContent = money(tot);
     if(etaEl) etaEl.textContent = "30–60 min";
-
-    syncUI();
   }
 
-  function syncUI(){
-    $("#cartCount") && ($("#cartCount").textContent = String(cartCount()));
-    $("#ctaTotal") && ($("#ctaTotal").textContent = money(subtotal() + (getMode()==="entrega" ? Number(localStorage.getItem("LPGRILL_FEE_V1")||0) : 0)));
+  function renderAll(){
+    // Atualiza tudo sem loop infinito
+    setModeActiveUI();
+    renderTopUI();
     renderDrawer();
+    // ✅ se existir vitrine com qty/seleção, pede pra render.js atualizar
+    window.renderCardsQty?.();
   }
 
-  // Bind
-  document.addEventListener("DOMContentLoaded", ()=>{
+  function bind(){
     $("#openCart")?.addEventListener("click", openDrawer);
     $("#ctaOpenCart")?.addEventListener("click", openDrawer);
 
@@ -175,16 +172,40 @@ function clearCart(){
 
     $("#modeEntrega")?.addEventListener("click", ()=>{
       setMode("entrega");
-      syncUI();
+      renderAll();
     });
+
     $("#modeRetirar")?.addEventListener("click", ()=>{
       setMode("retirar");
-      localStorage.setItem("LPGRILL_FEE_V1","0");
-      syncUI();
+      localStorage.setItem(FEE_KEY,"0");
+      renderAll();
     });
 
-    syncUI();
-  });
+    // Delegação de eventos do carrinho (sem onclick inline)
+    $("#cartItems")?.addEventListener("click", (e)=>{
+      const btn = e.target.closest("[data-action]");
+      if(!btn) return;
+      const item = btn.closest(".citem");
+      const id = item?.getAttribute("data-id");
+      if(!id) return;
 
-  window.Cart = { readCart, writeCart, add, dec, remove, clear, openDrawer, closeDrawer, subtotal, getMode, setMode, syncUI };
+      const act = btn.getAttribute("data-action");
+      if(act==="add") add(id);
+      if(act==="dec") dec(id);
+      if(act==="remove") remove(id);
+    });
+
+    renderAll();
+  }
+
+  document.addEventListener("DOMContentLoaded", bind);
+
+  window.Cart = {
+    readCart, writeCart,
+    add, dec, remove, clear,
+    openDrawer, closeDrawer,
+    subtotal, total,
+    getMode, setMode,
+    renderAll
+  };
 })();
