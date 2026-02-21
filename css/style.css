@@ -33,15 +33,42 @@ h1,h2,h3{margin:0}
 p{margin:6px 0 0}
 body.app{padding-bottom:110px}
 
-/* ===== PAGEBAR (padrão Açaí) ===== */
+/* ============================================================
+   ✅ HEADER / PAGEBAR (sticky premium)
+   - blindado: nunca some
+============================================================ */
 .pagebar{
-  position:sticky; top:0; z-index:30;
-  display:flex; align-items:center; justify-content:space-between; gap:10px;
+  position:sticky;
+  top:0;
+  z-index: 2000; /* acima do conteúdo, abaixo de overlays */
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:12px;
   padding:12px 14px;
   background: rgba(251,251,253,.88);
   backdrop-filter: blur(12px);
   border-bottom:1px solid rgba(17,24,39,.08);
+  isolation:isolate;
 }
+.pagebar::after{
+  /* “vapor” sutil no topo */
+  content:"";
+  position:absolute;
+  left:-40px;
+  right:-40px;
+  bottom:-18px;
+  height:56px;
+  pointer-events:none;
+  z-index:-1;
+  background:
+    radial-gradient(ellipse at 20% 60%, rgba(17,24,39,.10), transparent 65%),
+    radial-gradient(ellipse at 55% 30%, rgba(17,24,39,.07), transparent 70%),
+    radial-gradient(ellipse at 85% 55%, rgba(17,24,39,.08), transparent 66%);
+  filter: blur(10px);
+  opacity:.35;
+}
+
 .back{
   display:inline-flex; align-items:center; gap:8px;
   padding:10px 12px;
@@ -54,7 +81,107 @@ body.app{padding-bottom:110px}
 .page-title h1{font-size:16px; letter-spacing:.2px}
 .page-title p{font-size:12px; color:var(--muted)}
 
-/* ===== TOP CARDS HOME (index) ===== */
+/* ============================================================
+   ✅ TOP MENU (opções no header) + ATIVO AUTOMÁTICO
+   Compatível com seu HTML: .topnav a[data-nav].is-active
+============================================================ */
+.topnav{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex: 1;
+  justify-content:center;
+  min-width: 0;
+}
+.topnav a{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  padding:10px 12px;
+  border-radius:999px;
+  border:1px solid rgba(17,24,39,.10);
+  background: rgba(255,255,255,.85);
+  font-weight:900;
+  font-size:13px;
+  white-space:nowrap;
+  cursor:pointer;
+  transition: transform .12s ease, filter .12s ease, background .12s ease, border-color .12s ease;
+}
+.topnav a:hover{ transform: translateY(-1px); filter: brightness(1.02); }
+.topnav a:active{ transform: scale(.99); }
+
+/* ✅ estado ativo automático (JS adiciona .is-active) */
+.topnav a.is-active{
+  background: linear-gradient(180deg, var(--wine), #4c0f0f);
+  color:#fff;
+  border-color: rgba(127,29,29,.35);
+}
+
+/* mobile: vira barra rolável */
+@media (max-width: 860px){
+  .pagebar{
+    flex-wrap: wrap;
+    justify-content: space-between;
+  }
+  .page-title{
+    order: 1;
+    width: calc(100% - 64px);
+    text-align: left;
+  }
+  .cart-btn{ order: 2; }
+  .topnav{
+    order: 3;
+    width: 100%;
+    justify-content: flex-start;
+    overflow-x: auto;
+    padding-bottom: 6px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .topnav::-webkit-scrollbar{ display:none; }
+}
+
+/* ============================================================
+   ✅ Cart Button
+============================================================ */
+.cart-btn{
+  position:relative;
+  border:1px solid rgba(17,24,39,.10);
+  background: rgba(255,255,255,.85);
+  border-radius:14px;
+  padding:10px 12px;
+  cursor:pointer;
+  box-shadow: 0 10px 18px rgba(17,24,39,.08);
+}
+.cart-ico{font-size:18px}
+.cart-badge{
+  position:absolute; top:-8px; right:-8px;
+  background: var(--green);
+  color:#fff;
+  border:2px solid #fff;
+  border-radius:999px;
+  font-size:12px;
+  min-width:22px; height:22px;
+  display:flex; align-items:center; justify-content:center;
+  padding:0 6px;
+}
+
+/* ============================================================
+   ✅ sub info bar pills
+============================================================ */
+.subinfo{display:flex;flex-wrap:wrap;gap:10px;margin:12px auto 0}
+.pill{
+  display:inline-flex; align-items:center; gap:8px;
+  background: rgba(255,255,255,.85);
+  border:1px solid rgba(17,24,39,.10);
+  border-radius:999px;
+  padding:8px 12px;
+  font-size:13px;
+}
+
+/* ============================================================
+   ✅ HOME GRID TILES
+============================================================ */
 .grid{
   display:grid;
   grid-template-columns: repeat(2, minmax(0,1fr));
@@ -83,6 +210,20 @@ body.app{padding-bottom:110px}
     radial-gradient(260px 140px at 86% 15%, rgba(239,68,68,.10), transparent 65%);
   pointer-events:none;
 }
+.tile::after{
+  content:"";
+  position:absolute;
+  right:12px;
+  bottom:10px;
+  width:36px;
+  height:36px;
+  border-radius:999px;
+  pointer-events:none;
+  background:
+    radial-gradient(circle at 30% 30%, rgba(127,29,29,.18), rgba(127,29,29,0) 60%),
+    radial-gradient(circle at 70% 70%, rgba(239,68,68,.12), rgba(239,68,68,0) 62%);
+  opacity:.45;
+}
 .tile>*{position:relative; z-index:1}
 .tile-ico{font-size:26px;margin-bottom:10px}
 .tile-title{font-weight:900}
@@ -92,41 +233,9 @@ body.app{padding-bottom:110px}
   box-shadow: 0 22px 55px rgba(34,197,94,.10), var(--shadow);
 }
 
-/* ===== Cart Button ===== */
-.cart-btn{
-  position:relative;
-  border:1px solid rgba(17,24,39,.10);
-  background: rgba(255,255,255,.85);
-  border-radius:14px;
-  padding:10px 12px;
-  cursor:pointer;
-  box-shadow: 0 10px 18px rgba(17,24,39,.08);
-}
-.cart-ico{font-size:18px}
-.cart-badge{
-  position:absolute; top:-8px; right:-8px;
-  background: var(--green);
-  color:#fff;
-  border:2px solid #fff;
-  border-radius:999px;
-  font-size:12px;
-  min-width:22px; height:22px;
-  display:flex; align-items:center; justify-content:center;
-  padding:0 6px;
-}
-
-/* ===== sub info bar pills ===== */
-.subinfo{display:flex;flex-wrap:wrap;gap:10px;margin:12px auto 0}
-.pill{
-  display:inline-flex; align-items:center; gap:8px;
-  background: rgba(255,255,255,.85);
-  border:1px solid rgba(17,24,39,.10);
-  border-radius:999px;
-  padding:8px 12px;
-  font-size:13px;
-}
-
-/* ===== Products ===== */
+/* ============================================================
+   ✅ Products
+============================================================ */
 .product-grid{
   display:grid;
   grid-template-columns: repeat(1, minmax(0,1fr));
@@ -137,7 +246,7 @@ body.app{padding-bottom:110px}
   .product-grid{grid-template-columns: repeat(2, minmax(0,1fr))}
 }
 .product{
-  background: rgba(255,255,255,.92);
+  background: rgba(255,255,255,.95);
   border:1px solid rgba(17,24,39,.10);
   border-radius: var(--radius);
   box-shadow: var(--shadow);
@@ -146,12 +255,19 @@ body.app{padding-bottom:110px}
   gap:12px;
   padding:12px;
   cursor:pointer;
+  backdrop-filter: blur(6px);
 }
 .pimg{
   width:86px; height:86px; border-radius:16px;
   border:1px solid rgba(17,24,39,.10);
   background: linear-gradient(180deg, rgba(127,29,29,.10), rgba(255,255,255,.8));
   object-fit:cover;
+  box-shadow: 0 8px 22px rgba(17,24,39,.12);
+  transition: transform .18s ease, filter .18s ease;
+}
+.product:hover .pimg{
+  transform: scale(1.05);
+  filter: contrast(1.02) saturate(1.04);
 }
 .pbody{flex:1; min-width:0}
 .ptitle{display:flex; align-items:flex-start; justify-content:space-between; gap:10px}
@@ -165,7 +281,7 @@ body.app{padding-bottom:110px}
   background: rgba(255,255,255,.80);
 }
 
-/* ===== Qty Buttons (o que está faltando no seu print) ===== */
+/* Qty */
 .qty{display:flex;align-items:center;gap:8px}
 .qbtn{
   width:34px; height:34px;
@@ -185,7 +301,9 @@ body.app{padding-bottom:110px}
   color: var(--red);
 }
 
-/* ===== Whats + Sticky ===== */
+/* ============================================================
+   ✅ Whats + Sticky CTA
+============================================================ */
 .wa-float{
   position:fixed; right:14px;
   bottom:84px;
@@ -227,8 +345,11 @@ body.app{padding-bottom:110px}
   color:#fff;
 }
 
-/* ===== Drawer ===== */
-.drawer{position:fixed; inset:0; z-index:80; display:none}
+/* ============================================================
+   ✅ Drawer (Carrinho)
+   (fica acima do menu quando abre)
+============================================================ */
+.drawer{position:fixed; inset:0; z-index:5000; display:none}
 .drawer.open{display:block}
 .drawer-backdrop{position:absolute; inset:0; background: rgba(17,24,39,.45)}
 .drawer-panel{
@@ -297,7 +418,9 @@ body.app{padding-bottom:110px}
 .cdesc{font-size:12px; color:var(--muted); margin-top:4px; line-height:1.35}
 .ccontrols{margin-top:10px; display:flex; align-items:center; justify-content:space-between; gap:10px}
 
-/* (seus estilos adicionais existentes) */
+/* ============================================================
+   ✅ seus estilos adicionais (mantidos)
+============================================================ */
 .lp-grid{display:grid; gap:14px; grid-template-columns:repeat(4,1fr);}
 @media (max-width:1100px){.lp-grid{grid-template-columns:repeat(2,1fr);}}
 @media (max-width:640px){.lp-grid{grid-template-columns:1fr;}}
@@ -357,10 +480,8 @@ body.app{padding-bottom:110px}
 #checkoutMsg{margin-top:8px;}
 
 /* ============================================================
-   ✅ ADD-ONS PREMIUM (NÃO MUDA MENU — SÓ ADICIONA VISUAL)
+   ✅ ADD-ONS PREMIUM (visual)
 ============================================================ */
-
-/* Fundo gastronômico premium (pattern leve + texturas) */
 body::after{
   content:"";
   position:fixed;
@@ -375,7 +496,6 @@ body::after{
   opacity:1;
 }
 
-/* Logo grande, redonda, canto esquerdo */
 body::before{
   content:"";
   position:fixed;
@@ -393,64 +513,13 @@ body::before{
   filter: saturate(1.05);
 }
 
-/* “Fumaça” sutil no topo (vapor) */
-.pagebar::after{
-  content:"";
-  position:absolute;
-  left:-40px;
-  right:-40px;
-  bottom:-18px;
-  height:56px;
-  pointer-events:none;
-  z-index:-1;
-  background:
-    radial-gradient(ellipse at 20% 60%, rgba(17,24,39,.10), transparent 65%),
-    radial-gradient(ellipse at 55% 30%, rgba(17,24,39,.07), transparent 70%),
-    radial-gradient(ellipse at 85% 55%, rgba(17,24,39,.08), transparent 66%);
-  filter: blur(10px);
-  opacity:.35;
-}
+/* Admin gear (pedido) */
+.admin-gear{ opacity: 0.15; }
+.admin-gear:hover{ opacity: 1; }
 
-/* Vida nos tiles (sem alterar conteúdo) */
-.tile::after{
-  content:"";
-  position:absolute;
-  right:12px;
-  bottom:10px;
-  width:36px;
-  height:36px;
-  border-radius:999px;
-  pointer-events:none;
-  background:
-    radial-gradient(circle at 30% 30%, rgba(127,29,29,.18), rgba(127,29,29,0) 60%),
-    radial-gradient(circle at 70% 70%, rgba(239,68,68,.12), rgba(239,68,68,0) 62%);
-  opacity:.45;
-}
-
-/* Imagens dos produtos mais “fotografia” */
-.pimg{
-  box-shadow: 0 8px 22px rgba(17,24,39,.12);
-  transition: transform .18s ease, filter .18s ease;
-}
-.product:hover .pimg{
-  transform: scale(1.05);
-  filter: contrast(1.02) saturate(1.04);
-}
-
-/* Glass sutil nos cards (não muda layout) */
-.product{
-  backdrop-filter: blur(6px);
-  background: rgba(255,255,255,.95);
-}
-
-/* Admin gear opacidade (pedido) */
-.admin-gear{
-  opacity: 0.15;
-}
-.admin-gear:hover{
-  opacity: 1;
-}
-/* ===== Checkout Overlay (não mexe na home) ===== */
+/* ============================================================
+   ✅ Checkout overlay (fica acima de tudo quando abre)
+============================================================ */
 .ck-overlay{
   position:fixed; inset:0;
   display:none;
@@ -458,10 +527,11 @@ body::before{
   justify-content:center;
   padding:16px;
   background:rgba(0,0,0,.55);
-  z-index:99999;
+  z-index:9000;
 }
 .ck-overlay.is-open{ display:flex; }
 
+/* resto do checkout mantido */
 .ck-sheet{
   width:min(720px, 100%);
   max-height: 92vh;
@@ -486,17 +556,9 @@ body::before{
   border:1px solid rgba(255,255,255,.12);
   background:transparent; color:#fff;
 }
-
 .ck-step{ padding:16px; }
-
-.ck-paygrid{
-  display:grid;
-  grid-template-columns: 1fr;
-  gap:10px;
-}
-@media (min-width:560px){
-  .ck-paygrid{ grid-template-columns: 1fr 1fr 1fr; }
-}
+.ck-paygrid{ display:grid; grid-template-columns: 1fr; gap:10px; }
+@media (min-width:560px){ .ck-paygrid{ grid-template-columns: 1fr 1fr 1fr; } }
 .ck-paybtn{
   display:flex; gap:10px; align-items:center;
   padding:14px;
@@ -536,9 +598,7 @@ body::before{
   grid-template-columns: 1fr;
   margin: 10px 0 12px;
 }
-@media (min-width:720px){
-  .ck-qrwrap{ grid-template-columns: 260px 1fr; }
-}
+@media (min-width:720px){ .ck-qrwrap{ grid-template-columns: 260px 1fr; } }
 .ck-qrbox{
   border:1px solid rgba(255,255,255,.12);
   background:rgba(0,0,0,.20);
@@ -561,7 +621,6 @@ body::before{
   color:#fff;
   resize:none;
 }
-
 .ck-warn{
   border:1px solid rgba(255,255,255,.10);
   background:rgba(255,255,255,.04);
@@ -582,13 +641,8 @@ body::before{
   background:rgba(0,0,0,.25);
   color:#fff;
 }
-.ck-row2{
-  display:grid; gap:10px;
-  grid-template-columns: 1fr;
-}
-@media(min-width:560px){
-  .ck-row2{ grid-template-columns: 1fr 1fr; }
-}
+.ck-row2{ display:grid; gap:10px; grid-template-columns: 1fr; }
+@media(min-width:560px){ .ck-row2{ grid-template-columns: 1fr 1fr; } }
 
 .ck-actions{
   display:flex;
@@ -613,11 +667,7 @@ body::before{
 
 .ck-loc{ margin-top:8px; }
 .ck-hint{ font-size:12px; opacity:.7; margin-top:8px; }
-.ck-feeline{
-  margin-top:10px;
-  font-size:13px;
-  opacity:.95;
-}
+.ck-feeline{ margin-top:10px; font-size:13px; opacity:.95; }
 .ck-block{
   margin-top:10px;
   padding:12px;
@@ -626,37 +676,3 @@ body::before{
   background:rgba(255,40,40,.12);
   font-size:13px;
 }
-/* ============================================================
-   ✅ FIX MENU SUMINDO (SEM MUDAR O VISUAL)
-   - sobe o menu acima de tudo
-   - evita menu "perder clique" por overlays invisíveis
-   - mantém sticky exatamente igual
-============================================================ */
-
-/* 1) Garante que o menu (pagebar) sempre fique acima dos cards/hero */
-.pagebar{
-  z-index: 1000;          /* antes era 30, muito baixo */
-  position: sticky;       /* mantém seu comportamento */
-  top: 0;
-  isolation: isolate;     /* cria contexto de empilhamento consistente */
-}
-
-/* 2) Se algum pseudo-elemento estiver “cobrindo” o topo (raro, mas acontece) */
-.pagebar::after{
-  pointer-events: none;   /* seu vapor continua, mas não bloqueia clique */
-}
-
-/* 3) Garante que fundos/pseudos não virem uma “camada” na frente */
-body::before,
-body::after{
-  pointer-events: none;
-}
-
-/* 4) Se algum elemento tiver transform e criar stacking estranho */
-.pagebar, .pagebar *{
-  transform: translateZ(0);
-}
-
-/* 5) Drawer e checkout overlay continuam acima quando abertos (não altera sua UX) */
-.drawer{ z-index: 5000; }        /* era 80 */
-.ck-overlay{ z-index: 9000; }    /* era 99999 (absurdo alto), mas continua acima do menu */
