@@ -35,12 +35,11 @@ body.app{padding-bottom:110px}
 
 /* ============================================================
    ✅ HEADER / PAGEBAR (sticky premium)
-   - blindado: nunca some
 ============================================================ */
 .pagebar{
   position:sticky;
   top:0;
-  z-index: 2000; /* acima do conteúdo, abaixo de overlays */
+  z-index: 2000;
   display:flex;
   align-items:center;
   justify-content:space-between;
@@ -52,7 +51,6 @@ body.app{padding-bottom:110px}
   isolation:isolate;
 }
 .pagebar::after{
-  /* “vapor” sutil no topo */
   content:"";
   position:absolute;
   left:-40px;
@@ -83,7 +81,6 @@ body.app{padding-bottom:110px}
 
 /* ============================================================
    ✅ TOP MENU (opções no header) + ATIVO AUTOMÁTICO
-   Compatível com seu HTML: .topnav a[data-nav].is-active
 ============================================================ */
 .topnav{
   display:flex;
@@ -109,36 +106,25 @@ body.app{padding-bottom:110px}
 }
 .topnav a:hover{ transform: translateY(-1px); filter: brightness(1.02); }
 .topnav a:active{ transform: scale(.99); }
-
-/* ✅ estado ativo automático (JS adiciona .is-active) */
 .topnav a.is-active{
   background: linear-gradient(180deg, var(--wine), #4c0f0f);
   color:#fff;
   border-color: rgba(127,29,29,.35);
 }
-
-/* mobile: vira barra rolável */
 @media (max-width: 860px){
-  .pagebar{
-    flex-wrap: wrap;
-    justify-content: space-between;
-  }
-  .page-title{
-    order: 1;
-    width: calc(100% - 64px);
-    text-align: left;
-  }
-  .cart-btn{ order: 2; }
+  .pagebar{flex-wrap:wrap; justify-content:space-between;}
+  .page-title{order:1; width: calc(100% - 64px); text-align:left;}
+  .cart-btn{order:2;}
   .topnav{
-    order: 3;
-    width: 100%;
-    justify-content: flex-start;
-    overflow-x: auto;
-    padding-bottom: 6px;
+    order:3;
+    width:100%;
+    justify-content:flex-start;
+    overflow-x:auto;
+    padding-bottom:6px;
     -webkit-overflow-scrolling: touch;
-    scrollbar-width: none;
+    scrollbar-width:none;
   }
-  .topnav::-webkit-scrollbar{ display:none; }
+  .topnav::-webkit-scrollbar{display:none;}
 }
 
 /* ============================================================
@@ -234,7 +220,7 @@ body.app{padding-bottom:110px}
 }
 
 /* ============================================================
-   ✅ Products
+   ✅ Products (layout antigo, mantido)
 ============================================================ */
 .product-grid{
   display:grid;
@@ -281,24 +267,117 @@ body.app{padding-bottom:110px}
   background: rgba(255,255,255,.80);
 }
 
-/* Qty */
-.qty{display:flex;align-items:center;gap:8px}
-.qbtn{
-  width:34px; height:34px;
+/* ============================================================
+   ✅ NOVO: Cards do render.js (lp-card) — com seleção qty
+============================================================ */
+.lp-card.card{
+  background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(255,255,255,.90));
+  border:1px solid rgba(17,24,39,.10);
+  border-radius: var(--radius);
+  box-shadow: var(--shadow);
+  overflow:hidden;
+}
+.lp-cover{
+  position:relative;
+  background: linear-gradient(180deg, rgba(127,29,29,.10), rgba(255,255,255,.86));
+}
+.lp-cover img{
+  width:100%;
+  height:190px;
+  object-fit:cover;
+  display:block;
+}
+.lp-badges{
+  position:absolute;
+  left:12px;
+  top:12px;
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+}
+.lp-pill{
+  font-size:12px;
+  font-weight:800;
+  padding:6px 10px;
+  border-radius:999px;
+  border:1px solid rgba(255,255,255,.18);
+  background: rgba(17,24,39,.55);
+  color:#fff;
+  backdrop-filter: blur(8px);
+}
+.lp-pill.lp-sold{ background: rgba(220,38,38,.92); }
+.lp-pill.lp-promo{ background: rgba(245,158,11,.95); color:#111; border-color: rgba(255,255,255,.22); }
+
+.lp-body{ padding:12px; }
+.lp-top{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:10px;
+}
+.lp-title{ margin:0; font-size:16px; font-weight:900; letter-spacing:-.2px; }
+.lp-desc{ margin:6px 0 0; font-size:13px; color:var(--muted); line-height:1.35; min-height:34px; }
+
+.lp-price{ display:flex; align-items:baseline; gap:8px; }
+.lp-old{ text-decoration:line-through; opacity:.55; font-weight:800; }
+.lp-new{ font-weight:900; font-size:16px; color: var(--wine); }
+
+.lp-actions{
+  margin-top:12px;
+  display:flex;
+  justify-content:flex-end;
+  gap:10px;
+}
+
+/* Seleção qty (–  n  +) */
+.lp-qty{
+  display:inline-flex;
+  align-items:center;
+  gap:10px;
+  padding:8px 10px;
+  border-radius:14px;
+  border:1px solid rgba(17,24,39,.12);
+  background: rgba(255,255,255,.92);
+  box-shadow: 0 10px 20px rgba(17,24,39,.08);
+}
+.lp-qbtn{
+  width:36px;
+  height:36px;
   border-radius:12px;
   border:1px solid rgba(17,24,39,.14);
-  background: rgba(255,255,255,.92);
+  background: rgba(255,255,255,.95);
   cursor:pointer;
   font-weight:900;
+  font-size:18px;
+  line-height:1;
 }
-.qbtn:active{transform:scale(.98)}
-.qbtn.remove{
-  width:auto; height:auto;
-  padding:8px 10px;
-  border-radius:12px;
-  background: rgba(239,68,68,.10);
-  border:1px solid rgba(239,68,68,.25);
-  color: var(--red);
+.lp-qbtn:active{ transform: scale(.98); }
+.lp-q{
+  min-width:22px;
+  text-align:center;
+  font-weight:900;
+  color: var(--wine);
+}
+
+/* Botões padrão */
+.btn{
+  border:0;
+  border-radius:14px;
+  padding:12px 14px;
+  font-weight:900;
+  cursor:pointer;
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+.btn.primary{
+  background: linear-gradient(180deg, var(--wine), #4c0f0f);
+  color:#fff;
+}
+.btn.light{
+  background: rgba(255,255,255,.92);
+  border:1px solid rgba(17,24,39,.12);
 }
 
 /* ============================================================
@@ -347,7 +426,6 @@ body.app{padding-bottom:110px}
 
 /* ============================================================
    ✅ Drawer (Carrinho)
-   (fica acima do menu quando abre)
 ============================================================ */
 .drawer{position:fixed; inset:0; z-index:5000; display:none}
 .drawer.open{display:block}
@@ -383,13 +461,7 @@ body.app{padding-bottom:110px}
 .row{display:flex; align-items:center; justify-content:space-between; gap:10px; padding:6px 0}
 .row.total strong{font-size:18px}
 .drawer-actions{display:flex; gap:10px}
-.btn{
-  border:0; border-radius:14px; padding:12px 14px;
-  font-weight:900; cursor:pointer;
-  display:inline-flex; align-items:center; justify-content:center; gap:8px;
-}
-.btn.primary{background: linear-gradient(180deg, var(--wine), #4c0f0f); color:#fff}
-.btn.light{background: rgba(255,255,255,.92); border:1px solid rgba(17,24,39,.12)}
+
 .delivery-toggle{ display:flex; gap:10px; margin-bottom:10px; }
 .dt-btn{
   flex:1;
@@ -418,66 +490,25 @@ body.app{padding-bottom:110px}
 .cdesc{font-size:12px; color:var(--muted); margin-top:4px; line-height:1.35}
 .ccontrols{margin-top:10px; display:flex; align-items:center; justify-content:space-between; gap:10px}
 
-/* ============================================================
-   ✅ seus estilos adicionais (mantidos)
-============================================================ */
-.lp-grid{display:grid; gap:14px; grid-template-columns:repeat(4,1fr);}
-@media (max-width:1100px){.lp-grid{grid-template-columns:repeat(2,1fr);}}
-@media (max-width:640px){.lp-grid{grid-template-columns:1fr;}}
-
-.lp-card{border:1px solid rgba(0,0,0,.12); border-radius:18px; overflow:hidden; background:#fff; box-shadow:0 10px 30px rgba(0,0,0,.06);}
-.lp-cover{position:relative; background:#f3f4f6;}
-.lp-cover img{width:100%; height:190px; object-fit:cover; display:block;}
-.lp-badges{position:absolute; left:12px; top:12px; display:flex; gap:8px; flex-wrap:wrap;}
-.lp-pill{font-size:12px; font-weight:700; padding:6px 10px; border-radius:999px; background:rgba(0,0,0,.55); color:#fff;}
-.lp-pill.lp-sold{background:rgba(220,38,38,.9);}
-.lp-pill.lp-promo{background:rgba(245,158,11,.95);}
-
-.lp-body{padding:12px;}
-.lp-title{margin:0 0 6px; font-size:16px;}
-.lp-desc{margin:0 0 10px; opacity:.75; font-size:13px; min-height:34px;}
-.lp-row{display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;}
-
-.lp-price{display:flex; align-items:baseline; gap:8px;}
-.lp-old{text-decoration:line-through; opacity:.6; font-weight:700;}
-.lp-new{font-weight:900; font-size:16px;}
-
-.lp-btn{display:inline-flex; align-items:center; justify-content:center; padding:10px 12px; border-radius:12px; text-decoration:none; font-weight:800; border:1px solid rgba(0,0,0,.12); background:#111827; color:#fff;}
-.lp-btn:hover{filter:brightness(1.08);}
-.lp-btn.lp-btn-disabled{background:#9ca3af; cursor:not-allowed;}
-.lp-empty{padding:14px; border:1px dashed rgba(0,0,0,.18); border-radius:14px; opacity:.7;}
-
-.checkout-form{
-  margin-top:18px;
-  padding:14px;
-  border:1px solid rgba(0,0,0,.10);
-  border-radius:16px;
-  background:#fff;
-}
-.checkout-form h2{margin:0 0 12px;}
-.checkout-form label{
-  display:grid;
-  gap:6px;
-  font-weight:700;
-  font-size:13px;
-  margin-bottom:10px;
-}
-.checkout-form input, .checkout-form textarea{
-  width:100%;
-  padding:12px;
+/* qty antigo (mantido p/ drawer) */
+.qty{display:flex;align-items:center;gap:8px}
+.qbtn{
+  width:34px; height:34px;
   border-radius:12px;
-  border:1px solid rgba(0,0,0,.12);
-  outline:none;
-}
-.checkout-form textarea{resize:vertical; min-height:90px;}
-.checkout-form .btn.primary{
-  width:100%;
-  margin-top:8px;
-  border-radius:14px;
-  padding:14px;
+  border:1px solid rgba(17,24,39,.14);
+  background: rgba(255,255,255,.92);
+  cursor:pointer;
   font-weight:900;
 }
-#checkoutMsg{margin-top:8px;}
+.qbtn:active{transform:scale(.98)}
+.qbtn.remove{
+  width:auto; height:auto;
+  padding:8px 10px;
+  border-radius:12px;
+  background: rgba(239,68,68,.10);
+  border:1px solid rgba(239,68,68,.25);
+  color: var(--red);
+}
 
 /* ============================================================
    ✅ ADD-ONS PREMIUM (visual)
@@ -513,12 +544,12 @@ body::before{
   filter: saturate(1.05);
 }
 
-/* Admin gear (pedido) */
+/* Admin gear */
 .admin-gear{ opacity: 0.15; }
 .admin-gear:hover{ opacity: 1; }
 
 /* ============================================================
-   ✅ Checkout overlay (fica acima de tudo quando abre)
+   ✅ Checkout overlay (UMA vez só)
 ============================================================ */
 .ck-overlay{
   position:fixed; inset:0;
@@ -527,11 +558,10 @@ body::before{
   justify-content:center;
   padding:16px;
   background:rgba(0,0,0,.55);
-  z-index:9000;
+  z-index:9000; /* acima do drawer (5000) */
 }
 .ck-overlay.is-open{ display:flex; }
 
-/* resto do checkout mantido */
 .ck-sheet{
   width:min(720px, 100%);
   max-height: 92vh;
@@ -555,8 +585,10 @@ body::before{
   width:38px; height:38px; border-radius:12px;
   border:1px solid rgba(255,255,255,.12);
   background:transparent; color:#fff;
+  cursor:pointer;
 }
 .ck-step{ padding:16px; }
+
 .ck-paygrid{ display:grid; grid-template-columns: 1fr; gap:10px; }
 @media (min-width:560px){ .ck-paygrid{ grid-template-columns: 1fr 1fr 1fr; } }
 .ck-paybtn{
@@ -676,179 +708,20 @@ body::before{
   background:rgba(255,40,40,.12);
   font-size:13px;
 }
-/* ===== Checkout Overlay (não mexe na home) ===== */
-.ck-overlay{
-  position:fixed; inset:0;
+
+/* Toast */
+.toast{
+  position: fixed;
+  left: 50%;
+  bottom: 18px;
+  transform: translateX(-50%);
+  background: rgba(30,16,22,.92);
+  color: #FFF7F1;
+  border:1px solid rgba(255,255,255,.12);
+  border-radius: 14px;
+  padding: 12px 14px;
+  box-shadow: 0 18px 50px rgba(0,0,0,.25);
   display:none;
-  align-items:flex-end;
-  justify-content:center;
-  padding:16px;
-  background:rgba(0,0,0,.55);
-  z-index:99999;
-}
-.ck-overlay.is-open{ display:flex; }
-
-.ck-sheet{
-  width:min(720px, 100%);
-  max-height: 92vh;
-  overflow:auto;
-  background:#0f1115;
-  color:#fff;
-  border:1px solid rgba(255,255,255,.10);
-  border-radius:18px;
-  box-shadow: 0 16px 50px rgba(0,0,0,.55);
-}
-.ck-head{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  padding:16px 16px 10px;
-  border-bottom:1px solid rgba(255,255,255,.08);
-}
-.ck-title{ font-size:18px; font-weight:800; letter-spacing:.2px; }
-.ck-sub{ font-size:12px; opacity:.75; margin-top:2px; }
-.ck-x{
-  width:38px; height:38px; border-radius:12px;
-  border:1px solid rgba(255,255,255,.12);
-  background:transparent; color:#fff;
-}
-
-.ck-step{ padding:16px; }
-
-.ck-paygrid{
-  display:grid;
-  grid-template-columns: 1fr;
-  gap:10px;
-}
-@media (min-width:560px){
-  .ck-paygrid{ grid-template-columns: 1fr 1fr 1fr; }
-}
-.ck-paybtn{
-  display:flex; gap:10px; align-items:center;
-  padding:14px;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,.12);
-  background:rgba(255,255,255,.04);
-  color:#fff;
-  cursor:pointer;
-  transition: transform .12s ease, background .12s ease, border-color .12s ease;
-}
-.ck-paybtn:hover{
-  transform: translateY(-1px);
-  background:rgba(255,255,255,.06);
-  border-color: rgba(255,255,255,.18);
-}
-.ck-ic{ font-size:18px; }
-.ck-paytxt strong{ display:block; font-size:14px; }
-.ck-paytxt small{ display:block; font-size:12px; opacity:.75; margin-top:2px; }
-
-.ck-box{
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.03);
-  border-radius:18px;
-  padding:14px;
-}
-.ck-row{
-  display:grid; gap:10px;
-  grid-template-columns: 1fr 1fr;
-  margin-bottom:12px;
-}
-.ck-k{ font-size:12px; opacity:.75; }
-.ck-v{ font-size:15px; font-weight:800; margin-top:4px; }
-
-.ck-qrwrap{
-  display:grid;
-  gap:12px;
-  grid-template-columns: 1fr;
-  margin: 10px 0 12px;
-}
-@media (min-width:720px){
-  .ck-qrwrap{ grid-template-columns: 260px 1fr; }
-}
-.ck-qrbox{
-  border:1px solid rgba(255,255,255,.12);
-  background:rgba(0,0,0,.20);
-  border-radius:16px;
-  padding:12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  min-height:260px;
-}
-.ck-qr{ width:220px; height:220px; }
-
-.ck-copy .ck-k{ margin-bottom:6px; }
-.ck-textarea{
-  width:100%;
-  border-radius:14px;
-  padding:10px 12px;
-  border:1px solid rgba(255,255,255,.12);
-  background:rgba(0,0,0,.25);
-  color:#fff;
-  resize:none;
-}
-
-.ck-warn{
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.04);
-  border-radius:16px;
-  padding:12px;
-  font-size:13px;
-  line-height:1.35;
-  opacity:.95;
-}
-
-.ck-field{ display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
-.ck-lbl{ font-size:12px; opacity:.78; }
-.ck-inp{
-  height:44px;
-  border-radius:14px;
-  padding:0 12px;
-  border:1px solid rgba(255,255,255,.12);
-  background:rgba(0,0,0,.25);
-  color:#fff;
-}
-.ck-row2{
-  display:grid; gap:10px;
-  grid-template-columns: 1fr;
-}
-@media(min-width:560px){
-  .ck-row2{ grid-template-columns: 1fr 1fr; }
-}
-
-.ck-actions{
-  display:flex;
-  gap:10px;
-  justify-content:flex-end;
-  margin-top:12px;
-}
-.ck-btn, .ck-back{
-  height:44px;
-  border-radius:14px;
-  padding:0 14px;
-  border:1px solid rgba(255,255,255,.14);
-  background:#fff;
-  color:#0b0d10;
-  font-weight:800;
-  cursor:pointer;
-}
-.ck-btn.ghost, .ck-back.ghost{
-  background:transparent;
-  color:#fff;
-}
-
-.ck-loc{ margin-top:8px; }
-.ck-hint{ font-size:12px; opacity:.7; margin-top:8px; }
-.ck-feeline{
-  margin-top:10px;
-  font-size:13px;
-  opacity:.95;
-}
-.ck-block{
-  margin-top:10px;
-  padding:12px;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,.14);
-  background:rgba(255,40,40,.12);
-  font-size:13px;
+  z-index: 9999;
+  max-width: calc(100vw - 28px);
 }
