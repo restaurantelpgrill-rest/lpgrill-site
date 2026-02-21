@@ -372,35 +372,42 @@
     return toCrc + crc16(toCrc);
   }
 
-  function renderPix(total, fee){
-    const grand = total + fee;
-    elTotalPix.textContent = money(total);
-    elFeePix.textContent = money(fee);
+ function renderPix(total, fee){
+  const grand = total + fee;
 
-    const code = buildPixPayload({
-      key: CONFIG.pixKey,
-      name: CONFIG.merchantName,
-      city: CONFIG.merchantCity,
-      amount: grand,
-      txid: CONFIG.txid
-    });
+  elTotalPix.textContent = money(total);
+  elFeePix.textContent = money(fee);
 
-    elPixCode.value = code;
-    elQr.innerHTML = "";
+  const code = buildPixPayload({
+    key: CONFIG.pixKey,
+    name: CONFIG.merchantName,
+    city: CONFIG.merchantCity,
+    amount: grand,
+    txid: CONFIG.txid
+  });
 
-    if(typeof QRCode === "undefined"){
-      elQr.textContent = "QR Code não carregou.";
-      return;
-    }
-    QRCode.toCanvas(code, { width: 220, margin: 1 }, (err, canvas)=>{
-      if(err || !canvas){
-        elQr.textContent = "Erro ao gerar QR.";
-        return;
-      }
-      elQr.appendChild(canvas);
-    });
+  elPixCode.value = code;
+
+  // ✅ QR dentro do quadrado (modo seguro, igual seu PIX antigo)
+  elQr.innerHTML = "";
+
+  if (typeof QRCode === "undefined") {
+    elQr.textContent = "QR Code não carregou (biblioteca).";
+    return;
   }
 
+  const canvas = document.createElement("canvas");
+  canvas.width = 220;
+  canvas.height = 220;
+  elQr.appendChild(canvas);
+
+  QRCode.toCanvas(canvas, code, { margin: 1, scale: 6 }, (err) => {
+    if (err) {
+      console.error(err);
+      elQr.textContent = "Erro ao gerar QR.";
+    }
+  });
+}
   function openWhatsApp(msg){
     window.open(`https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`, "_blank");
   }
