@@ -1,1 +1,246 @@
+<!doctype html>
+<html lang="pt-br">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>LP Grill — Pagamento</title>
+  <link rel="stylesheet" href="../css/style.css" />
 
+  <style>
+    :root{
+      --wine-900:#2A0E17;
+      --gold-500:#D6B36A;
+      --cream-50:#FFF8F1;
+      --cream-100:#F6EFE6;
+      --ink:#171118;
+      --ink2:rgba(23,17,24,.72);
+      --line:rgba(0,0,0,.10);
+      --shadow: 0 14px 36px rgba(0,0,0,.12);
+      --radius:18px;
+    }
+
+    .wine-hero{
+      position:relative;
+      margin-top: 16px;
+      background:
+        radial-gradient(1100px 520px at 15% 18%, rgba(214,179,106,.18), transparent 55%),
+        radial-gradient(900px 520px at 85% 25%, rgba(90,26,45,.08), transparent 55%),
+        linear-gradient(180deg, var(--cream-50), var(--cream-100));
+      border: 1px solid var(--line);
+      border-radius: var(--radius);
+      overflow: hidden;
+    }
+
+    .wine-shell{ max-width: 1120px; margin: 0 auto; padding: 18px 16px 20px; }
+    .wine-topbar{ display:flex; align-items:center; justify-content:space-between; gap:12px; flex-wrap:wrap; }
+
+    .wine-badge{
+      display:inline-flex; align-items:center; gap:10px;
+      padding:10px 14px;
+      border-radius: 999px;
+      background: rgba(214,179,106,.16);
+      border:1px solid rgba(214,179,106,.30);
+      color: rgba(70,45,10,1);
+      font-weight:900;
+    }
+
+    .pill{
+      display:inline-flex; align-items:center; gap:8px;
+      padding: 8px 12px;
+      border-radius: 999px;
+      font-weight: 900;
+      border:1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.85);
+      color: rgba(35,20,25,.92);
+    }
+    .pill.ok{ background: rgba(0,200,120,.12); border-color: rgba(0,200,120,.28); color: rgba(0,90,50,1); }
+    .pill.wait{ background: rgba(214,179,106,.16); border-color: rgba(214,179,106,.30); color: rgba(80,55,15,1); }
+
+    .wine-title{
+      font-size: 22px;
+      line-height: 1.15;
+      margin: 12px 0 6px;
+      color: var(--wine-900);
+      letter-spacing: -0.2px;
+    }
+    .wine-sub{
+      color: var(--ink2);
+      font-size: 14px;
+      line-height: 1.5;
+      max-width: 72ch;
+      margin: 0;
+    }
+
+    .wine-grid{
+      display:grid;
+      grid-template-columns: 1.2fr .8fr;
+      gap: 14px;
+      margin-top: 14px;
+    }
+    @media(max-width: 900px){ .wine-grid{ grid-template-columns: 1fr; } }
+
+    .wine-card{
+      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(246,239,230,.92));
+      color: var(--ink);
+      border: 1px solid rgba(0,0,0,.08);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      overflow:hidden;
+    }
+    .wine-card .inner{ padding: 16px; }
+
+    .btn-wine{
+      display:inline-flex; align-items:center; justify-content:center; gap:10px;
+      padding: 12px 14px;
+      border-radius: 14px;
+      border:1px solid rgba(0,0,0,.10);
+      background: rgba(255,255,255,.75);
+      color: rgba(25,15,20,.92);
+      font-weight: 900;
+      cursor:pointer;
+      text-decoration:none;
+      transition: transform .12s ease, background .12s ease, border-color .12s ease;
+    }
+    .btn-wine:hover{ transform: translateY(-1px); background: rgba(255,255,255,.92); border-color: rgba(0,0,0,.14); }
+    .btn-gold{
+      background: linear-gradient(180deg, rgba(242,220,165,.98), rgba(214,179,106,.92));
+      color:#2a1607;
+      border:1px solid rgba(214,179,106,.55);
+    }
+
+    .pix-row{ display:flex; gap:12px; align-items:stretch; flex-wrap:wrap; }
+    .pix-qr{
+      width: 168px; height: 168px;
+      background: rgba(255,255,255,.65);
+      border:1px dashed rgba(0,0,0,.18);
+      border-radius: 16px;
+      display:flex; align-items:center; justify-content:center;
+    }
+    .pix-meta{ flex:1; min-width: 240px; }
+    .pix-label{ font-size: 12px; color: rgba(23,17,24,.70); margin-bottom: 6px; }
+    .pix-value{
+      font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, "Liberation Mono", "Courier New", monospace;
+      font-size: 13px;
+      padding: 10px 12px;
+      border-radius: 14px;
+      background: rgba(255,255,255,.75);
+      border:1px solid rgba(0,0,0,.10);
+      word-break: break-all;
+      color: rgba(25,15,20,.92);
+    }
+
+    .pay-status{
+      display:flex; align-items:center; justify-content:space-between; gap:10px;
+      padding: 12px 14px;
+      border-radius: 16px;
+      background: rgba(255,255,255,.75);
+      border:1px solid rgba(0,0,0,.10);
+    }
+
+    .toast{
+      position: fixed; left: 50%; bottom: 18px; transform: translateX(-50%);
+      background: rgba(30,16,22,.92); color: #FFF7F1;
+      border:1px solid rgba(255,255,255,.12);
+      border-radius: 14px; padding: 12px 14px;
+      box-shadow: 0 18px 50px rgba(0,0,0,.25);
+      display:none; z-index: 9999;
+      max-width: calc(100vw - 28px);
+    }
+  </style>
+</head>
+
+<body class="app">
+
+  <header class="pagebar">
+    <div class="page-title">
+      <h1>Pagamento</h1>
+      <p>Conclua o Pix para liberar o pedido</p>
+    </div>
+    <a class="btn-wine btn-gold" href="../checkout.html">Ir para Checkout</a>
+  </header>
+
+  <main class="container">
+    <section class="wine-hero" aria-label="Pagamento via Pix">
+      <div class="wine-shell">
+        <div class="wine-topbar">
+          <div class="wine-badge">🍷 Pix com valor do carrinho</div>
+          <div id="payPill" class="pill wait">⏳ Aguardando pagamento</div>
+        </div>
+
+        <h2 class="wine-title">Pague pelo Pix (QR Code)</h2>
+        <p class="wine-sub">
+          O QR é gerado com o <b>total do carrinho</b>. Depois de pagar, toque em <b>“Já paguei”</b>.
+          Se o carrinho mudar, o pagamento é invalidado.
+        </p>
+
+        <div class="wine-grid">
+          <div class="wine-card">
+            <div class="inner">
+              <div class="pix-row">
+                <div class="pix-qr">
+                  <canvas id="pixCanvas" width="168" height="168"></canvas>
+                </div>
+
+                <div class="pix-meta">
+                  <div class="pix-label">Total do carrinho</div>
+                  <div id="cartTotalView" class="pix-value">R$ 0,00</div>
+
+                  <div style="height:10px;"></div>
+
+                  <div class="pix-label">PIX Copia e Cola</div>
+                  <div id="pixPayload" class="pix-value">Gerando Pix...</div>
+
+                  <div style="display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;">
+                    <button class="btn-wine btn-gold" id="btnCopyPix" type="button">📋 Copiar Pix</button>
+                    <button class="btn-wine" id="btnPaid" type="button">✅ Já paguei</button>
+                    <a class="btn-wine" href="../index.html">← Voltar ao cardápio</a>
+                  </div>
+
+                  <div style="margin-top:12px; font-size:12px; color:rgba(23,17,24,.70); line-height:1.5;">
+                    *Sem servidor, a confirmação é manual. (Cliente paga e confirma.)
+                  </div>
+                </div>
+              </div>
+
+              <div style="height:12px;"></div>
+
+              <div class="pay-status">
+                <div>
+                  <div style="font-weight:900;">Status</div>
+                  <div id="payText" style="font-size:13px; color:rgba(23,17,24,.70);">
+                    Aguardando você confirmar.
+                  </div>
+                </div>
+                <button class="btn-wine" id="btnResetPay" type="button">↺ Reset</button>
+              </div>
+            </div>
+          </div>
+
+          <div class="wine-card">
+            <div class="inner">
+              <div style="font-size:16px; font-weight:900; margin-bottom:6px; color:rgba(42,14,23,.95);">
+                Regra do sistema
+              </div>
+              <div style="font-size:13px; color:rgba(23,17,24,.70); line-height:1.65;">
+                ✅ Checkout só libera finalizar se o pagamento estiver <b>concluído</b>.<br>
+                ✅ Se o carrinho mudar, o pagamento é <b>invalidado</b> automaticamente.
+              </div>
+            </div>
+          </div>
+
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <div class="toast" id="toast"></div>
+
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+
+  <!-- (se quiser ler carrinho por scripts do projeto, mantém) -->
+  <script src="../js/data.js"></script>
+  <script src="../js/cart.js"></script>
+
+  <script src="pagamento.js"></script>
+</body>
+</html>
