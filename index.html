@@ -41,193 +41,21 @@
     }
   </style>
 
-  <!-- WINE PREMIUM LIGHT (HOME) + PIX (mantido como você mandou) -->
+  <!-- (Opcional) Wine Hero styles — pode manter, não quebra nada -->
   <style>
     :root{
       --wine-900:#2A0E17;
       --wine-700:#5A1A2D;
-
       --gold-500:#D6B36A;
       --gold-400:#E6C983;
-
       --cream-50:#FFF8F1;
       --cream-100:#F6EFE6;
       --cream-200:#EFE3D5;
-
       --ink:#171118;
       --ink2:rgba(23,17,24,.72);
       --line:rgba(0,0,0,.10);
-
       --shadow: 0 14px 36px rgba(0,0,0,.12);
       --radius:18px;
-    }
-
-    .wine-hero{
-      position:relative;
-      margin-top: 16px;
-      background:
-        radial-gradient(1100px 520px at 15% 18%, rgba(214,179,106,.20), transparent 55%),
-        radial-gradient(900px 520px at 85% 25%, rgba(90,26,45,.10), transparent 55%),
-        linear-gradient(180deg, var(--cream-50), var(--cream-100));
-      border: 1px solid var(--line);
-      border-radius: var(--radius);
-      overflow: hidden;
-    }
-    .wine-shell{ max-width: 1120px; margin: 0 auto; padding: 18px 16px 20px; }
-
-    .wine-topbar{
-      display:flex; align-items:center; justify-content:space-between;
-      gap: 12px; flex-wrap: wrap;
-    }
-
-    .wine-badge{
-      display:inline-flex; align-items:center; gap:10px;
-      padding:10px 14px;
-      border-radius: 999px;
-      background: rgba(214,179,106,.16);
-      border:1px solid rgba(214,179,106,.35);
-      color: rgba(70,45,10,1);
-      font-weight:800;
-    }
-
-    .pill{
-      display:inline-flex; align-items:center; gap:8px;
-      padding: 8px 12px;
-      border-radius: 999px;
-      font-weight: 900;
-      border:1px solid rgba(0,0,0,.10);
-      background: rgba(255,255,255,.85);
-      color: rgba(35,20,25,.92);
-    }
-    .pill.ok{
-      background: rgba(0,200,120,.12);
-      border-color: rgba(0,200,120,.28);
-      color: rgba(0,90,50,1);
-    }
-    .pill.wait{
-      background: rgba(214,179,106,.16);
-      border-color: rgba(214,179,106,.30);
-      color: rgba(80,55,15,1);
-    }
-
-    .wine-title{
-      font-size: 22px;
-      line-height: 1.15;
-      margin: 12px 0 6px;
-      color: var(--wine-900);
-      letter-spacing: -0.2px;
-    }
-
-    .wine-sub{
-      color: var(--ink2);
-      font-size: 14px;
-      line-height: 1.5;
-      max-width: 70ch;
-      margin: 0;
-    }
-
-    .wine-grid{
-      display:grid;
-      grid-template-columns: 1.2fr .8fr;
-      gap: 14px;
-      margin-top: 14px;
-    }
-    @media(max-width: 900px){ .wine-grid{ grid-template-columns: 1fr; } }
-
-    .wine-card{
-      background: linear-gradient(180deg, rgba(255,255,255,.92), rgba(246,239,230,.92));
-      color: var(--ink);
-      border: 1px solid rgba(0,0,0,.08);
-      border-radius: var(--radius);
-      box-shadow: var(--shadow);
-      overflow:hidden;
-    }
-    .wine-card .inner{ padding: 16px; }
-
-    .btn-wine{
-      display:inline-flex; align-items:center; justify-content:center;
-      gap:10px;
-      padding: 12px 14px;
-      border-radius: 14px;
-      border:1px solid rgba(0,0,0,.10);
-      background: rgba(255,255,255,.75);
-      color: rgba(25,15,20,.92);
-      font-weight: 900;
-      cursor:pointer;
-      text-decoration:none;
-      transition: transform .12s ease, background .12s ease, border-color .12s ease;
-    }
-    .btn-wine:hover{
-      transform: translateY(-1px);
-      background: rgba(255,255,255,.92);
-      border-color: rgba(0,0,0,.14);
-    }
-    .btn-gold{
-      background: linear-gradient(180deg, rgba(242,220,165,.98), rgba(214,179,106,.92));
-      color:#2a1607;
-      border:1px solid rgba(214,179,106,.55);
-    }
-
-    .toast{
-      position: fixed;
-      left: 50%;
-      bottom: 18px;
-      transform: translateX(-50%);
-      background: rgba(30,16,22,.92);
-      color: #FFF7F1;
-      border:1px solid rgba(255,255,255,.12);
-      border-radius: 14px;
-      padding: 12px 14px;
-      box-shadow: 0 18px 50px rgba(0,0,0,.25);
-      display:none;
-      z-index: 9999;
-      max-width: calc(100vw - 28px);
-    }
-  </style>
-
-  <!-- ✅ MENU TOPBAR (aparece mesmo sem mexer no seu CSS) + estado ativo -->
-  <style>
-    .pagebar{ gap:12px; }
-    .topnav{
-      display:flex; align-items:center; gap:10px;
-      flex:1; justify-content:center; min-width:0;
-    }
-    .topnav a{
-      display:inline-flex; align-items:center; gap:8px;
-      padding:10px 12px;
-      border-radius:999px;
-      border:1px solid rgba(17,24,39,.10);
-      background: rgba(255,255,255,.85);
-      font-weight:900;
-      font-size:13px;
-      white-space:nowrap;
-      transition: transform .12s ease, filter .12s ease;
-    }
-    .topnav a:hover{ transform: translateY(-1px); filter: brightness(1.02); }
-    .topnav a:active{ transform: scale(.99); }
-
-    /* ativo automático (JS coloca .is-active) */
-    .topnav a.is-active{
-      background: linear-gradient(180deg, var(--wine, #7f1d1d), #4c0f0f);
-      color:#fff;
-      border-color: rgba(127,29,29,.35);
-    }
-
-    /* mobile: vira barra rolável */
-    @media (max-width: 860px){
-      .pagebar{ flex-wrap:wrap; justify-content:space-between; }
-      .page-title{ order:1; width: calc(100% - 64px); text-align:left; }
-      .cart-btn{ order:2; }
-      .topnav{
-        order:3;
-        width:100%;
-        justify-content:flex-start;
-        overflow-x:auto;
-        padding-bottom:6px;
-        -webkit-overflow-scrolling: touch;
-        scrollbar-width:none;
-      }
-      .topnav::-webkit-scrollbar{ display:none; }
     }
   </style>
 </head>
@@ -235,16 +63,6 @@
 <body class="app">
 
   <a href="#" id="adminGear" class="admin-gear" aria-label="Admin" title="Admin">⚙</a>
-
-     <!-- ✅ MENU TOP (opções) -->
-    <nav class="topnav" aria-label="Categorias">
-      <a href="index.html" data-nav="index">🏠 Início</a>
-      <a href="marmitas.html" data-nav="marmitas">🍱 Marmitas</a>
-      <a href="porcoes.html" data-nav="porcoes">🍟 Porções</a>
-      <a href="bebidas.html" data-nav="bebidas">🥤 Bebidas</a>
-      <a href="sobremesas.html" data-nav="sobremesas">🍰 Sobremesas</a>
-      <a href="checkout.html" data-nav="checkout">✅ Finalizar</a>
-    </nav>
 
   <div class="container subinfo" id="infoBar"></div>
 
@@ -322,7 +140,7 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- ====== CHECKOUT/PAGAMENTO (ETAPA SEPARADA) — NÃO APARECE NA HOME ====== -->
+  <!-- ✅ CHECKOUT/PAGAMENTO (UMA ÚNICA VEZ) -->
   <div id="checkoutOverlay" class="ck-overlay" aria-hidden="true">
     <div class="ck-sheet" role="dialog" aria-modal="true" aria-labelledby="ckTitle">
       <div class="ck-head">
@@ -476,173 +294,14 @@
     })();
   </script>
 
-  <!-- ✅ MENU ATIVO AUTOMÁTICO (serve pra TODAS as páginas) -->
-  <script>
-    (() => {
-      const clean = (s) => (s || "").toLowerCase().split("?")[0].split("#")[0];
-      const file = clean(location.pathname.split("/").pop() || "index.html");
+  <!-- QRCode (1x e ANTES do app.js, porque o checkout usa) -->
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 
-      const map = {
-        "index.html":"index",
-        "marmitas.html":"marmitas",
-        "porcoes.html":"porcoes",
-        "bebidas.html":"bebidas",
-        "sobremesas.html":"sobremesas",
-        "checkout.html":"checkout",
-        "admin.html":"admin"
-      };
-
-      const key = map[file] || "index";
-      document.querySelectorAll(".topnav a[data-nav]").forEach(a => {
-        const k = a.getAttribute("data-nav");
-        a.classList.toggle("is-active", k === key);
-        if(k === key) a.setAttribute("aria-current", "page");
-      });
-    })();
-  </script>
-
-  <!-- Scripts (uma vez só, na ordem certa) -->
+  <!-- Scripts (ordem correta) -->
   <script src="js/data.js"></script>
   <script src="js/cart.js"></script>
-  <script src="js/app.js"></script>
   <script src="js/render.js"></script>
+  <script src="js/app.js"></script>
 
-  <!-- QRCode (apenas 1x) -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<!-- ====== CHECKOUT/PAGAMENTO (ETAPA SEPARADA) — NÃO MUDA SUA HOME ====== -->
-<div id="checkoutOverlay" class="ck-overlay" aria-hidden="true">
-  <div class="ck-sheet" role="dialog" aria-modal="true" aria-labelledby="ckTitle">
-    <div class="ck-head">
-      <div>
-        <div id="ckTitle" class="ck-title">Finalizar pedido</div>
-        <div class="ck-sub">Escolha a forma de pagamento</div>
-      </div>
-      <button class="ck-x" type="button" id="ckClose" aria-label="Fechar">✕</button>
-    </div>
-
-    <!-- ETAPA 1: PAGAMENTO -->
-    <section class="ck-step" data-step="pay">
-      <div class="ck-paygrid">
-        <button class="ck-paybtn" type="button" data-pay="pix">
-          <span class="ck-ic">⚡</span>
-          <span class="ck-paytxt">
-            <strong>PIX</strong>
-            <small>Copia e Cola + QR Code</small>
-          </span>
-        </button>
-
-        <button class="ck-paybtn" type="button" data-pay="credit">
-          <span class="ck-ic">💳</span>
-          <span class="ck-paytxt">
-            <strong>Crédito</strong>
-            <small>Prossegue para endereço</small>
-          </span>
-        </button>
-
-        <button class="ck-paybtn" type="button" data-pay="debit">
-          <span class="ck-ic">💳</span>
-          <span class="ck-paytxt">
-            <strong>Débito</strong>
-            <small>Prossegue para endereço</small>
-          </span>
-        </button>
-      </div>
-
-      <div class="ck-actions">
-        <button class="ck-back ghost" type="button" id="ckCancel">Cancelar</button>
-      </div>
-    </section>
-
-    <!-- ETAPA 2: PIX (TRAVA AQUI) -->
-    <section class="ck-step" data-step="pix" hidden>
-      <div class="ck-box">
-        <div class="ck-row">
-          <div class="ck-kv">
-            <div class="ck-k">Total do pedido</div>
-            <div class="ck-v" id="ckTotalPix">R$ 0,00</div>
-          </div>
-          <div class="ck-kv">
-            <div class="ck-k">Taxa de entrega</div>
-            <div class="ck-v" id="ckFeePix">R$ 0,00</div>
-          </div>
-        </div>
-
-        <div class="ck-qrwrap">
-          <div class="ck-qrbox">
-            <!-- QR code entra aqui -->
-            <div id="ckQr" class="ck-qr"></div>
-          </div>
-
-          <div class="ck-copy">
-            <div class="ck-k">PIX Copia e Cola</div>
-            <textarea id="ckPixCode" class="ck-textarea" rows="3" readonly></textarea>
-            <button class="ck-btn" type="button" id="ckCopyPix">Copiar código PIX</button>
-          </div>
-        </div>
-
-        <div class="ck-warn">
-          <strong>Depois de pagar via PIX,</strong> envie o comprovante no WhatsApp para <strong>liberarmos seu pedido imediatamente</strong>.
-        </div>
-
-        <div class="ck-actions">
-          <button class="ck-back ghost" type="button" id="ckBackFromPix">Voltar</button>
-          <button class="ck-btn" type="button" id="ckPaidPix">Já paguei (enviar comprovante)</button>
-        </div>
-      </div>
-    </section>
-
-    <!-- ETAPA 3: ENDEREÇO (CRÉDITO/DÉBITO) -->
-    <section class="ck-step" data-step="addr" hidden>
-      <div class="ck-box">
-        <div class="ck-row2">
-          <div class="ck-field">
-            <label class="ck-lbl">Nome</label>
-            <input id="ckName" class="ck-inp" placeholder="Seu nome" autocomplete="name" />
-          </div>
-          <div class="ck-field">
-            <label class="ck-lbl">Telefone</label>
-            <input id="ckPhone" class="ck-inp" placeholder="(DDD) 99999-9999" inputmode="tel" />
-          </div>
-        </div>
-
-        <div class="ck-field">
-          <label class="ck-lbl">Endereço completo</label>
-          <input id="ckAddress" class="ck-inp" placeholder="Rua, número, bairro" autocomplete="street-address" />
-        </div>
-
-        <div class="ck-row2">
-          <div class="ck-field">
-            <label class="ck-lbl">Complemento (opcional)</label>
-            <input id="ckCompl" class="ck-inp" placeholder="Apto, bloco, referência" />
-          </div>
-          <div class="ck-field">
-            <label class="ck-lbl">Observações (opcional)</label>
-            <input id="ckObs" class="ck-inp" placeholder="Sem cebola, pouco gelo..." />
-          </div>
-        </div>
-
-        <div class="ck-loc">
-          <button class="ck-btn ghost" type="button" id="ckGetLocation">Usar minha localização (GPS) para calcular taxa</button>
-          <div class="ck-hint" id="ckKmHint">A taxa depende da distância até Maria Teresa (BH).</div>
-          <div class="ck-feeline" id="ckFeeLine" hidden>
-            Distância: <strong id="ckKm">0,0 km</strong> • Taxa: <strong id="ckFee">R$ 0,00</strong>
-          </div>
-          <div class="ck-block" id="ckBlocked" hidden>
-            Fora do raio de 10 km. Entrega indisponível para este endereço.
-          </div>
-        </div>
-
-        <div class="ck-actions">
-          <button class="ck-back ghost" type="button" id="ckBackFromAddr">Voltar</button>
-          <button class="ck-btn" type="button" id="ckConfirmOrder">Confirmar pedido</button>
-        </div>
-      </div>
-    </section>
-
-  </div>
-</div>
-
-<!-- QRCode lib (leve) -->
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
 </body>
 </html>
