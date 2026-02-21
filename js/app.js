@@ -1,10 +1,10 @@
-// js/app.js — LP Grill (window.DATA + carrinho + Drawer + Checkout Overlay PIX/Cartão)
-// ✅ Correção: removido "plugin duplicado" e interceptação do Finalizar reforçada
+// js/app.js — LP Grill (Carrinho + Drawer + Checkout Overlay PIX/Cartão)
+// Ajustado para o HTML do seu index (IDs: cartDrawer/modeEntrega/modeRetirar/checkoutOverlay/ck...)
 (function () {
-  // ===== Config =====
+  // ===================== CONFIG =====================
   const CFG = {
     brand: "LP Grill",
-    whatsapp: "5531998064556", // ✅ correto
+    whatsapp: "5531998064556",
 
     // Base Maria Teresa BH
     baseLat: -19.8850878,
@@ -15,33 +15,41 @@
     maxKm: 10,
   };
 
-  // ===== Utils =====
-  window.money =
-    window.money ||
-    function (v) {
-      return Number(v || 0).toLocaleString("pt-BR", {
-        style: "currency",
-        currency: "BRL",
-      });
-    };
+  const PIX = {
+    // sua chave já estava aqui — mantive
+    key: "e02484b0-c924-4d38-9af9-79af9ad97c3e",
+    merchantName: "LP GRILL",
+    merchantCity: "BELO HORIZONTE",
+    txid: "LPGRILL01",
+  };
 
+  // ===================== UTILS =====================
   const $ = (s, r = document) => r.querySelector(s);
+
+  const money = (v) =>
+    Number(v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+
+  function toast(msg) {
+    const el = $("#toast");
+    if (!el) return;
+    el.textContent = msg;
+    el.style.display = "block";
+    clearTimeout(toast._t);
+    toast._t = setTimeout(() => (el.style.display = "none"), 2200);
+  }
 
   function allProducts() {
     const list = [];
     if (window.DATA) {
-      for (const k in window.DATA) {
-        if (Array.isArray(window.DATA[k])) list.push(...window.DATA[k]);
-      }
+      for (const k in window.DATA) if (Array.isArray(window.DATA[k])) list.push(...window.DATA[k]);
     }
     return list;
   }
-
   function findProduct(id) {
     return allProducts().find((p) => p.id === id);
   }
 
-  // ===== Cart (localStorage) =====
+  // ===================== CART =====================
   const Cart = window.Cart || {};
   window.Cart = Cart;
 
@@ -49,11 +57,8 @@
   Cart.stateKey = "LPGRILL_CHECKOUT";
 
   Cart.read = function () {
-    try {
-      return JSON.parse(localStorage.getItem(Cart.key) || "[]");
-    } catch (e) {
-      return [];
-    }
+    try { return JSON.parse(localStorage.getItem(Cart.key) || "[]"); }
+    catch { return []; }
   };
 
   Cart.write = function (items) {
@@ -67,6 +72,7 @@
     if (found) found.qty += 1;
     else items.push({ id, qty: 1 });
     Cart.write(items);
+    renderDrawer();
   };
 
   Cart.dec = function (id) {
@@ -74,12 +80,13 @@
     const found = items.find((x) => x.id === id);
     if (!found) return;
     found.qty -= 1;
-    const next = items.filter((x) => x.qty > 0);
-    Cart.write(next);
+    Cart.write(items.filter((x) => x.qty > 0));
+    renderDrawer();
   };
 
   Cart.remove = function (id) {
     Cart.write(Cart.read().filter((x) => x.id !== id));
+    renderDrawer();
   };
 
   Cart.count = function () {
@@ -94,11 +101,8 @@
   };
 
   Cart.checkoutState = function () {
-    try {
-      return JSON.parse(localStorage.getItem(Cart.stateKey) || "{}");
-    } catch (e) {
-      return {};
-    }
+    try { return JSON.parse(localStorage.getItem(Cart.stateKey) || "{}"); }
+    catch { return {}; }
   };
 
   Cart.setCheckoutState = function (patch) {
@@ -108,16 +112,47 @@
     return next;
   };
 
-  // ===== Distância / taxa =====
+  Cart.fee = function () {
+    const st = Cart.checkoutState();
+    if ((st.tipo || "entrega") !== "entrega") return 0;
+    return Number(st.fee || 0);
+  };
+
+  Cart.total = function () {
+    return Cart.subtotal() + Cart.fee();
+  };
+
+  Cart.syncUI = function () {
+    const countEl = $("#cartCount") || $("#cartBadge");
+    if (countEl) countEl.textContent = String(Cart.count());
+
+    const totalEl = $("#ctaTotal");
+    if (totalEl) totalEl.textContent = money(Cart.total());
+
+    const sticky = $("#stickyCTA");
+    if (sticky) sticky.hidden = Cart.count() === 0;
+
+    const wa = $("#waFloat");
+    if (wa) {
+      // WhatsApp flutuante vira “abrir carrinho” se tiver itens
+      wa.href = "#";
+      wa.addEventListener("click", (e) => {
+        e.preventDefault();
+        if (Cart.count() > 0) openCart();
+        else toast("Seu carrinho está vazio.");
+      }, { once: true });
+    }
+  };
+
+  // ===================== DISTÂNCIA / TAXA =====================
   function haversineKm(lat1, lon1, lat2, lon2) {
     const R = 6371;
     const dLat = (lat2 - lat1) * Math.PI / 180;
     const dLon = (lon2 - lon1) * Math.PI / 180;
     const a =
       Math.sin(dLat / 2) ** 2 +
-      Math.cos(lat1 * Math.PI / 180) *
-        Math.cos(lat2 * Math.PI / 180) *
-        Math.sin(dLon / 2) ** 2;
+      Math.cos(lat1 * Math.PI / 180) * Math.cos(lat2 * Math.PI / 180) *
+      Math.sin(dLon / 2) ** 2;
     return 2 * R * Math.asin(Math.sqrt(a));
   }
 
@@ -135,274 +170,131 @@
 
   function calcFeeWithGPS() {
     return new Promise((resolve, reject) => {
-      if (!navigator.geolocation)
-        return reject(new Error("GPS não suportado."));
+      if (!navigator.geolocation) return reject(new Error("GPS não suportado."));
       navigator.geolocation.getCurrentPosition(
-        (pos) =>
-          resolve(
-            calcFeeByCoords(pos.coords.latitude, pos.coords.longitude)
-          ),
+        (pos) => resolve(calcFeeByCoords(pos.coords.latitude, pos.coords.longitude)),
         reject,
         { enableHighAccuracy: true, timeout: 12000, maximumAge: 0 }
       );
     });
   }
 
-  // ===== Totais =====
-  Cart.fee = function () {
-    const st = Cart.checkoutState();
-    if ((st.tipo || "entrega") !== "entrega") return 0;
-    return Number(st.fee || 0);
-  };
+  // ===================== DRAWER =====================
+  const drawer = $("#cartDrawer");
+  const backdrop = $("#closeCartBackdrop");
+  const closeBtn = $("#closeCart");
+  const openBtn = $("#openCart"); // pode não existir no index
+  const ctaOpenCart = $("#ctaOpenCart");
 
-  Cart.total = function () {
-    return Cart.subtotal() + Cart.fee();
-  };
+  function openCart() {
+    if (!drawer) return;
+    drawer.classList.add("open");
+    drawer.setAttribute("aria-hidden", "false");
+    renderDrawer();
+  }
 
-  Cart.syncUI = function () {
-    // seus ids variam entre páginas — então tento todos sem quebrar
-    const badge =
-      document.getElementById("cartBadge") ||
-      document.getElementById("cartCount");
-    const total =
-      document.getElementById("ctaTotal") ||
-      document.getElementById("grandTotal");
-    const gt =
-      document.getElementById("grandTotal") ||
-      document.getElementById("totV");
-
-    if (badge) badge.textContent = String(Cart.count());
-    if (total) total.textContent = money(Cart.total());
-    if (gt) gt.textContent = money(Cart.total());
-  };
-
-  // ===== Drawer (mantém seu layout) =====
-  function ensureDrawer() {
-    if (document.getElementById("cartDrawer")) return;
-
-    const wrap = document.createElement("div");
-    wrap.className = "drawer";
-    wrap.id = "cartDrawer";
-    wrap.innerHTML = `
-      <div class="drawer-backdrop" id="drawerBackdrop"></div>
-      <aside class="drawer-panel" role="dialog" aria-label="Carrinho">
-        <div class="drawer-head">
-          <div>
-            <strong style="font-size:16px">Seu carrinho</strong>
-            <div class="mini muted">Revise e finalize</div>
-          </div>
-          <button class="icon-btn" id="closeCart" type="button">✕</button>
-        </div>
-
-        <div class="drawer-body">
-          <div class="delivery-toggle">
-            <button class="dt-btn" id="dtEntrega" type="button">Entrega</button>
-            <button class="dt-btn" id="dtRetirada" type="button">Retirada</button>
-          </div>
-
-          <div class="note">
-            <label>Endereço (obrigatório se Entrega)</label>
-            <textarea id="addr" placeholder="Rua, número, bairro, complemento..."></textarea>
-          </div>
-
-          <div class="note">
-            <label>Pagamento</label>
-            <select id="pay" style="border:1px solid rgba(199,201,209,.85);border-radius:14px;padding:12px;background:rgba(255,255,255,.82);outline:none">
-              <option value="Pix">Pix</option>
-              <option value="Cartão">Cartão</option>
-              <option value="Dinheiro">Dinheiro</option>
-            </select>
-          </div>
-
-          <div class="note" id="trocoBox" style="display:none">
-            <label>Troco para quanto?</label>
-            <input id="troco" placeholder="Ex: 50" style="border:1px solid rgba(199,201,209,.85);border-radius:14px;padding:12px;background:rgba(255,255,255,.82);outline:none" />
-          </div>
-
-          <div class="note">
-            <label>Observações</label>
-            <textarea id="obs" placeholder="Sem cebola, bem passado, etc..."></textarea>
-          </div>
-
-          <div style="height:12px"></div>
-          <div id="cartItems"></div>
-        </div>
-
-        <div class="drawer-foot">
-          <div class="totals">
-            <div class="row"><span class="muted">Subtotal</span><strong id="subV">${money(
-              0
-            )}</strong></div>
-            <div class="row"><span class="muted">Taxa</span><strong id="taxV">${money(
-              0
-            )}</strong></div>
-            <div class="row total"><span>Total</span><strong id="totV">${money(
-              0
-            )}</strong></div>
-          </div>
-
-          <div class="drawer-actions">
-            <a class="btn primary" id="goCheckout" href="checkout.html">Finalizar</a>
-          </div>
-
-          <div class="mini muted" id="warn" style="margin-top:10px; display:none; color:#b91c1c; font-weight:900">
-            Coloque o endereço para enviar o pedido!!
-          </div>
-        </div>
-      </aside>
-    `;
-    document.body.appendChild(wrap);
-
-    const open = () => {
-      wrap.classList.add("open");
-      renderDrawer();
-    };
-    const close = () => wrap.classList.remove("open");
-
-    // IDs diferentes por página (seguro)
-    document.getElementById("openCart")?.addEventListener("click", open);
-    document.getElementById("ctaCart")?.addEventListener("click", open);
-    document.getElementById("ctaOpenCart")?.addEventListener("click", open);
-
-    document.getElementById("drawerBackdrop")?.addEventListener("click", close);
-    document.getElementById("closeCart")?.addEventListener("click", close);
-
-    const st = Cart.checkoutState();
-    const tipo = st.tipo || "entrega";
-    setTipo(tipo);
-
-    document
-      .getElementById("dtEntrega")
-      .addEventListener("click", () => setTipo("entrega"));
-    document
-      .getElementById("dtRetirada")
-      .addEventListener("click", () => setTipo("retirada"));
-
-    const addr = document.getElementById("addr");
-    const pay = document.getElementById("pay");
-    const obs = document.getElementById("obs");
-    const troco = document.getElementById("troco");
-
-    addr.value = st.endereco || "";
-    pay.value = st.pagamento || "Pix";
-    obs.value = st.obs || "";
-    troco.value = st.troco || "";
-
-    const syncState = () => {
-      Cart.setCheckoutState({
-        endereco: addr.value,
-        pagamento: pay.value,
-        obs: obs.value,
-        troco: troco.value,
-      });
-      toggleTroco(pay.value);
-      renderDrawer();
-    };
-
-    addr.addEventListener("input", syncState);
-    obs.addEventListener("input", syncState);
-    pay.addEventListener("change", syncState);
-    troco.addEventListener("input", syncState);
-
-    toggleTroco(pay.value);
+  function closeCart() {
+    if (!drawer) return;
+    drawer.classList.remove("open");
+    drawer.setAttribute("aria-hidden", "true");
   }
 
   function setTipo(tipo) {
-    const st = Cart.setCheckoutState({ tipo });
+    Cart.setCheckoutState({ tipo });
 
-    const e = document.getElementById("dtEntrega");
-    const r = document.getElementById("dtRetirada");
-    if (e && r) {
-      e.classList.toggle("active", tipo === "entrega");
-      r.classList.toggle("active", tipo === "retirada");
+    const bEnt = $("#modeEntrega");
+    const bRet = $("#modeRetirar");
+    if (bEnt && bRet) {
+      bEnt.classList.toggle("active", tipo === "entrega");
+      bRet.classList.toggle("active", tipo === "retirar");
     }
 
-    // ao trocar tipo, zera taxa se retirada
-    if ((st.tipo || "entrega") !== "entrega") {
+    if (tipo !== "entrega") {
       Cart.setCheckoutState({ km: 0, fee: 0, blocked: false });
     }
 
     renderDrawer();
-  }
-
-  function toggleTroco(pay) {
-    const box = document.getElementById("trocoBox");
-    if (!box) return;
-    box.style.display = pay === "Dinheiro" ? "block" : "none";
+    Cart.syncUI();
   }
 
   function renderDrawer() {
     const items = Cart.read();
-    const $items = document.getElementById("cartItems");
-    const $sub = document.getElementById("subV");
-    const $tax = document.getElementById("taxV");
-    const $tot = document.getElementById("totV");
-    const $warn = document.getElementById("warn");
-
+    const $items = $("#cartItems");
     if (!$items) return;
 
     if (!items.length) {
       $items.innerHTML = `<div class="muted" style="padding:10px 2px">Seu carrinho está vazio.</div>`;
     } else {
-      $items.innerHTML = items
-        .map((it) => {
-          const p = findProduct(it.id) || { title: "Item", price: 0 };
-          return `
-            <div class="citem">
-              <div class="citem-top">
-                <div>
-                  <div class="cname">${p.title}</div>
-                  <div class="cdesc">${money(p.price)} • x${it.qty}</div>
-                </div>
-                <button class="qbtn remove" onclick="Cart.remove('${it.id}')">remover</button>
+      $items.innerHTML = items.map((it) => {
+        const p = findProduct(it.id) || { title: "Item", price: 0 };
+        return `
+          <div class="citem">
+            <div class="citem-top">
+              <div>
+                <div class="cname">${p.title}</div>
+                <div class="cdesc">${money(p.price)} • x${it.qty}</div>
               </div>
-              <div class="ccontrols">
-                <div class="qty">
-                  <button class="qbtn" onclick="Cart.dec('${it.id}')">-</button>
-                  <strong>${it.qty}</strong>
-                  <button class="qbtn" onclick="Cart.add('${it.id}')">+</button>
-                </div>
-                <strong>${money(p.price * it.qty)}</strong>
-              </div>
+              <button class="qbtn remove" type="button" onclick="Cart.remove('${it.id}')">remover</button>
             </div>
-          `;
-        })
-        .join("");
+            <div class="ccontrols">
+              <div class="qty">
+                <button class="qbtn" type="button" onclick="Cart.dec('${it.id}')">-</button>
+                <strong>${it.qty}</strong>
+                <button class="qbtn" type="button" onclick="Cart.add('${it.id}')">+</button>
+              </div>
+              <strong>${money(p.price * it.qty)}</strong>
+            </div>
+          </div>
+        `;
+      }).join("");
     }
 
-    const st = Cart.checkoutState();
     const sub = Cart.subtotal();
-    const taxa = Cart.fee();
-    const tot = sub + taxa;
+    const fee = Cart.fee();
+    const total = sub + fee;
 
-    if ($sub) $sub.textContent = money(sub);
-    if ($tax) $tax.textContent = money(taxa);
-    if ($tot) $tot.textContent = money(tot);
+    const subEl = $("#subTotal");
+    const feeEl = $("#deliveryFee");
+    const totEl = $("#grandTotal");
 
-    const needAddr = (st.tipo || "entrega") === "entrega";
-    const hasAddr = (st.endereco || "").trim().length >= 6;
-    if ($warn)
-      $warn.style.display =
-        needAddr && !hasAddr && items.length ? "block" : "none";
-
-    Cart.syncUI();
+    if (subEl) subEl.textContent = money(sub);
+    if (feeEl) feeEl.textContent = money(fee);
+    if (totEl) totEl.textContent = money(total);
   }
 
-  // ===== WhatsApp message =====
+  // Limpar carrinho
+  $("#clearCart")?.addEventListener("click", () => {
+    Cart.write([]);
+    Cart.setCheckoutState({ km: 0, fee: 0, blocked: false });
+    renderDrawer();
+    Cart.syncUI();
+    toast("Carrinho limpo.");
+  });
+
+  openBtn?.addEventListener("click", openCart);
+  ctaOpenCart?.addEventListener("click", openCart);
+  backdrop?.addEventListener("click", closeCart);
+  closeBtn?.addEventListener("click", closeCart);
+  document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeCart(); });
+
+  $("#modeEntrega")?.addEventListener("click", () => setTipo("entrega"));
+  $("#modeRetirar")?.addEventListener("click", () => setTipo("retirar"));
+
+  // ===================== WHATSAPP =====================
   function buildWhatsMessage(extraLines = []) {
     const items = Cart.read();
     const st = Cart.checkoutState();
     const lines = [];
 
     lines.push(`*Pedido — ${CFG.brand}*`);
-    lines.push(``);
+    lines.push("");
 
     if (!items.length) {
-      lines.push(`(Carrinho vazio)`);
+      lines.push("(Carrinho vazio)");
       return lines.join("\n");
     }
 
-    lines.push(`*Itens:*`);
+    lines.push("*Itens:*");
     items.forEach((it) => {
       const p = findProduct(it.id);
       if (!p) return;
@@ -410,28 +302,23 @@
     });
 
     const sub = Cart.subtotal();
-    const taxa = Cart.fee();
-    const total = sub + taxa;
+    const fee = Cart.fee();
+    const total = sub + fee;
 
-    lines.push(``);
+    lines.push("");
     lines.push(`Subtotal: *${money(sub)}*`);
-    lines.push(`Taxa: *${money(taxa)}*`);
+    lines.push(`Taxa: *${money(fee)}*`);
     lines.push(`Total: *${money(total)}*`);
-    lines.push(``);
+    lines.push("");
 
     const tipo = st.tipo || "entrega";
-    lines.push(`*${tipo === "entrega" ? "Entrega" : "Retirada"}*`);
-
-    const addr = (st.endereco || "").trim();
-    if (tipo === "entrega") {
-      lines.push(`Endereço: ${addr || "(NÃO INFORMADO)"}`);
-    }
+    lines.push(`*${tipo === "entrega" ? "Entrega" : "Retirar"}*`);
 
     extraLines.filter(Boolean).forEach((l) => lines.push(l));
 
     const obs = (st.obs || "").trim();
     if (obs) {
-      lines.push(``);
+      lines.push("");
       lines.push(`Obs: ${obs}`);
     }
 
@@ -443,56 +330,42 @@
     window.open(url, "_blank");
   }
 
-  // ===== PIX (EMV + CRC16) =====
-  const PIX = {
-    key: "e02484b0-c924-4d38-9af9-79af9ad97c3e",
-    merchantName: "LP GRILL",
-    merchantCity: "BELO HORIZONTE",
-    txid: "LPGRILL01",
-  };
-
+  // ===================== PIX (EMV + CRC16) =====================
   function crc16(payload) {
     let crc = 0xffff;
     for (let i = 0; i < payload.length; i++) {
       crc ^= payload.charCodeAt(i) << 8;
       for (let j = 0; j < 8; j++) {
-        crc = crc & 0x8000 ? (crc << 1) ^ 0x1021 : crc << 1;
+        crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
         crc &= 0xffff;
       }
     }
     return crc.toString(16).toUpperCase().padStart(4, "0");
   }
-
   function emv(id, value) {
     const len = String(value.length).padStart(2, "0");
     return `${id}${len}${value}`;
   }
-
   function buildPixPayload({ key, name, city, amount, txid }) {
-    const mai =
-      emv("00", "BR.GOV.BCB.PIX") +
-      emv("01", key) +
-      (txid ? emv("02", txid) : "");
-
+    const mai = emv("00", "BR.GOV.BCB.PIX") + emv("01", key) + (txid ? emv("02", txid) : "");
     const payload =
-      emv("00", "01") +
-      emv("01", "12") +
+      emv("00","01") +
+      emv("01","12") +
       emv("26", mai) +
-      emv("52", "0000") +
-      emv("53", "986") +
+      emv("52","0000") +
+      emv("53","986") +
       emv("54", amount.toFixed(2)) +
-      emv("58", "BR") +
-      emv("59", name.slice(0, 25)) +
-      emv("60", city.slice(0, 15)) +
+      emv("58","BR") +
+      emv("59", name.slice(0,25)) +
+      emv("60", city.slice(0,15)) +
       emv("62", emv("05", txid || "PEDIDO"));
-
     const toCrc = payload + "6304";
     return toCrc + crc16(toCrc);
   }
 
-  // ===== Checkout Overlay (aba sem sair do menu) =====
+  // ===================== CHECKOUT OVERLAY =====================
+  const overlay = $("#checkoutOverlay");
   function initOverlay() {
-    const overlay = $("#checkoutOverlay");
     if (!overlay) return;
 
     const steps = {
@@ -523,8 +396,8 @@
     const bairroHint = $("#ckBairroHint", overlay);
 
     let paymentMethod = null;
-    let lastResults = [];
     let selectedPlace = null;
+    let lastResults = [];
     let tDebounce = null;
 
     function goStep(name) {
@@ -533,6 +406,10 @@
     }
 
     function openOverlay() {
+      if (Cart.count() === 0) {
+        toast("Adicione itens no carrinho antes de finalizar.");
+        return;
+      }
       overlay.classList.add("is-open");
       overlay.setAttribute("aria-hidden", "false");
       goStep("pay");
@@ -541,14 +418,10 @@
 
       if (elFeeLine) elFeeLine.hidden = true;
       if (elBlocked) elBlocked.hidden = true;
-      if (elKmHint)
-        elKmHint.textContent =
-          "A taxa depende da distância até Maria Teresa (BH).";
+      if (elKmHint) elKmHint.textContent = "A taxa depende da distância até Maria Teresa (BH).";
 
       if (inBairro) inBairro.value = "";
-      if (bairroHint)
-        bairroHint.textContent =
-          "Digite para ver opções próximas (até 10 km).";
+      if (bairroHint) bairroHint.textContent = "Digite para ver opções próximas (até 10 km).";
     }
 
     function closeOverlay() {
@@ -558,42 +431,35 @@
 
     $("#ckClose", overlay)?.addEventListener("click", closeOverlay);
     $("#ckCancel", overlay)?.addEventListener("click", closeOverlay);
-    overlay.addEventListener("click", (e) => {
-      if (e.target === overlay) closeOverlay();
-    });
+    overlay.addEventListener("click", (e) => { if (e.target === overlay) closeOverlay(); });
 
-    // ✅ Intercepta TODOS os "Finalizar" (sem depender do href exato)
-    const intercept = () => {
-      // 1) links clássicos
-      const selectors = [
-        'a.tile.highlight[href="checkout.html"]',
-        'a.tile.highlight[href="./checkout.html"]',
-        '.drawer-actions a.btn.primary[href="checkout.html"]',
-        '.drawer-actions a.btn.primary[href="./checkout.html"]',
-        '.sticky-cta a.cta.primary[href="checkout.html"]',
-        '.sticky-cta a.cta.primary[href="./checkout.html"]',
-        "#goCheckout",
-      ];
-      document.querySelectorAll(selectors.join(",")).forEach((a) => {
+    // Intercepta TODOS os Finalizar (cards, sticky, drawer)
+    const bindFinalizers = () => {
+      const nodes = [
+        $("#btnFinalizarCards"),
+        $("#btnFinalizarSticky"),
+        $("#btnFinalizarDrawer"),
+      ].filter(Boolean);
+
+      // também pega qualquer link para checkout.html
+      document.querySelectorAll('a[href="checkout.html"], a[href="./checkout.html"]').forEach(a => nodes.push(a));
+
+      [...new Set(nodes)].forEach((a) => {
         a.addEventListener("click", (e) => {
           e.preventDefault();
+          closeCart();
           openOverlay();
         });
       });
     };
+    bindFinalizers();
 
-    intercept();
-
-    // ===== Bairros (Nominatim) =====
+    // ===== Bairros (autocomplete até 10 km) =====
     async function searchBairros(q) {
       const url =
         "https://nominatim.openstreetmap.org/search" +
-        `?format=jsonv2&addressdetails=1&limit=12&q=${encodeURIComponent(
-          q + " bairro, Belo Horizonte, MG"
-        )}`;
-      const res = await fetch(url, {
-        headers: { Accept: "application/json" },
-      });
+        `?format=jsonv2&addressdetails=1&limit=12&q=${encodeURIComponent(q + " bairro, Belo Horizonte, MG")}`;
+      const res = await fetch(url, { headers: { Accept: "application/json" } });
       if (!res.ok) throw new Error("Falha na busca");
       const data = await res.json();
 
@@ -623,11 +489,7 @@
     }
 
     function applyFeeUI(res) {
-      Cart.setCheckoutState({
-        km: res.km,
-        fee: res.fee,
-        blocked: !!res.blocked,
-      });
+      Cart.setCheckoutState({ km: res.km, fee: res.fee, blocked: !!res.blocked });
 
       if (elKm) elKm.textContent = `${res.km.toFixed(1)} km`;
       if (elFee) elFee.textContent = money(res.fee);
@@ -650,18 +512,14 @@
       selectedPlace = null;
       if (!val) return;
 
-      const hit = lastResults.find(
-        (r) =>
-          r.label.toLowerCase().includes(val) ||
-          val.includes(r.label.split(",")[0].toLowerCase())
+      const hit = lastResults.find((r) =>
+        r.label.toLowerCase().includes(val) ||
+        val.includes(r.label.split(",")[0].toLowerCase())
       );
 
       if (hit) {
         selectedPlace = hit;
-        if (bairroHint)
-          bairroHint.textContent = `OK • ${hit.km.toFixed(
-            1
-          )} km • taxa ${money(hit.fee)}`;
+        if (bairroHint) bairroHint.textContent = `OK • ${hit.km.toFixed(1)} km • taxa ${money(hit.fee)}`;
         applyFeeUI(hit);
       }
     }
@@ -670,13 +528,11 @@
       inBairro.addEventListener("input", () => {
         const q = inBairro.value.trim();
         selectedPlace = null;
-
         if (tDebounce) clearTimeout(tDebounce);
+
         tDebounce = setTimeout(async () => {
           if (q.length < 3) {
-            if (bairroHint)
-              bairroHint.textContent =
-                "Digite ao menos 3 letras para sugerir bairros (até 10 km).";
+            if (bairroHint) bairroHint.textContent = "Digite ao menos 3 letras para sugerir bairros (até 10 km).";
             return;
           }
           try {
@@ -684,15 +540,10 @@
             const list = await searchBairros(q);
             lastResults = list;
             fillDatalist(list);
-            if (bairroHint)
-              bairroHint.textContent = list.length
-                ? "Escolha um bairro da lista."
-                : "Nenhum bairro (até 10 km).";
+            if (bairroHint) bairroHint.textContent = list.length ? "Escolha um bairro da lista." : "Nenhum bairro (até 10 km).";
             pickFromInput();
           } catch {
-            if (bairroHint)
-              bairroHint.textContent =
-                "Não consegui buscar bairros agora. Use GPS.";
+            if (bairroHint) bairroHint.textContent = "Não consegui buscar bairros agora. Use GPS.";
           }
         }, 350);
       });
@@ -700,7 +551,6 @@
       inBairro.addEventListener("change", pickFromInput);
     }
 
-    // GPS calcula taxa
     $("#ckGetLocation", overlay)?.addEventListener("click", async () => {
       if (elKmHint) elKmHint.textContent = "Calculando distância...";
       if (elFeeLine) elFeeLine.hidden = true;
@@ -712,15 +562,13 @@
         applyFeeUI(res);
         if (bairroHint) bairroHint.textContent = "Usando GPS para calcular taxa.";
       } catch {
-        if (elKmHint)
-          elKmHint.textContent =
-            "Não consegui acessar o GPS. Escolha um bairro da lista.";
+        if (elKmHint) elKmHint.textContent = "Não consegui acessar o GPS. Escolha um bairro da lista.";
       }
     });
 
-    // ===== Render PIX (QR + copia e cola) =====
+    // ===== PIX =====
     function renderPix() {
-      const total = Cart.subtotal() + Cart.fee();
+      const totalPedido = Cart.subtotal() + Cart.fee();
 
       if (elTotalPix) elTotalPix.textContent = money(Cart.subtotal());
       if (elFeePix) elFeePix.textContent = money(Cart.fee());
@@ -729,7 +577,7 @@
         key: PIX.key,
         name: PIX.merchantName,
         city: PIX.merchantCity,
-        amount: total,
+        amount: totalPedido,
         txid: PIX.txid,
       });
 
@@ -741,110 +589,35 @@
           elQr.textContent = "QR Code não carregou.";
         } else {
           const canvas = document.createElement("canvas");
-          canvas.width = 220;
-          canvas.height = 220;
           elQr.appendChild(canvas);
           QRCode.toCanvas(canvas, code, { margin: 1, scale: 6 }, (err) => {
-            if (err) {
-              console.error(err);
-              elQr.textContent = "Erro ao gerar QR.";
-            }
+            if (err) elQr.textContent = "Erro ao gerar QR.";
           });
         }
       }
     }
 
-    // ===== fluxo pagamento =====
+    // ===== Escolha pagamento =====
     overlay.querySelectorAll("[data-pay]").forEach((b) => {
       b.addEventListener("click", () => {
         paymentMethod = b.getAttribute("data-pay"); // pix|credit|debit
         Cart.setCheckoutState({ payMethod: paymentMethod });
 
-        // Sempre vai pro endereço primeiro (como você queria)
+        // PIX: vai direto pro PIX (sem endereço)
+        if (paymentMethod === "pix") {
+          goStep("pix");
+          renderPix();
+          return;
+        }
+
+        // Crédito/Débito: endereço
         goStep("addr");
       });
     });
 
-    // Confirmar endereço:
-    // - PIX -> vai pra tela PIX e gera QR (fica travado nela)
-    // - crédito/débito -> WhatsApp direto
-    $("#ckConfirmOrder", overlay)?.addEventListener("click", () => {
-      const name = (inName?.value || "").trim();
-      const phone = (inPhone?.value || "").trim();
-      const address = (inAddr?.value || "").trim();
-      const bairro = (inBairro?.value || "").trim();
-      const compl = (inCompl?.value || "").trim();
-      const obs = (inObs?.value || "").trim();
+    $("#ckBackFromPix", overlay)?.addEventListener("click", () => goStep("pay"));
+    $("#ckBackFromAddr", overlay)?.addEventListener("click", () => goStep("pay"));
 
-      const st = Cart.checkoutState();
-      const tipo = st.tipo || "entrega";
-
-      if (!name || !phone) {
-        alert("Preencha Nome e Telefone.");
-        return;
-      }
-
-      Cart.setCheckoutState({
-        nome: name,
-        telefone: phone,
-        endereco: address,
-        bairro,
-        compl,
-        obs,
-      });
-
-      // Retirada: não exige taxa
-      if (tipo !== "entrega") {
-        Cart.setCheckoutState({ km: 0, fee: 0, blocked: false });
-      } else {
-        // Entrega: exige bairro + endereço + taxa
-        if (selectedPlace?.lat && selectedPlace?.lon) {
-          applyFeeUI(selectedPlace);
-        }
-
-        const st2 = Cart.checkoutState();
-        if (!bairro) {
-          alert("Selecione um bairro (até 10 km) ou use o GPS para calcular a taxa.");
-          return;
-        }
-        if (!address) {
-          alert("Preencha o Endereço completo.");
-          return;
-        }
-        if (st2.km == null) {
-          alert("Calcule a taxa (GPS) ou escolha um bairro válido da lista.");
-          return;
-        }
-        if (Number(st2.km) > CFG.maxKm) {
-          alert("Fora do raio de 10 km. Entrega indisponível.");
-          return;
-        }
-      }
-
-      // PIX → trava no PIX
-      if (paymentMethod === "pix") {
-        goStep("pix");
-        renderPix();
-        return;
-      }
-
-      // Crédito / Débito → WhatsApp normal
-      const methodLabel =
-        paymentMethod === "credit" ? "Crédito" : "Débito";
-
-      const text = buildWhatsMessage([
-        `Pagamento: *${methodLabel}*`,
-        `Nome: ${name}`,
-        `Telefone: ${phone}`,
-        tipo === "entrega" ? `Bairro: ${bairro}` : null,
-        tipo === "entrega" ? `Endereço: ${address}` : null,
-        compl ? `Compl: ${compl}` : null,
-      ]);
-
-      openWhats(text);
-    });
-
-    // PIX: copiar
     $("#ckCopyPix", overlay)?.addEventListener("click", async () => {
       const val = (elPixCode?.value || "").trim();
       if (!val) return;
@@ -861,64 +634,94 @@
       }
     });
 
-    // PIX: Já paguei -> WhatsApp
+    // PIX: confirmou pagamento -> libera WhatsApp
     $("#ckPaidPix", overlay)?.addEventListener("click", () => {
-      const st = Cart.checkoutState();
-      const tipo = st.tipo || "entrega";
+      Cart.setCheckoutState({ tipo: Cart.checkoutState().tipo || "entrega" });
+      const msg = buildWhatsMessage([`Pagamento: *PIX*`, `✅ PIX confirmado pelo cliente.`]);
+      closeOverlay();
+      openWhats(msg);
+    });
 
-      const aviso =
-        "✅ *PIX realizado.* Vou enviar o comprovante agora para liberar o pedido.";
+    // Crédito/Débito: confirmar -> valida e manda WhatsApp
+    $("#ckConfirmOrder", overlay)?.addEventListener("click", () => {
+      const stTipo = Cart.checkoutState().tipo || "entrega";
+
+      const name = (inName?.value || "").trim();
+      const phone = (inPhone?.value || "").trim();
+      const bairro = (inBairro?.value || "").trim();
+      const address = (inAddr?.value || "").trim();
+      const compl = (inCompl?.value || "").trim();
+      const obs = (inObs?.value || "").trim();
+
+      if (!name || !phone) {
+        toast("Preencha Nome e Telefone.");
+        return;
+      }
+
+      // Para entrega: exige bairro + endereço + taxa calculada
+      if (stTipo === "entrega") {
+        if (!bairro || bairro.length < 3) {
+          toast("Digite e selecione um bairro (até 10 km).");
+          return;
+        }
+        if (!address || address.length < 6) {
+          toast("Preencha o endereço completo.");
+          return;
+        }
+
+        // se selecionou um bairro sugerido, aplica taxa
+        if (selectedPlace?.lat && selectedPlace?.lon) applyFeeUI(selectedPlace);
+
+        const st2 = Cart.checkoutState();
+        if (st2.km == null) {
+          toast("Selecione um bairro da lista ou use o GPS para calcular a taxa.");
+          return;
+        }
+        if (Number(st2.km) > CFG.maxKm || st2.blocked) {
+          toast("Fora do raio de 10 km. Entrega indisponível.");
+          return;
+        }
+      } else {
+        // retirar: zera taxa
+        Cart.setCheckoutState({ km: 0, fee: 0, blocked: false });
+      }
+
+      Cart.setCheckoutState({
+        nome: name,
+        telefone: phone,
+        bairro,
+        endereco: address,
+        compl,
+        obs,
+      });
+
+      const methodLabel = paymentMethod === "credit" ? "Crédito" : "Débito";
+
       const extra = [
-        aviso,
-        `Pagamento: *PIX*`,
-        tipo === "entrega"
-          ? `Distância: ${Number(st.km || 0).toFixed(1)} km`
-          : null,
+        `Pagamento: *${methodLabel}*`,
+        `Nome: ${name}`,
+        `Telefone: ${phone}`,
+        stTipo === "entrega" ? `Bairro: ${bairro}` : "Retirar no local",
+        stTipo === "entrega" ? `Endereço: ${address}` : null,
+        compl ? `Compl: ${compl}` : null,
       ];
 
+      closeOverlay();
       openWhats(buildWhatsMessage(extra));
     });
 
-    $("#ckBackFromPix", overlay)?.addEventListener("click", () => goStep("addr"));
-
-    // se o carrinho for recriado depois, reintercepta
-    document.addEventListener("lp:rebindCheckout", intercept);
+    // expõe para outros binds se precisar
+    window.__LP_OPEN_CHECKOUT__ = openOverlay;
   }
 
-  // ===== Bind =====
+  // ===================== INIT =====================
   document.addEventListener("DOMContentLoaded", () => {
-    ensureDrawer();
-    renderDrawer();
+    // tipo inicial (entrega)
+    const st = Cart.checkoutState();
+    setTipo(st.tipo || "entrega");
+
     Cart.syncUI();
+    renderDrawer();
     initOverlay();
   });
 })();
-
-/* ===== MENU ATIVO AUTOMÁTICO (seguro) ===== */
-__LP_READY__(() => {
-  const nav = document.querySelector(".topnav");
-  if (!nav) return;
-
-  const clean = (s) => (s || "").toLowerCase().split("?")[0].split("#")[0];
-  const file = clean(location.pathname.split("/").pop() || "index.html");
-
-  const map = {
-    "index.html": "index",
-    "marmitas.html": "marmitas",
-    "porcoes.html": "porcoes",
-    "bebidas.html": "bebidas",
-    "sobremesas.html": "sobremesas",
-    "checkout.html": "checkout",
-    "admin.html": "admin",
-  };
-
-  const key = map[file] || "index";
-
-  nav.querySelectorAll("a[data-nav]").forEach((a) => {
-    const k = a.getAttribute("data-nav");
-    const active = k === key;
-    a.classList.toggle("is-active", active);
-    if (active) a.setAttribute("aria-current", "page");
-    else a.removeAttribute("aria-current");
-  });
-});
