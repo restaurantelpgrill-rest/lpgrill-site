@@ -585,3 +585,411 @@
   // Start
   bindOpenButton();
 })();
+/* ===== LP GRILL — Checkout Overlay (sem mexer na HOME) ===== */
+(() => {
+  const CONFIG = {
+    whatsapp: "5531998064556",
+    pixKey: "e02484b0-c924-4d38-9af9-79af9ad97c3e",
+    merchantName: "LP GRILL",
+    merchantCity: "BELO HORIZONTE",
+    txid: "LPGRILL01",
+
+    baseLat: -19.8850878,
+    baseLon: -43.9877612,
+    feeUpTo5km: 5,
+    fee5to10km: 8,
+    maxKm: 10
+  };
+
+  const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  const $ = (s, r=document)=> r.querySelector(s);
+
+  // ========== Pega total do seu layout ==========
+  function parseBRL(text){
+    if(!text) return 0;
+    const n = String(text)
+      .replace(/\s/g,"")
+      .replace("R$","")
+      .replace(/\./g,"")
+      .replace(",",".")
+      .replace(/[^\d.]/g,"");
+    return Number(n||0);
+  }
+  function getCartTotal(){
+    const gt = $("#grandTotal");
+    if(gt){
+      const v = parseBRL(gt.textContent);
+      if(v > 0) return v;
+    }
+    const ct = $("#ctaTotal");
+    if(ct){
+      const v = parseBRL(ct.textContent);
+      if(v > 0) return v;
+    }
+    return 0;
+  }
+
+  // Entrega x Retirar (se tiver a classe active, ótimo; se não tiver, tenta pelo texto)
+  function isRetirarMode(){
+    const btnR = $("#modeRetirar");
+    const btnE = $("#modeEntrega");
+    if(btnR?.classList.contains("active")) return true;
+    if(btnE?.classList.contains("active")) return false;
+    // fallback simples: se o texto tiver "Retirar" e estiver visualmente marcado (alguns projetos usam aria-pressed)
+    if(btnR?.getAttribute("aria-pressed") === "true") return true;
+    return false; // padrão: entrega
+  }
+
+  // ========== Overlay ==========
+  const overlay = $("#checkoutOverlay");
+  if(!overlay) return;
+
+  const steps = {
+    pay: overlay.querySelector('[data-step="pay"]'),
+    pix: overlay.querySelector('[data-step="pix"]'),
+    addr: overlay.querySelector('[data-step="addr"]')
+  };
+
+  const elTotalPix = $("#ckTotalPix", overlay);
+  const elFeePix   = $("#ckFeePix", overlay);
+  const elPixCode  = $("#ckPixCode", overlay);
+  const elQr       = $("#ckQr", overlay);
+
+  const elKmHint   = $("#ckKmHint", overlay);
+  const elFeeLine  = $("#ckFeeLine", overlay);
+  const elKm       = $("#ckKm", overlay);
+  const elFee      = $("#ckFee", overlay);
+  const elBlocked  = $("#ckBlocked", overlay);
+
+  let paymentMethod = null;
+  let lastKm = null;
+  let lastFee = 0;
+
+  function goStep(name){
+    Object.values(steps).forEach(s => s.hidden = true);
+    steps[name].hidden = false;
+  }
+  function openOverlay(){
+    overlay.classList.add("is-open");
+    overlay.setAttribute("aria-hidden","false");
+    goStep("pay");
+    paymentMethod = null;
+    lastKm = null;
+    lastFee = 0;
+    elFeeLine.hidden = true;
+    elBlocked.hidden = true;
+    elKmHint.textContent = "A taxa depende da distância até Maria Teresa (BH).";
+  }
+  function closeOverlay(){
+    overlay.classList.remove("is-open");
+    overlay.setAttribute("aria-hidden","true");
+  }
+
+  $("#ckClose", overlay)?.addEventListener("click", closeOverlay);
+  $("#ckCancel", overlay)?.addEventListener("click", closeOverlay);
+  overlay.addEventListener("click", (e)=>{ if(e.target === overlay) closeOverlay(); });
+
+  // ========== Intercepta TODOS os links checkout.html ==========
+  function interceptCheckoutLinks(){
+    const selectors = [
+      'a.tile.highlight[href="checkout.html"]',
+      '.drawer-actions a.btn.primary[href="checkout.html"]',
+      '.sticky-cta a.cta.primary[href="checkout.html"]'
+    ];
+    document.querySelectorAll(selectors.join(",")).forEach(a => {
+      a.addEventListener("click", (e)=>{
+        e.preventDefault();
+        openOverlay();
+      });
+    });
+  }
+
+  // ========== Distância ==========
+  function haversineKm(lat1, lon1, lat2, lon2){
+    const R = 6371;
+    const dLat = (lat2-lat1) * Math.PI/180;
+    const dLon = (lon2-lon1) * Math.PI/180;
+    const a =
+      Math.sin(dLat/2)**2 +
+      Math.cos(lat1*Math.PI/180)*Math.cos(lat2*Math.PI/180)*
+      Math.sin(dLon/2)**2;
+    return 2 * R * Math.asin(Math.sqrt(a));
+  }
+  function feeByKm(km){
+    if(km > CONFIG.maxKm) return { blocked:true, fee:0 };
+    if(km <= 5) return { blocked:false, fee: CONFIG.feeUpTo5km };
+    return { blocked:false, fee: CONFIG.fee5to10km };
+  }
+  function calcFeeWithGPS(){
+    return new Promise((resolve, reject)=>{
+      if(!navigator.geolocation) return reject(new Error("GPS não suportado."));
+      navigator.geolocation.getCurrentPosition(
+        (pos)=>{
+          const { latitude, longitude } = pos.coords;
+          const km = haversineKm(CONFIG.baseLat, CONFIG.baseLon, latitude, longitude);
+          const rule = feeByKm(km);
+          resolve({ km, ...rule });
+        },
+        reject,
+        { enableHighAccuracy:true, timeout:12000, maximumAge:0 }
+      );
+    });
+  }
+
+  // ========== PIX EMV + CRC16 ==========
+  function crc16(payload){
+    let crc = 0xFFFF;
+    for(let i=0;i<payload.length;i++){
+      crc ^= payload.charCodeAt(i) << 8;
+      for(let j=0;j<8;j++){
+        crc = (crc & 0x8000) ? ((crc << 1) ^ 0x1021) : (crc << 1);
+        crc &= 0xFFFF;
+      }
+    }
+    return crc.toString(16).toUpperCase().padStart(4,"0");
+  }
+  function emv(id, value){
+    const len = String(value.length).padStart(2,"0");
+    return `${id}${len}${value}`;
+  }
+  function buildPixPayload({key, name, city, amount, txid}){
+    const mai = emv("00","BR.GOV.BCB.PIX") + emv("01", key) + (txid ? emv("02", txid) : "");
+    const payload =
+      emv("00","01") +
+      emv("01","12") +
+      emv("26", mai) +
+      emv("52","0000") +
+      emv("53","986") +
+      emv("54", amount.toFixed(2)) +
+      emv("58","BR") +
+      emv("59", name.slice(0,25)) +
+      emv("60", city.slice(0,15)) +
+      emv("62", emv("05", txid || "PEDIDO"));
+    const toCrc = payload + "6304";
+    return toCrc + crc16(toCrc);
+  }
+
+  function renderPix(total, fee){
+    const grand = total + fee;
+    elTotalPix.textContent = money(total);
+    elFeePix.textContent = money(fee);
+
+    const code = buildPixPayload({
+      key: CONFIG.pixKey,
+      name: CONFIG.merchantName,
+      city: CONFIG.merchantCity,
+      amount: grand,
+      txid: CONFIG.txid
+    });
+
+    elPixCode.value = code;
+    elQr.innerHTML = "";
+
+    if(typeof QRCode === "undefined"){
+      elQr.textContent = "QR Code não carregou.";
+      return;
+    }
+    QRCode.toCanvas(code, { width: 220, margin: 1 }, (err, canvas)=>{
+      if(err || !canvas){
+        elQr.textContent = "Erro ao gerar QR.";
+        return;
+      }
+      elQr.appendChild(canvas);
+    });
+  }
+
+  function openWhatsApp(msg){
+    window.open(`https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`, "_blank");
+  }
+
+  function buildOrderText(extra = []){
+    // Você pode melhorar depois pegando itens do carrinho; por enquanto seguro:
+    const lines = [];
+    lines.push("🛒 *NOVO PEDIDO — LP GRILL*");
+    lines.push("");
+    extra.filter(Boolean).forEach(x => lines.push(x));
+    lines.push(`Total: ${money(getCartTotal())}`);
+    return lines.join("\n");
+  }
+
+  // ========== Flow ==========
+  overlay.querySelectorAll("[data-pay]").forEach((b)=>{
+    b.addEventListener("click", async ()=>{
+      paymentMethod = b.getAttribute("data-pay");
+
+      // PIX trava na etapa do PIX
+      if(paymentMethod === "pix"){
+        goStep("pix");
+
+        const total = getCartTotal();
+        if(total <= 0){
+          elQr.innerHTML = "";
+          elPixCode.value = "";
+          elTotalPix.textContent = money(0);
+          elFeePix.textContent = money(0);
+          overlay.querySelector(".ck-warn").innerHTML =
+            "<strong>Carrinho vazio.</strong> Adicione itens para gerar o Pix.";
+          return;
+        }
+
+        // Se for retirar: taxa 0 e não usa GPS
+        if(isRetirarMode()){
+          lastKm = 0;
+          lastFee = 0;
+          overlay.querySelector(".ck-warn").innerHTML =
+            "<strong>Retirada no local:</strong> após pagar via PIX, envie o comprovante no WhatsApp para liberarmos seu pedido imediatamente.";
+          renderPix(total, 0);
+          return;
+        }
+
+        // Entrega: tenta GPS pra calcular taxa
+        try{
+          const res = await calcFeeWithGPS();
+          lastKm = res.km;
+          lastFee = res.blocked ? 0 : res.fee;
+
+          if(res.blocked){
+            elQr.innerHTML = "";
+            elPixCode.value = "";
+            overlay.querySelector(".ck-warn").innerHTML =
+              "<strong>Entrega indisponível:</strong> você está fora do raio de 10 km do bairro Maria Teresa (BH).";
+            elTotalPix.textContent = money(total);
+            elFeePix.textContent = money(0);
+            return;
+          }
+
+          overlay.querySelector(".ck-warn").innerHTML =
+            "<strong>Depois de pagar via PIX,</strong> envie o comprovante no WhatsApp para <strong>liberarmos seu pedido imediatamente</strong>.";
+
+          renderPix(total, lastFee);
+        } catch {
+          // Sem GPS: você decide — aqui eu travo pra não errar taxa
+          elQr.innerHTML = "";
+          elPixCode.value = "";
+          overlay.querySelector(".ck-warn").innerHTML =
+            "<strong>Ative a localização (GPS)</strong> para calcular a taxa de entrega corretamente e gerar o PIX.";
+          elTotalPix.textContent = money(total);
+          elFeePix.textContent = money(0);
+        }
+        return;
+      }
+
+      // Crédito/Débito → endereço
+      if(paymentMethod === "credit" || paymentMethod === "debit"){
+        goStep("addr");
+      }
+    });
+  });
+
+  $("#ckBackFromPix", overlay)?.addEventListener("click", ()=> goStep("pay"));
+
+  $("#ckCopyPix", overlay)?.addEventListener("click", async ()=>{
+    const val = elPixCode.value.trim();
+    if(!val) return;
+    try{
+      await navigator.clipboard.writeText(val);
+      $("#ckCopyPix", overlay).textContent = "Copiado ✅";
+      setTimeout(()=> $("#ckCopyPix", overlay).textContent = "Copiar código PIX", 1200);
+    } catch {
+      elPixCode.select();
+      document.execCommand("copy");
+    }
+  });
+
+  $("#ckPaidPix", overlay)?.addEventListener("click", ()=>{
+    const total = getCartTotal();
+    const fee = Number(lastFee || 0);
+    const grand = total + fee;
+
+    const msg =
+      "✅ *PAGAMENTO PIX REALIZADO*\n" +
+      "Estou enviando o comprovante para liberar o pedido.\n\n" +
+      `Forma de pagamento: PIX\n` +
+      `Taxa de entrega: ${money(fee)}\n` +
+      `Total com taxa: ${money(grand)}\n\n` +
+      "📎 Comprovante: (anexar aqui)\n";
+
+    openWhatsApp(msg);
+  });
+
+  $("#ckGetLocation", overlay)?.addEventListener("click", async ()=>{
+    elKmHint.textContent = "Calculando distância...";
+    elFeeLine.hidden = true;
+    elBlocked.hidden = true;
+
+    try{
+      const { km, fee, blocked } = await calcFeeWithGPS();
+      lastKm = km;
+      lastFee = fee;
+
+      elKm.textContent = `${km.toFixed(1)} km`;
+      elFee.textContent = money(fee);
+      elFeeLine.hidden = false;
+
+      if(blocked){
+        elBlocked.hidden = false;
+      } else {
+        elBlocked.hidden = true;
+      }
+      elKmHint.textContent = "Taxa calculada pela distância (GPS).";
+    } catch {
+      elKmHint.textContent = "Não consegui acessar o GPS. Ative a localização para calcular a taxa.";
+    }
+  });
+
+  $("#ckBackFromAddr", overlay)?.addEventListener("click", ()=> goStep("pay"));
+
+  $("#ckConfirmOrder", overlay)?.addEventListener("click", ()=>{
+    const name = $("#ckName", overlay).value.trim();
+    const phone = $("#ckPhone", overlay).value.trim();
+    const addr = $("#ckAddress", overlay).value.trim();
+    const compl = $("#ckCompl", overlay).value.trim();
+    const obs = $("#ckObs", overlay).value.trim();
+
+    if(!name || !phone || !addr){
+      alert("Preencha Nome, Telefone e Endereço.");
+      return;
+    }
+
+    // Se for entrega, exige GPS calculado
+    if(!isRetirarMode()){
+      if(lastKm == null){
+        alert("Toque em “Usar minha localização (GPS)” para calcular a taxa de entrega.");
+        return;
+      }
+      if(lastKm > CONFIG.maxKm){
+        alert("Fora do raio de 10 km do bairro Maria Teresa (BH). Entrega indisponível.");
+        return;
+      }
+    } else {
+      lastKm = 0;
+      lastFee = 0;
+    }
+
+    const methodLabel = paymentMethod === "credit" ? "Crédito" : "Débito";
+    const total = getCartTotal();
+    const fee = Number(lastFee || 0);
+    const grand = total + fee;
+
+    const msg = [
+      "🛒 *NOVO PEDIDO — LP GRILL*",
+      "",
+      `Forma de pagamento: ${methodLabel}`,
+      isRetirarMode() ? "Modo: Retirar no local" : `Distância: ${lastKm.toFixed(1)} km`,
+      `Taxa de entrega: ${money(fee)}`,
+      `Total com taxa: ${money(grand)}`,
+      "",
+      "*DADOS DO CLIENTE*",
+      `Nome: ${name}`,
+      `Telefone: ${phone}`,
+      `Endereço: ${addr}`,
+      compl ? `Complemento: ${compl}` : null,
+      obs ? `Obs: ${obs}` : null
+    ].filter(Boolean).join("\n");
+
+    openWhatsApp(msg);
+  });
+
+  // INIT
+  interceptCheckoutLinks();
+})();
