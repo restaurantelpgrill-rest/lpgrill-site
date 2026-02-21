@@ -1,6 +1,9 @@
+// js/data.js — LP Grill (fonte única de dados + fallback + admin/localStorage)
+// ✅ garante img, price numérico e categorias sempre presentes
 (() => {
   const STORE_KEY = "LPGRILL_DATA_ADMIN_V1";
 
+  // ========== Fallback (site funciona mesmo sem admin) ==========
   const fallback = {
     marmitas: [
       { id:"m1", title:"Marmita Tradicional", desc:"Arroz, feijão, carne e salada.", tag:"Bem servida", price:18.90, img:"img/marmita_tradicional.jpg" },
@@ -23,30 +26,78 @@
     ]
   };
 
+  // ========== Helpers ==========
+  const isObj = (v) => v && typeof v === "object" && !Array.isArray(v);
+
+  function num(v){
+    const n = Number(String(v ?? "").replace(",", ".").replace(/[^\d.]/g, ""));
+    return Number.isFinite(n) ? n : 0;
+  }
+
+  function normalizeItem(it, idx, prefix){
+    const o = isObj(it) ? it : {};
+    const id = String(o.id || `${prefix}${idx+1}`).trim();
+
+    return {
+      id,
+      title: String(o.title || "Item").trim(),
+      desc: String(o.desc || "").trim(),
+      tag: String(o.tag || "").trim(),
+      price: num(o.price),
+      img: String(o.img || "img/mockup.png").trim()
+    };
+  }
+
+  function normalizeData(d){
+    const out = {
+      marmitas: [],
+      porcoes: [],
+      bebidas: [],
+      sobremesas: []
+    };
+
+    const src = isObj(d) ? d : {};
+
+    out.marmitas = (Array.isArray(src.marmitas) ? src.marmitas : []).map((it,i)=> normalizeItem(it,i,"m"));
+    out.porcoes  = (Array.isArray(src.porcoes)  ? src.porcoes  : []).map((it,i)=> normalizeItem(it,i,"p"));
+    out.bebidas  = (Array.isArray(src.bebidas)  ? src.bebidas  : []).map((it,i)=> normalizeItem(it,i,"b"));
+    out.sobremesas = (Array.isArray(src.sobremesas) ? src.sobremesas : []).map((it,i)=> normalizeItem(it,i,"s"));
+
+    return out;
+  }
+
+  function mergePreferAdmin(admin, base){
+    // Regra simples: se admin tiver categoria com itens, usa admin;
+    // se não tiver, usa fallback.
+    const A = normalizeData(admin);
+    const B = normalizeData(base);
+
+    return {
+      marmitas: A.marmitas.length ? A.marmitas : B.marmitas,
+      porcoes:  A.porcoes.length  ? A.porcoes  : B.porcoes,
+      bebidas:  A.bebidas.length  ? A.bebidas  : B.bebidas,
+      sobremesas: A.sobremesas.length ? A.sobremesas : B.sobremesas
+    };
+  }
+
   function loadAdmin(){
     try{
       const raw = localStorage.getItem(STORE_KEY);
       if(!raw) return null;
       const d = JSON.parse(raw);
-      d.marmitas ||= []; d.porcoes ||= []; d.bebidas ||= []; d.sobremesas ||= [];
-      return d;
-    }catch(e){ return null; }
+      return isObj(d) ? d : null;
+    }catch(e){
+      return null;
+    }
   }
-// js/data.js
-window.DATA = {
-  marmitas: [
-    { id:"m1", title:"Marmita P", desc:"Arroz, feijão e carne", price: 18.00 },
-    { id:"m2", title:"Marmita M", desc:"Bem servida", price: 22.00 }
-  ],
-  porcoes: [
-    { id:"p1", title:"Batata Frita", desc:"Crocante", price: 20.00 }
-  ],
-  bebidas: [
-    { id:"b1", title:"Refrigerante Lata", desc:"350ml", price: 6.00 }
-  ],
-  sobremesas: [
-    { id:"s1", title:"Pudim", desc:"Caseiro", price: 8.00 }
-  ]
-};
-  window.DATA = loadAdmin() || fallback;
+
+  // ========== Build final DATA ==========
+  const admin = loadAdmin();
+  const finalData = admin ? mergePreferAdmin(admin, fallback) : normalizeData(fallback);
+
+  // Exponha no global:
+  window.DATA = finalData;
+
+  // Debug opcional (se quiser ver no console)
+  // console.log("DATA loaded:", window.DATA);
 })();
