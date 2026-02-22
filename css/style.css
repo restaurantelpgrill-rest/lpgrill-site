@@ -48,6 +48,7 @@
    ========================= */
 *{ box-sizing:border-box; }
 html,body{ height:100%; }
+
 body{
   margin:0;
   font-family: ui-sans-serif, system-ui, -apple-system, Segoe UI, Roboto, Arial, sans-serif;
@@ -79,55 +80,9 @@ p{ margin:6px 0 0; }
   padding:14px 14px calc(var(--bottomBarH) + 22px);
 }
 
-/* =========================
-   TOP BANNER (FOTO NOVA) — PREMIUM
-   ========================= */
-.top-banner{
-  width: 100%;
-  height: clamp(120px, 18vw, 200px);
-  overflow: hidden;
-  display: grid;
-  place-items: center;
-
-  background: linear-gradient(180deg, #f7f7fb, #ffffff);
-
-  border-bottom-left-radius: 18px;
-  border-bottom-right-radius: 18px;
-
-  border: 1px solid rgba(0,0,0,.06);
-  box-shadow: 0 8px 24px rgba(0,0,0,.06);
-
-  isolation: isolate;
-}
-
-.top-banner img{
-  width: 100%;
-  height: 100%;
-  display:block;
-  object-fit:cover;
-  object-position:center;
-  transform: translateZ(0);
-  will-change: transform;
-}
-
-@media (max-width:600px){
-  .top-banner{
-    height: clamp(96px, 26vw, 140px);
-    border-bottom-left-radius: 16px;
-    border-bottom-right-radius: 16px;
-  }
-}
-
-/* (opcional) full-bleed se estiver dentro de container com padding */
-.top-banner.full-bleed{
-  width: 100vw;
-  margin-left: calc(50% - 50vw);
-  margin-right: calc(50% - 50vw);
-}
-
-/* =========================
+/* ============================================================
    PAGEBAR (sticky)
-   ========================= */
+============================================================ */
 .pagebar{
   position:sticky;
   top:0;
@@ -167,9 +122,71 @@ p{ margin:6px 0 0; }
   filter: drop-shadow(0 10px 18px rgba(0,0,0,.14));
 }
 
-/* =========================
+/* header sem logo quadrada: texto premium */
+.brand-mini--text .brand-name{
+  font-weight: 1000;
+  letter-spacing: -.02em;
+  font-size: 15px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(17,24,39,.10);
+  background: rgba(255,255,255,.86);
+  box-shadow: 0 10px 18px rgba(17,24,39,.06);
+  white-space: nowrap;
+}
+@media (max-width:520px){
+  .brand-mini--text .brand-name{ font-size: 14px; padding: 9px 10px; }
+}
+
+/* ============================================================
+   TOP BANNER (FOTO NOVA) — FULL BLEED REAL
+   ✅ funciona mesmo com container/padding
+============================================================ */
+.top-banner{
+  position: relative;
+  width: 100%;
+  height: clamp(120px, 18vw, 210px);
+  overflow: hidden;
+  display: grid;
+  place-items: center;
+
+  /* só arredonda embaixo (fica premium) */
+  border-bottom-left-radius: 18px;
+  border-bottom-right-radius: 18px;
+
+  background: #fff;
+  box-shadow: 0 10px 28px rgba(0,0,0,.06);
+}
+
+/* garante que o banner “encoste” logo abaixo do header */
+.pagebar + .top-banner{ margin-top: 0; }
+
+.top-banner img{
+  width: 100%;
+  height: 100%;
+  display:block;
+  object-fit: cover;
+  object-position: center;
+}
+
+/* FULL BLEED: ocupa 100vw mesmo fora do container */
+.top-banner.full-bleed{
+  width: 100vw;
+  margin-left: calc(50% - 50vw);
+  margin-right: calc(50% - 50vw);
+}
+
+@media (max-width:600px){
+  .top-banner{
+    height: clamp(96px, 26vw, 150px);
+    border-bottom-left-radius: 16px;
+    border-bottom-right-radius: 16px;
+  }
+}
+
+/* ============================================================
    TOPNAV (chips)
-   ========================= */
+============================================================ */
 .topnav{
   display:flex;
   align-items:center;
@@ -213,9 +230,9 @@ p{ margin:6px 0 0; }
   .topnav::-webkit-scrollbar{ display:none; }
 }
 
-/* =========================
+/* ============================================================
    CART BUTTON (top)
-   ========================= */
+============================================================ */
 .cart-btn{
   position:relative;
   border:1px solid rgba(17,24,39,.10);
@@ -237,9 +254,101 @@ p{ margin:6px 0 0; }
   padding:0 6px;
 }
 
-/* =========================
+/* ============================================================
+   HERO MINI / INFOBAR
+============================================================ */
+#infoBar:empty{
+  display:none !important;
+  padding:0 !important;
+  margin:0 !important;
+}
+
+.hero-mini{ margin: 12px 0 22px; }
+@media (max-width: 520px){ .hero-mini{ margin-top: 8px; } }
+
+.hero-mini__card{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  background:#ffffff;
+  border-radius:16px;
+  padding:16px 18px;
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
+  flex-wrap:wrap;
+  border:1px solid rgba(17,24,39,.08);
+}
+
+.hero-mini__left{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+  min-width:0;
+}
+.hero-mini__title{
+  font-weight:1000;
+  font-size:16px;
+  letter-spacing:-.01em;
+}
+.hero-mini__sub{
+  font-size:13px;
+  color:var(--muted);
+  font-weight:800;
+}
+
+.hero-mini__chips{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:6px;
+}
+.chip{
+  background:#f3f4f6;
+  padding:6px 10px;
+  border-radius:999px;
+  font-size:12px;
+  border:1px solid rgba(17,24,39,.08);
+  font-weight:900;
+}
+
+.hero-mini__right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  width:100%;
+}
+.hero-mini__search{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  background:#f7f7f7;
+  border-radius:999px;
+  padding:8px 12px;
+  border:1px solid rgba(17,24,39,.08);
+  width:100%;
+}
+.hero-mini__search input{
+  border:none;
+  outline:none;
+  background:transparent;
+  font-size:13px;
+  width:100%;
+}
+
+@media (max-width:600px){
+  .hero-mini__card{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+  .hero-mini__right{
+    width:100%;
+    justify-content:space-between;
+  }
+}
+
+/* ============================================================
    HOME GRID (Categorias)
-   ========================= */
+============================================================ */
 .grid,
 .lp-grid{
   display:grid;
@@ -320,9 +429,9 @@ p{ margin:6px 0 0; }
   .tile, .lp-card{ min-height:120px; }
 }
 
-/* =========================
-   PRODUCTS
-   ========================= */
+/* ============================================================
+   PRODUCTS (cards)
+============================================================ */
 .product-grid{
   display:grid;
   grid-template-columns: repeat(1, minmax(0,1fr));
@@ -332,6 +441,7 @@ p{ margin:6px 0 0; }
 @media(min-width:820px){
   .product-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
 }
+
 .product{
   background: rgba(255,255,255,.94);
   border:1px solid rgba(17,24,39,.10);
@@ -341,8 +451,8 @@ p{ margin:6px 0 0; }
   display:flex;
   gap:12px;
   padding:12px;
-  cursor:pointer;
 }
+
 .pimg{
   width:78px; height:78px;
   border-radius:16px;
@@ -357,9 +467,60 @@ p{ margin:6px 0 0; }
 .price{ font-weight:950; color: var(--wine); }
 .pdesc{ margin-top:6px; font-size:12px; color:var(--muted); line-height:1.35; }
 
-/* =========================
+/* ============================================================
+   ✅ MENU STEPPER (−  Adicionar X  +) — SEM CONFLITO COM CARRINHO
+   (funciona se seu HTML usar .qty dentro do card do produto)
+============================================================ */
+.product .qty{
+  display:inline-flex;
+  align-items:center;
+  gap:8px;
+  margin-top:10px;
+  padding:6px;
+  border-radius:14px;
+  border:1px solid rgba(17,24,39,.10);
+  background: rgba(255,255,255,.86);
+  box-shadow: 0 8px 18px rgba(17,24,39,.06);
+}
+
+.product .qty button{
+  height:38px;
+  border-radius:12px;
+  border:1px solid rgba(17,24,39,.14);
+  background:#fff;
+  cursor:pointer;
+  font-weight:1000;
+  transition: transform .08s ease, box-shadow .12s ease;
+}
+
+.product .qty button:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 12px 22px rgba(17,24,39,.12);
+}
+.product .qty button:active{ transform: scale(.99); }
+
+.product .qty button:first-child,
+.product .qty button:last-child{
+  width:38px;
+  font-size:18px;
+  display:grid;
+  place-items:center;
+  line-height:1;
+}
+
+.product .qty button:nth-child(2){
+  width:auto;
+  min-width:120px;
+  padding:0 12px;
+  font-size:13px;
+  font-weight:1000;
+  background: linear-gradient(180deg, rgba(211,47,47,.10), rgba(127,29,29,.06));
+  border-color: rgba(127,29,29,.18);
+}
+
+/* ============================================================
    WHATS FLOAT
-   ========================= */
+============================================================ */
 .wa-float,
 .lp-wa-fab{
   position:fixed;
@@ -378,9 +539,9 @@ p{ margin:6px 0 0; }
 .wa-float img,
 .lp-wa-fab img{ width:28px; height:28px; }
 
-/* =========================
+/* ============================================================
    STICKY CTA BOTTOM
-   ========================= */
+============================================================ */
 .sticky-cta,
 .lp-bottom{
   position:fixed;
@@ -434,8 +595,7 @@ p{ margin:6px 0 0; }
 }
 
 /* ============================================================
-   DRAWER (Carrinho) — PADRÃO DO SEU HTML (.drawer)
-   (mantém funcionamento, só visual premium)
+   DRAWER (Carrinho) — SEU HTML (.drawer)
 ============================================================ */
 .drawer{
   position:fixed;
@@ -556,14 +716,14 @@ p{ margin:6px 0 0; }
 .cname{ font-weight:1000; font-size:15px; letter-spacing:-.01em; }
 .cdesc{ font-size:12.5px; color:var(--muted); margin-top:4px; line-height:1.35; }
 
-/* QUANTIDADE (único .qty no projeto, sem duplicar) */
-.qty{
+/* ✅ QUANTIDADE DO CARRINHO — SÓ NO DRAWER (não quebra menu) */
+.drawer .qty{
   display:flex;
   align-items:center;
   gap:10px;
   margin-top:10px;
 }
-.qbtn{
+.drawer .qbtn{
   width:40px; height:40px;
   border-radius: 14px;
   border:1px solid rgba(17,24,39,.12);
@@ -574,11 +734,11 @@ p{ margin:6px 0 0; }
   box-shadow: 0 10px 18px rgba(17,24,39,.08);
   transition: transform .08s ease, box-shadow .12s ease;
 }
-.qbtn:hover{
+.drawer .qbtn:hover{
   transform: translateY(-1px);
   box-shadow: 0 16px 26px rgba(17,24,39,.12);
 }
-.qbtn:active{ transform: translateY(0px) scale(.99); }
+.drawer .qbtn:active{ transform: translateY(0px) scale(.99); }
 
 /* ações */
 .drawer-actions{
@@ -619,7 +779,6 @@ p{ margin:6px 0 0; }
 
 /* ============================================================
    CHECKOUT OVERLAY (mantém .ck-* para seu checkout.js)
-   ✅ FIX: modal não corta / rolagem correta / safe-area
 ============================================================ */
 .ck-overlay{
   position:fixed;
@@ -772,122 +931,13 @@ p{ margin:6px 0 0; }
 }
 
 /* ============================================================
-   HERO MINI / INFOBAR (limpo + sem vazio)
-============================================================ */
-#infoBar:empty{
-  display:none !important;
-  padding:0 !important;
-  margin:0 !important;
-}
-.hero-mini{
-  margin: 12px 0 22px;
-}
-@media (max-width: 520px){
-  .hero-mini{ margin-top: 8px; }
-}
-
-.hero-mini__card{
-  display:flex;
-  justify-content:space-between;
-  align-items:center;
-  gap:16px;
-  background:#ffffff;
-  border-radius:16px;
-  padding:16px 18px;
-  box-shadow:0 6px 18px rgba(0,0,0,.06);
-  flex-wrap:wrap;
-  border:1px solid rgba(17,24,39,.08);
-}
-
-.hero-mini__left{
-  display:flex;
-  flex-direction:column;
-  gap:6px;
-  min-width:0;
-}
-.hero-mini__title{
-  font-weight:1000;
-  font-size:16px;
-  letter-spacing:-.01em;
-}
-.hero-mini__sub{
-  font-size:13px;
-  color:var(--muted);
-  font-weight:800;
-}
-
-.hero-mini__chips{
-  display:flex;
-  gap:8px;
-  flex-wrap:wrap;
-  margin-top:6px;
-}
-.chip{
-  background:#f3f4f6;
-  padding:6px 10px;
-  border-radius:999px;
-  font-size:12px;
-  border:1px solid rgba(17,24,39,.08);
-  font-weight:900;
-}
-
-.hero-mini__right{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  width:100%;
-}
-.hero-mini__search{
-  display:flex;
-  align-items:center;
-  gap:6px;
-  background:#f7f7f7;
-  border-radius:999px;
-  padding:8px 12px;
-  border:1px solid rgba(17,24,39,.08);
-  width:100%;
-}
-.hero-mini__search input{
-  border:none;
-  outline:none;
-  background:transparent;
-  font-size:13px;
-  width:100%;
-}
-
-.hero-mini__btn{
-  background: linear-gradient(180deg, var(--red2), var(--red1));
-  color:#fff;
-  border:none;
-  border-radius:999px;
-  padding:10px 14px;
-  font-size:13px;
-  font-weight:1000;
-  cursor:pointer;
-  box-shadow: 0 14px 26px rgba(163,19,19,.18);
-  white-space:nowrap;
-}
-
-@media (max-width:600px){
-  .hero-mini__card{
-    flex-direction:column;
-    align-items:flex-start;
-  }
-  .hero-mini__right{
-    width:100%;
-    justify-content:space-between;
-  }
-}
-
-/* ============================================================
-   EXTRAS: botões +/- com toque premium (sem quebrar nada)
+   EXTRAS: toque premium
 ============================================================ */
 button,
 .qbtn,
 .ck-pay,
 .ck-paybtn,
 .cta,
-.lp-cartbox,
 .drawer-actions .btn,
 .icon-btn{
   -webkit-tap-highlight-color: transparent;
