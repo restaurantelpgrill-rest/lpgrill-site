@@ -1095,3 +1095,27 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
 
   window.addEventListener("DOMContentLoaded", init);
 })();
+// ===============================
+// CHECKOUT: abrir overlay (global)
+// fallback: ir para checkout.html
+// ===============================
+(() => {
+  function openCheckout(e){
+    const overlay = document.getElementById("checkoutOverlay");
+    if(overlay){
+      e?.preventDefault?.();
+      overlay.classList.add("is-open");
+      overlay.setAttribute("aria-hidden", "false");
+      return;
+    }
+    // fallback (se a página não tem overlay)
+    // deixa navegar normal para checkout.html
+  }
+
+  // Intercepta qualquer link/botão com data-open-checkout em QUALQUER página
+  document.addEventListener("click", (e) => {
+    const a = e.target?.closest?.("[data-open-checkout]");
+    if(!a) return;
+    openCheckout(e);
+  }, true);
+})();
