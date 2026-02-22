@@ -45,10 +45,11 @@
 
   <a href="#" id="adminGear" class="admin-gear" aria-label="Admin" title="Admin">⚙</a>
 
-  <!-- TOPBAR -->
+  <!-- TOPBAR (sem logo quadrada) -->
   <header class="pagebar">
-    <div class="brand-mini">
-      <img src="img/logo.png" alt="LP Grill">
+    <!-- Troquei a logo quadrada por texto premium -->
+    <div class="brand-mini brand-mini--text" aria-label="LP Grill">
+      <span class="brand-name">LP Grill</span>
     </div>
 
     <div class="page-title">
@@ -56,18 +57,22 @@
       <p>Escolha uma categoria para começar</p>
     </div>
 
-    <!-- topo abre o MESMO carrinho -->
     <button class="cart-btn" id="openCart" data-open-cart type="button" aria-label="Carrinho">
       <span class="cart-ico">🛒</span>
       <span class="cart-badge" id="cartBadge" hidden>0</span>
     </button>
   </header>
 
+  <!-- TOP BANNER FULL (de fora a fora) -->
+  <div class="top-banner full-bleed" aria-label="LP Grill - Banner">
+    <img src="img/banner-topo.jpg" alt="LP Grill Restaurante" loading="eager" decoding="async">
+  </div>
+
   <div class="container subinfo" id="infoBar"></div>
 
   <main class="container">
 
-    <!-- HERO MINI (sem botão "Ver carrinho") -->
+    <!-- HERO MINI -->
     <section class="hero-mini">
       <div class="hero-mini__card">
         <div class="hero-mini__left">
