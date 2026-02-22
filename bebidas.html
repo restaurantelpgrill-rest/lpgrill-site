@@ -3,32 +3,39 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Bebidas</title>
+  <title>Bebidas — LP Grill</title>
+
   <link rel="stylesheet" href="css/style.css" />
 </head>
+
 <body class="app">
 
-  <header class="pagebar">
-    <a class="back" href="index.html">← Voltar ao Menu</a>
-    <div class="page-title">
-      <h1>Bebidas</h1>
-      <p>Geladas • do jeito certo</p>
+  <!-- Top bar (igual ao seu print: voltar + título + carrinho) -->
+  <header class="container" style="padding-top:12px;">
+    <div style="display:flex; align-items:center; justify-content:space-between; gap:12px;">
+      <a href="index.html" class="btn light" style="text-decoration:none;">← Voltar ao Menu</a>
+
+      <div style="text-align:center; flex:1;">
+        <div style="font-weight:1000;">Bebidas</div>
+        <div class="muted" style="font-size:12px;">Geladas • do jeito certo</div>
+      </div>
+
+      <!-- abre o carrinho (Cart bind no cart.js/app.js) -->
+      <button class="icon-btn" id="openCart" type="button" aria-label="Abrir carrinho">🛒</button>
     </div>
-    <button class="cart-btn" id="openCart" aria-label="Abrir carrinho">
-      <span class="cart-ico">🛒</span><span class="cart-badge" id="cartCount">0</span>
-    </button>
   </header>
 
-  <div class="container" id="infoBar"></div>
-
-  <main class="container">
-    <section class="product-grid" id="listBebidas"></section>
+  <main class="container" style="padding-bottom:120px;">
+    <!-- ✅ AQUI É O PONTO: render novo precisa de product-grid + id -->
+    <div id="gridBebidas" class="product-grid"></div>
   </main>
 
+  <!-- WhatsApp flutuante -->
   <a class="wa-float" id="waFloat" href="#" aria-label="WhatsApp">
     <img src="img/whatsapp.png" alt="WhatsApp">
   </a>
 
+  <!-- Sticky CTA (igual index) -->
   <div class="sticky-cta" id="stickyCTA" hidden>
     <button class="cta" id="ctaOpenCart" type="button">
       <span>Ver carrinho</span><strong id="ctaTotal">R$ 0,00</strong>
@@ -36,14 +43,12 @@
     <a class="cta primary" href="checkout.html">Finalizar</a>
   </div>
 
+  <!-- Drawer do carrinho (igual index) -->
   <aside class="drawer" id="cartDrawer" aria-hidden="true">
     <div class="drawer-backdrop" id="closeCartBackdrop"></div>
     <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="Carrinho">
       <div class="drawer-head">
-        <div>
-          <h3>Seu carrinho</h3>
-          <p class="muted">Itens + taxa (se entrega)</p>
-        </div>
+        <div><h3>Seu carrinho</h3><p class="muted">Itens + taxa (se entrega)</p></div>
         <button class="icon-btn" id="closeCart" aria-label="Fechar">✕</button>
       </div>
 
@@ -62,7 +67,6 @@
           <div class="row total"><span>Total</span><strong id="grandTotal">R$ 0,00</strong></div>
           <div class="mini muted">⏱️ Tempo médio: <span id="etaText">30–60 min</span></div>
         </div>
-
         <div class="drawer-actions">
           <button class="btn light" id="clearCart" type="button">Limpar</button>
           <a class="btn primary" href="checkout.html">Finalizar</a>
@@ -71,14 +75,23 @@
     </div>
   </aside>
 
-  <!-- SÓ scripts da vitrine/carrinho -->
+  <div class="toast" id="toast"></div>
+
+  <!-- ✅ SCRIPTS NA ORDEM CERTA -->
   <script src="js/data.js"></script>
-  <script src="js/cart.js"></script>
   <script src="js/render.js"></script>
+  <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
 
+  <!-- ✅ CHAMA O RENDER NOVO -->
   <script>
-    window.renderCategory("bebidas","listBebidas");
+    window.addEventListener("DOMContentLoaded", () => {
+      window.renderCategory?.("bebidas", "gridBebidas");
+
+      // botão carrinho do topo (se existir no seu css)
+      const open = document.getElementById("openCart");
+      open?.addEventListener("click", () => window.Cart?.openDrawer?.());
+    });
   </script>
 </body>
 </html>
