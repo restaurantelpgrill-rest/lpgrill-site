@@ -11,7 +11,6 @@
 
   <header class="pagebar">
     <a class="back" href="index.html">← Voltar ao Menu</a>
-
     <div class="page-title">
       <h1>Combo</h1>
       <p>Monte e economize</p>
@@ -29,11 +28,6 @@
     <section class="product-grid" id="gridCombo"></section>
   </main>
 
-  <a class="wa-float" id="waFloat" href="#" aria-label="WhatsApp">
-    <img src="img/whatsapp.png" alt="WhatsApp">
-  </a>
-
-  <!-- ✅ Barra inferior padrão -->
   <div class="sticky-cta" id="stickyCTA" hidden>
     <button class="cta" id="ctaOpenCart" data-open-cart type="button">
       <span>
@@ -42,14 +36,12 @@
       </span>
       <strong id="ctaTotal">R$ 0,00</strong>
     </button>
-
     <button class="cta primary" type="button" data-open-checkout>Finalizar</button>
   </div>
 
-  <!-- ✅ CARRINHO ÚNICO PADRÃO -->
+  <!-- Carrinho padrão (mesmo das outras páginas) -->
   <aside class="drawer" id="cartDrawer" aria-hidden="true">
     <div class="drawer-backdrop" id="closeCartBackdrop"></div>
-
     <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="Carrinho">
       <div class="drawer-head">
         <div>
@@ -83,173 +75,16 @@
     </div>
   </aside>
 
-  <div class="toast" id="toast"></div>
-
-  <!-- ✅ CHECKOUT OVERLAY (mesmo do padrão) -->
-  <div id="checkoutOverlay" class="ck-overlay" aria-hidden="true">
-    <div class="ck-modal" role="dialog" aria-modal="true" aria-label="Finalizar pedido">
-      <header class="ck-head">
-        <div class="ck-title">
-          <strong>Finalizar pedido</strong>
-          <span class="ck-sub">Escolha pagamento e confirme seus dados</span>
-        </div>
-        <button id="ckClose" class="ck-x" type="button" aria-label="Fechar">✕</button>
-      </header>
-
-      <section class="ck-step" data-step="pay">
-        <div class="ck-card">
-          <p class="ck-hint">Como você quer pagar?</p>
-
-          <div class="ck-grid">
-            <button class="ck-pay" type="button" data-pay="pix">
-              <span class="ck-pay-title">PIX</span>
-              <span class="ck-pay-desc">Copia e cola + QR Code</span>
-            </button>
-
-            <button class="ck-pay" type="button" data-pay="credit">
-              <span class="ck-pay-title">Cartão (Crédito)</span>
-              <span class="ck-pay-desc">Pagar na entrega/retirada</span>
-            </button>
-
-            <button class="ck-pay" type="button" data-pay="debit">
-              <span class="ck-pay-title">Cartão (Débito)</span>
-              <span class="ck-pay-desc">Pagar na entrega/retirada</span>
-            </button>
-          </div>
-        </div>
-
-        <div class="ck-actions">
-          <button id="ckCancel" class="ck-btn ghost" type="button" style="width:100%;">Cancelar</button>
-        </div>
-      </section>
-
-      <section class="ck-step" data-step="addr" hidden>
-        <div class="ck-card">
-          <p class="ck-hint" id="ckKmHint">Toque em “Usar minha localização (GPS)” para calcular a taxa.</p>
-
-          <div id="ckFeeLine" class="ck-fee" hidden>
-            <div><span>Distância</span> <strong id="ckKm">—</strong></div>
-            <div><span>Taxa</span> <strong id="ckFee">—</strong></div>
-          </div>
-
-          <div id="ckBlocked" class="ck-blocked" hidden>
-            Fora do raio de entrega. Entrega indisponível.
-          </div>
-
-          <button id="ckGetLocation" class="ck-btn full" type="button">Usar minha localização (GPS)</button>
-
-          <div class="ck-form">
-            <label class="ck-field">
-              <span>Nome</span>
-              <input id="ckName" type="text" placeholder="Seu nome" autocomplete="name" />
-            </label>
-
-            <label class="ck-field">
-              <span>Telefone (DDD)</span>
-              <input id="ckPhone" type="tel" placeholder="31999999999" autocomplete="tel" />
-            </label>
-
-            <label class="ck-field">
-              <span>Bairro</span>
-              <input id="ckBairro" type="text" placeholder="Ex.: Santa Tereza" />
-            </label>
-
-            <label class="ck-field">
-              <span>Endereço</span>
-              <input id="ckAddress" type="text" placeholder="Rua, número, referência" autocomplete="street-address" />
-            </label>
-
-            <label class="ck-field">
-              <span>Complemento (opcional)</span>
-              <input id="ckCompl" type="text" placeholder="Apto, bloco, casa..." />
-            </label>
-
-            <label class="ck-field">
-              <span>Observações (opcional)</span>
-              <textarea id="ckObs" rows="3" placeholder="Sem cebola, ponto da carne, etc."></textarea>
-            </label>
-          </div>
-        </div>
-
-        <div class="ck-actions">
-          <button id="ckBackFromAddr" class="ck-btn ghost" type="button" style="flex:1;">Voltar</button>
-          <button id="ckConfirmOrder" class="ck-btn primary" type="button" style="flex:1.2;">Confirmar</button>
-        </div>
-      </section>
-
-      <section class="ck-step" data-step="pix" hidden>
-        <div class="ck-card">
-          <div class="ck-summary" style="display:grid; gap:6px; margin-bottom:10px;">
-            <div class="row"><span>Subtotal</span> <strong id="ckTotalPix">R$ 0,00</strong></div>
-            <div class="row"><span>Taxa</span> <strong id="ckFeePix">R$ 0,00</strong></div>
-            <div class="row total"><span>Total</span> <strong id="ckPixTotal">R$ 0,00</strong></div>
-          </div>
-
-          <div class="ck-qrwrap">
-            <div id="ckQr" class="ck-qr">Gerando QR…</div>
-          </div>
-
-          <label class="ck-field">
-            <span>Código PIX (copia e cola)</span>
-            <textarea id="ckPixCode" rows="4" readonly></textarea>
-          </label>
-
-          <button id="ckCopyPix" class="ck-btn full" type="button">Copiar código PIX</button>
-
-          <div class="ck-note muted" style="margin-top:10px; font-size:12px;">
-            Depois de pagar, toque em “Já paguei” e envie o comprovante no WhatsApp.
-          </div>
-
-          <button id="ckPaidPix" class="ck-btn full ghost" type="button">Já paguei (enviar comprovante)</button>
-        </div>
-
-        <div class="ck-actions">
-          <button id="ckBackFromPix" class="ck-btn ghost" type="button" style="width:100%;">Voltar</button>
-        </div>
-      </section>
-    </div>
-  </div>
-
-  <!-- ✅ Scripts (ORDEM CERTA) -->
+  <!-- Scripts (ordem certa) -->
   <script src="js/data.js"></script>
   <script src="js/render.js"></script>
   <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
 
-  <!-- QRCode + checkout.js -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-  <script src="js/checkout.js"></script>
-
   <script>
-    // ✅ IMPORTANTE: aqui é o nome da categoria no seu data.js
-    // Se no seu data.js estiver "combos" ou "comboItens", troque o primeiro argumento.
+    // ✅ se você tiver DATA.combo, renderiza.
+    // Se ainda não existe, vai ficar vazio (normal) até você cadastrar os combos.
     window.renderCategory("combo","gridCombo");
   </script>
-
-  <script>
-    // ✅ Badge padrão
-    (() => {
-      const badge = document.getElementById("cartBadge");
-      function syncBadge(){
-        try{
-          const cart = window.Cart;
-          if(!cart) return;
-          let c = 0;
-          if(typeof cart.count === "function") c = cart.count() || 0;
-          else{
-            const items = (typeof cart.items === "function" ? cart.items() : cart.items) || cart.state?.items;
-            if(Array.isArray(items)) c = items.length;
-          }
-          if(badge){
-            badge.hidden = c <= 0;
-            badge.textContent = String(c);
-          }
-        }catch{}
-      }
-      document.addEventListener("lp:cart-change", syncBadge);
-      syncBadge();
-    })();
-  </script>
-
 </body>
 </html>
