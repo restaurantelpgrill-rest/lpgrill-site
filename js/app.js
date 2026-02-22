@@ -1134,3 +1134,33 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
     // se não tiver overlay, segue o href normalmente (combo.html)
   }, true);
 })();
+// =======================================
+// FINALIZAR (sticky) -> abre checkout overlay
+// fallback -> vai para checkout.html
+// =======================================
+(() => {
+  function openCheckout(e){
+    const overlay = document.getElementById("checkoutOverlay");
+    if(overlay){
+      e?.preventDefault?.();
+      e?.stopPropagation?.();
+      overlay.classList.add("is-open");
+      overlay.setAttribute("aria-hidden","false");
+      return true;
+    }
+    return false;
+  }
+
+  document.addEventListener("click", (e) => {
+    const el = e.target?.closest?.("[data-open-checkout]");
+    if(!el) return;
+
+    // se existe overlay, abre e cancela navegação
+    if(openCheckout(e)) return;
+
+    // fallback: se for <button>, navega
+    if(el.tagName === "BUTTON"){
+      window.location.href = "checkout.html";
+    }
+  }, true);
+})();
