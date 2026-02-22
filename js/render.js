@@ -1,5 +1,3 @@
-ta ai meu render adicione no local certo !! e me devolva pronto ! 
-
 // js/render.js — LP Grill (Cards com foto + seleção (qty) + carrinho compatível com cart.js V3)
 (() => {
   const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
