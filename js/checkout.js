@@ -1,6 +1,6 @@
 /* js/checkout.js — LP GRILL Checkout Overlay (sem mexer no render/produtos) */
 (() => {
-  // evita inicializar duas vezes (caso seu site injete scripts)
+  // evita inicializar duas vezes
   if (window.__LPGRILL_CHECKOUT_INIT__) return;
   window.__LPGRILL_CHECKOUT_INIT__ = true;
 
@@ -121,12 +121,10 @@
   // tenta pegar linhas de itens do carrinho SEM depender do formato
   function getCartLines(cart) {
     try {
-      // 1) se existir um método pronto:
       if (typeof cart.toWhatsApp === "function") {
         const s = cart.toWhatsApp();
         if (s && typeof s === "string") return s.trim();
       }
-      // 2) formatos comuns:
       const items =
         (typeof cart.items === "function" && cart.items()) ||
         cart.items ||
@@ -150,13 +148,27 @@
   }
 
   function init() {
-    const overlay = $("#checkoutOverlay");
+    const overlay = $("#checkoutOverlay"); // deve ser o backdrop (.ck-overlay)
     if (!overlay) return;
 
     const cart = getCart();
     if (!cart) {
       console.warn("checkout.js: window.Cart não existe (cart.js não carregou).");
       return;
+    }
+
+    // ====== trava/destrava scroll do fundo (FIX corte/bug de toque) ======
+    let prevOverflowHtml = "";
+    let prevOverflowBody = "";
+    function lockScroll() {
+      prevOverflowHtml = document.documentElement.style.overflow || "";
+      prevOverflowBody = document.body.style.overflow || "";
+      document.documentElement.style.overflow = "hidden";
+      document.body.style.overflow = "hidden";
+    }
+    function unlockScroll() {
+      document.documentElement.style.overflow = prevOverflowHtml;
+      document.body.style.overflow = prevOverflowBody;
     }
 
     const steps = {
@@ -166,9 +178,9 @@
     };
 
     // PIX UI
-    const elPixSub   = $("#ckTotalPix", overlay); // (mantive seu id) agora vira SUBTOTAL exibido
+    const elPixSub   = $("#ckTotalPix", overlay);
     const elFeePix   = $("#ckFeePix", overlay);
-    const elPixTotal = $("#ckPixTotal", overlay); // opcional (se não existir, tudo bem)
+    const elPixTotal = $("#ckPixTotal", overlay);
     const elPixCode  = $("#ckPixCode", overlay);
     const elQr       = $("#ckQr", overlay);
 
@@ -192,10 +204,32 @@
     const btnConfirm = $("#ckConfirmOrder", overlay);
     const btnCopyPix = $("#ckCopyPix", overlay);
 
+    // botões de pagamento (os seus têm data-pay="pix|credit|debit")
+    const payButtons = $$("[data-pay]", overlay);
+
     let payMethod = null;
     let lastKm = null;
     let lastFee = 0;
     let lastFocusEl = null;
+
+    function normPay(v){
+      const x = String(v||"").toLowerCase().trim();
+      if (x === "pix") return "pix";
+      if (x === "credit" || x === "credito") return "credit";
+      if (x === "debit" || x === "debito") return "debit";
+      return x;
+    }
+
+    function setPayActive(method){
+      payMethod = normPay(method);
+      // CSS: .ck-pay.is-active / .ck-paybtn.is-active
+      payButtons.forEach(b => b.classList.toggle("is-active", normPay(b.getAttribute("data-pay")) === payMethod));
+    }
+
+    function clearPayActive(){
+      payMethod = null;
+      payButtons.forEach(b => b.classList.remove("is-active"));
+    }
 
     function getMode() {
       const mode = (cart.getMode && cart.getMode()) || cart.mode || "entrega";
@@ -215,7 +249,6 @@
         const items = (typeof cart.items === "function" ? cart.items() : cart.items) || cart.state?.items;
         if (Array.isArray(items)) return items.length === 0;
       } catch { /* ignore */ }
-      // fallback: se subtotal for 0, provavelmente vazio (não perfeito, mas ajuda)
       return subtotal() <= 0;
     }
 
@@ -230,7 +263,6 @@
       Object.values(steps).forEach(s => { if (s) s.hidden = true; });
       if (steps[name]) steps[name].hidden = false;
 
-      // foco amigável
       const focusTarget =
         (name === "pay" && overlay.querySelector("[data-pay]")) ||
         (name === "addr" && inName) ||
@@ -273,7 +305,9 @@
       overlay.setAttribute("aria-hidden", "false");
       overlay.setAttribute("role", "dialog");
 
-      payMethod = null;
+      lockScroll(); // ✅ FIX
+
+      clearPayActive();
       lastKm = null;
       lastFee = 0;
 
@@ -290,49 +324,77 @@
     function closeOverlay() {
       overlay.classList.remove("is-open");
       overlay.setAttribute("aria-hidden", "true");
+
+      unlockScroll(); // ✅ FIX
+
       // devolve foco
       setTimeout(() => lastFocusEl?.focus?.(), 10);
     }
 
-    // fechar: botões + clique fora + ESC
+    // ===== fechar: botões + clique fora + ESC =====
     $("#ckClose", overlay)?.addEventListener("click", closeOverlay);
     $("#ckCancel", overlay)?.addEventListener("click", closeOverlay);
-    overlay.addEventListener("click", (e) => { if (e.target === overlay) closeOverlay(); });
+
+    // clique fora fecha (importante: só fecha se clicou no backdrop)
+    overlay.addEventListener("click", (e) => {
+      if (e.target === overlay) closeOverlay();
+    });
+
     document.addEventListener("keydown", (e) => {
       if (e.key === "Escape" && overlay.classList.contains("is-open")) closeOverlay();
     });
 
-    // Intercepta Finalizar (sem mexer no layout)
-    const selectors = [
+    // ===== ABRIR CHECKOUT: mais robusto (link OU botão) =====
+    const openSelectors = [
+      // seus links antigos
       'a.tile.highlight[href="checkout.html"]',
       '.drawer-actions a.btn.primary[href="checkout.html"]',
-      '.sticky-cta a.cta.primary[href="checkout.html"]'
+      '.sticky-cta a.cta.primary[href="checkout.html"]',
+      // variações comuns
+      'a[href$="checkout.html"]',
+      'a[href*="checkout.html"]',
+      // caso seja botão/div no layout
+      '.lp-finalize',
+      '.cta.primary',
+      '#btnFinalizar',
+      '#finalizar',
+      '[data-open-checkout]'
     ];
-    document.querySelectorAll(selectors.join(",")).forEach(a => {
-      a.addEventListener("click", (e) => { e.preventDefault(); openOverlay(); });
+
+    document.querySelectorAll(openSelectors.join(",")).forEach(el => {
+      el.addEventListener("click", (e) => { e.preventDefault(); openOverlay(); });
     });
 
-    // salva enquanto digita (sem ser pesado)
+    // ===== salva enquanto digita =====
     [inName, inPhone, inBairro, inAddr, inCompl, inObs].forEach((el) => {
       if (!el) return;
       el.addEventListener("input", () => persistInputs());
       el.addEventListener("blur", () => persistInputs());
     });
 
-    // telefone: limpa para números (sem inventar máscara)
+    // telefone: só números (DDD+9)
     if (inPhone) {
       inPhone.addEventListener("input", () => {
         const d = onlyDigits(inPhone.value);
-        // limita tamanho comum BR (DDD + 9 dígitos) sem DDI
         inPhone.value = d.slice(0, 11);
       });
     }
 
-    // Escolha pagamento -> endereço
-    $$("[data-pay]", overlay).forEach(btn => {
+    // ===== Escolha pagamento: agora fica bonito + toggle =====
+    payButtons.forEach(btn => {
       btn.addEventListener("click", () => {
-        payMethod = btn.getAttribute("data-pay"); // pix|credit|debit
+        const clicked = normPay(btn.getAttribute("data-pay"));
+
+        // toggle: se clicar no mesmo, desmarca e fica no step pay
+        if (payMethod === clicked) {
+          clearPayActive();
+          goStep("pay");
+          return;
+        }
+
+        setPayActive(clicked);
         goStep("addr");
+
         if (isEntregaMode()) {
           if (elKmHint) elKmHint.textContent = "Para entrega: calcule a taxa pelo GPS.";
         } else {
@@ -344,7 +406,7 @@
     $("#ckBackFromAddr", overlay)?.addEventListener("click", () => goStep("pay"));
     $("#ckBackFromPix", overlay)?.addEventListener("click", () => goStep("addr"));
 
-    // GPS
+    // ===== GPS =====
     btnGps?.addEventListener("click", async () => {
       if (!isEntregaMode()) {
         lastKm = 0; lastFee = 0;
@@ -381,11 +443,17 @@
       }
     });
 
-    // Confirmar endereço / finalizar
+    // ===== Confirmar endereço / finalizar =====
     btnConfirm?.addEventListener("click", () => {
+      if (!payMethod) {
+        alert("Escolha uma forma de pagamento (PIX, Crédito ou Débito).");
+        goStep("pay");
+        return;
+      }
+
       const name = (inName?.value || "").trim();
       const phoneDigits = onlyDigits(inPhone?.value || "");
-      const phone = phoneDigits; // envia limpo (melhor pro WhatsApp)
+      const phone = phoneDigits;
       const bairro = (inBairro?.value || "").trim();
       const address = (inAddr?.value || "").trim();
       const compl = (inCompl?.value || "").trim();
@@ -418,8 +486,6 @@
       if (payMethod === "pix") {
         goStep("pix");
 
-        // mantém seus ids, mas corrige a semântica:
-        // ckTotalPix agora mostra SUBTOTAL; se existir ckPixTotal, mostra TOTAL
         if (elPixSub) elPixSub.textContent = money(sub);
         if (elFeePix) elFeePix.textContent = money(lastFee);
         if (elPixTotal) elPixTotal.textContent = money(total);
@@ -453,6 +519,7 @@
       // Crédito / Débito -> WhatsApp
       const label = (payMethod === "credit") ? "Crédito" : "Débito";
       const itemsLines = getCartLines(cart);
+
       const msg =
         `🛒 *NOVO PEDIDO — LP GRILL*\n` +
         `Pagamento: *${label}*\n` +
@@ -461,9 +528,7 @@
         (isEntrega ? `Distância: ${Number(lastKm || 0).toFixed(1)} km\nTaxa: ${money(lastFee)}\n` : "") +
         `Total: *${money(total)}*\n` +
         `\nNome: ${name}\nTelefone: ${phone}\n` +
-        (isEntrega
-          ? `Bairro: ${bairro}\nEndereço: ${address}\n`
-          : `Modo: Retirar\n`) +
+        (isEntrega ? `Bairro: ${bairro}\nEndereço: ${address}\n` : `Modo: Retirar\n`) +
         (compl ? `Compl: ${compl}\n` : "") +
         (obs ? `Obs: ${obs}\n` : "");
 
@@ -479,14 +544,20 @@
       try {
         await navigator.clipboard.writeText(val);
         btnCopyPix.textContent = "Copiado ✅";
-        setTimeout(() => { btnCopyPix.textContent = btnCopyPix.dataset._label || "Copiar código PIX"; btnCopyPix.disabled = false; }, 1200);
+        setTimeout(() => {
+          btnCopyPix.textContent = btnCopyPix.dataset._label || "Copiar código PIX";
+          btnCopyPix.disabled = false;
+        }, 1200);
       } catch {
         try {
           elPixCode?.focus?.();
           elPixCode?.select?.();
           document.execCommand("copy");
           btnCopyPix.textContent = "Copiado ✅";
-          setTimeout(() => { btnCopyPix.textContent = btnCopyPix.dataset._label || "Copiar código PIX"; btnCopyPix.disabled = false; }, 1200);
+          setTimeout(() => {
+            btnCopyPix.textContent = btnCopyPix.dataset._label || "Copiar código PIX";
+            btnCopyPix.disabled = false;
+          }, 1200);
         } catch {
           alert("Não consegui copiar automaticamente. Selecione o código e copie manualmente.");
           btnCopyPix.disabled = false;
@@ -504,6 +575,7 @@
         `✅ *PIX PAGO* — vou enviar o comprovante agora.\n` +
         `Por favor, libere meu pedido assim que confirmar.\n\n` +
         `Nome: ${name}\nTelefone: ${phone}`;
+
       openWhatsApp(msg);
     });
   }
