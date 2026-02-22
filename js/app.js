@@ -1,10 +1,12 @@
-// js/app.js — LP Grill (Checkout Premium v2.1)
+// js/app.js — LP Grill (Checkout Premium v2.2) — FIX DUPLICAÇÃO
 // ✅ Endereço obrigatório (entrega) + valida raio 12 km + taxa R$1/km (mín. R$5)
 // ✅ Taxa entra no carrinho (localStorage LPGRILL_FEE_V1) e soma no total automaticamente
 // ✅ PIX (QR + copia/cola) com TXID
 // ✅ WhatsApp com pedido completo
 // ✅ NOVO DESIGNER (CSS premium injetado pelo JS)
-// ✅ SEM DUPLICAR MODAIS: remove payOverlay antigo e IGNORA scripts antigos via compat
+// ✅ SEM DUPLICAR MODAIS: remove payOverlay antigo e recria overlay se quebrado
+// ✅ FIX: 1 ÚNICO "openCheckout" + 1 ÚNICO listener global (data-open-checkout)
+
 (() => {
   "use strict";
 
@@ -77,7 +79,7 @@
   };
 
   // =========================
-  // ✅ Products resolver (compat com seu render/cart)
+  // ✅ Products resolver (compat com render/cart)
   // =========================
   function allProducts(){
     const d = window.DATA || {};
@@ -87,7 +89,6 @@
     return out;
   }
 
-  // usado pelo cart.js
   window.findProduct = function(id){
     return allProducts().find(p => String(p.id) === String(id)) || null;
   };
@@ -112,8 +113,7 @@
   }
 
   function fee(){
-    const mode = getMode();
-    if(mode !== "entrega") return 0;
+    if(getMode() !== "entrega") return 0;
     const f = Number(localStorage.getItem(LS.FEE) || "0");
     return Number.isFinite(f) ? f : 0;
   }
@@ -142,7 +142,6 @@
     return CONFIG.entrega.bairros.find(b => b.name.toLowerCase() === n) || null;
   }
 
-  // prioridade: começa com → contém
   function suggestBairros(prefix){
     const p = String(prefix||"").trim().toLowerCase();
     if(!p) return [];
@@ -153,7 +152,6 @@
   }
 
   function calcDeliveryFeeFromKm(km){
-    // R$ 1 por km (arredonda pra cima) + mínimo R$ 5
     const perKm = Number(CONFIG.entrega.feePerKm || 1);
     const min = Number(CONFIG.entrega.feeMin || 5);
     const kmBill = Math.max(1, Math.ceil(Number(km || 0)));
@@ -162,8 +160,7 @@
   }
 
   function computeAndStoreFeeForBairro(bairroName){
-    const mode = getMode();
-    if(mode !== "entrega"){
+    if(getMode() !== "entrega"){
       localStorage.setItem(LS.FEE, "0");
       window.Cart?.renderAll?.();
       return { ok:true, km:0, fee:0 };
@@ -190,7 +187,7 @@
   }
 
   // =========================
-  // ✅ PIX EMV (copia e cola) + CRC16
+  // ✅ PIX EMV + CRC16
   // =========================
   function crc16(payload){
     let crc = 0xFFFF;
@@ -301,7 +298,7 @@
   }
 
   // =========================
-  // ✅ NOVO DESIGNER (CSS Premium)
+  // ✅ Designer CSS Premium (injetado)
   // =========================
   function ensureCheckoutStyles(){
     if(document.getElementById("lpCheckoutStyles")) return;
@@ -316,13 +313,10 @@
   --ck-txt:#0b1220;
   --ck-mut: rgba(11,18,32,.68);
   --ck-line: rgba(15,23,42,.12);
-  --ck-accent: #111827;
   --ck-shadow: 0 18px 60px rgba(0,0,0,.22);
   --ck-radius: 18px;
 }
-
 html.modal-open, body.modal-open{ overflow:hidden !important; }
-
 .ck-overlay{
   position:fixed; inset:0;
   background: var(--ck-bg);
@@ -333,7 +327,6 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
   padding: 18px;
 }
 .ck-overlay.is-open{ display:flex; align-items:flex-end; justify-content:center; }
-
 .ck-sheet{
   width:min(980px, 100%);
   background: linear-gradient(180deg, var(--ck-card), var(--ck-card2));
@@ -345,7 +338,6 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
   animation: ckUp .22s ease-out forwards;
 }
 @keyframes ckUp{ to{ transform: translateY(0); } }
-
 .ck-head{
   display:flex; align-items:center; justify-content:space-between;
   padding: 16px 18px;
@@ -354,7 +346,6 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
 }
 .ck-title{ font-weight: 1000; letter-spacing:-.02em; font-size: 16px; color: var(--ck-txt); }
 .ck-sub{ font-size: 12px; color: var(--ck-mut); margin-top:2px; }
-
 .ck-x{
   border:1px solid var(--ck-line);
   background: rgba(255,255,255,.94);
@@ -363,9 +354,7 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
   font-size: 16px;
   cursor:pointer;
 }
-
 .ck-step{ padding: 16px 18px 18px; }
-
 .ck-box{
   border:1px solid var(--ck-line);
   background: rgba(255,255,255,.90);
@@ -381,14 +370,8 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
 }
 .ck-v{ font-size: 22px; font-weight: 1100; color: var(--ck-txt); margin-top: 4px; }
 .ck-hint{ font-size: 12px; color: var(--ck-mut); margin-top: 6px; line-height: 1.35; }
-
 .ck-paygrid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
-@media (max-width: 720px){
-  .ck-overlay.is-open{ align-items:flex-end; }
-  .ck-sheet{ border-radius: 22px; }
-  .ck-paygrid{ grid-template-columns: 1fr; }
-}
-
+@media (max-width: 720px){ .ck-paygrid{ grid-template-columns: 1fr; } }
 .ck-paybtn{
   border:1px solid var(--ck-line);
   background: rgba(255,255,255,.94);
@@ -412,9 +395,7 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
 }
 .ck-paytxt strong{ display:block; font-size: 14px; color: var(--ck-txt); }
 .ck-paytxt small{ display:block; font-size: 12px; color: var(--ck-mut); margin-top:2px; }
-
 .ck-actions{ display:flex; justify-content:flex-end; gap: 10px; margin-top: 14px; }
-
 .ck-btn, .ck-back{
   border:1px solid rgba(15,23,42,.14);
   background: linear-gradient(180deg, rgba(15,23,42,.96), rgba(15,23,42,.88));
@@ -424,12 +405,7 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
   font-weight: 1000;
   cursor:pointer;
 }
-.ck-btn:hover{ filter: brightness(1.02); }
-.ck-btn.ghost, .ck-back.ghost{
-  background: rgba(255,255,255,.92);
-  color: var(--ck-txt);
-}
-
+.ck-btn.ghost, .ck-back.ghost{ background: rgba(255,255,255,.92); color: var(--ck-txt); }
 .ck-field{ margin-top: 10px; }
 .ck-lbl{ font-size: 12px; font-weight: 900; color: var(--ck-txt); margin-bottom: 6px; }
 .ck-inp{
@@ -441,14 +417,8 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
   outline:none;
   font-size: 14px;
 }
-.ck-inp:focus{
-  border-color: rgba(15,23,42,.32);
-  box-shadow: 0 0 0 4px rgba(15,23,42,.07);
-}
-
 .ck-row2{ display:grid; grid-template-columns: 1fr 140px; gap:10px; }
 @media (max-width: 560px){ .ck-row2{ grid-template-columns: 1fr; } }
-
 .ck-block{
   margin-top: 12px;
   padding: 10px 12px;
@@ -459,10 +429,8 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
   font-weight: 800;
   font-size: 12px;
 }
-
 .ck-qrwrap{ display:grid; grid-template-columns: 280px 1fr; gap: 12px; margin-top: 12px; }
 @media (max-width: 820px){ .ck-qrwrap{ grid-template-columns: 1fr; } }
-
 .ck-qrbox{
   border:1px solid var(--ck-line);
   background: rgba(255,255,255,.94);
@@ -474,14 +442,12 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
   min-height: 280px;
 }
 .ck-qr{ width: 240px; height:240px; object-fit: contain; }
-
 .ck-copy{
   border:1px solid var(--ck-line);
   background: rgba(255,255,255,.94);
   border-radius: var(--ck-radius);
   padding: 12px;
 }
-
 .ck-textarea{
   width:100%;
   border:1px solid rgba(15,23,42,.16);
@@ -493,20 +459,6 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
   outline:none;
   margin-top: 8px;
 }
-
-.ck-feeline{ margin-top: 6px; font-size: 12px; color: var(--ck-mut); }
-
-.ck-warn{
-  border:1px solid rgba(245,158,11,.22);
-  background: rgba(245,158,11,.10);
-  color: #7c2d12;
-  padding: 10px 12px;
-  border-radius: 14px;
-  font-size: 12px;
-  font-weight: 900;
-}
-
-/* Sugestões bairros */
 #bairroSug .ck-sugwrap{
   display:flex; flex-wrap:wrap; gap:8px;
   padding:10px;
@@ -533,18 +485,16 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
   // ✅ Checkout Overlay (auto-create) — SEM DUPLICAR
   // =========================
   function ensureOverlay(){
-    // remove modal antigo se existir
     const old = $("#payOverlay");
     if(old) old.remove();
 
     let overlay = $("#checkoutOverlay");
     if(overlay){
-      // se existir mas não tem os IDs que precisamos, recria
-      if(!$("#ckTotalPay", overlay) || !$("#addrBairro", overlay) || !$("#ckPixPayload", overlay)){
-        overlay.innerHTML = "";
-      } else {
+      // se existir, garante que estrutura está OK
+      if($("#ckTotalPay", overlay) && $("#addrBairro", overlay) && $("#ckPixPayload", overlay)){
         return overlay;
       }
+      overlay.remove();
     }
 
     overlay = document.createElement("div");
@@ -562,7 +512,6 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
           <button class="ck-x" id="ckClose" type="button" aria-label="Fechar">✕</button>
         </div>
 
-        <!-- STEP: pay -->
         <section class="ck-step" data-step="pay">
           <div class="ck-box">
             <div class="ck-k">Total atual</div>
@@ -592,7 +541,6 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
           </div>
         </section>
 
-        <!-- STEP: addr -->
         <section class="ck-step" data-step="addr" hidden>
           <div class="ck-box">
             <div class="ck-k">Endereço</div>
@@ -622,7 +570,7 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
             </div>
           </div>
 
-          <div class="ck-field ck-loc">
+          <div class="ck-field">
             <div class="ck-lbl">Bairro (com sugestão)</div>
             <input class="ck-inp" id="addrBairro" placeholder="Digite: mon..." autocomplete="off" />
             <div id="bairroSug" style="margin-top:8px; display:none"></div>
@@ -647,7 +595,6 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
           </div>
         </section>
 
-        <!-- STEP: pix -->
         <section class="ck-step" data-step="pix" hidden>
           <div class="ck-box">
             <div class="ck-k">Total</div>
@@ -669,7 +616,8 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
               </div>
 
               <div class="ck-warn" style="margin-top:10px;">
-              Após o efeutuar o pagamento envie o comprovante no whatsapp para confirmação, sem o comprovante seu pedido não será entregue  , clique em <strong>Pagamento concluído</strong> para enviar o pedido no WhatsApp.
+                Após efetuar o pagamento, envie o comprovante no WhatsApp para confirmação.
+                Sem comprovante o pedido não será entregue. Clique em <strong>Pagamento concluído</strong>.
               </div>
 
               <div class="ck-actions" style="justify-content:flex-end; margin-top:10px;">
@@ -702,6 +650,7 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
     });
   }
 
+  // ✅ ÚNICA função pública de abrir checkout
   function openCheckout(){
     ensureCheckoutStyles();
     const overlay = ensureOverlay();
@@ -712,9 +661,10 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
 
     if(window.Cart?.closeDrawer) window.Cart.closeDrawer();
 
-    $("#ckTotalPay") && ($("#ckTotalPay").textContent = money(total()));
-    showStep(overlay, "pay");
+    const totalPay = $("#ckTotalPay");
+    if(totalPay) totalPay.textContent = money(total());
 
+    showStep(overlay, "pay");
     setTimeout(bindBairroAutocomplete, 0);
   }
 
@@ -801,8 +751,7 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
   // ✅ Autocomplete bairro + taxa dinâmica
   // =========================
   function updateFeePreviewByBairroName(name){
-    const mode = getMode();
-    if(mode !== "entrega"){
+    if(getMode() !== "entrega"){
       localStorage.setItem(LS.FEE, "0");
       setFeePreviewText(`Taxa: <strong>${money(0)}</strong> (retirada)`);
       window.Cart?.renderAll?.();
@@ -833,17 +782,9 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
       $('input[id*="bairro" i]') ||
       $$("input").find(i => (i.placeholder || "").toLowerCase().includes("bairro"));
 
-    if(!inp){
-      console.warn("[bairro] input não encontrado (addrBairro/bairro/name=).");
-      return;
-    }
+    if(!inp) return;
 
-    let box =
-      $("#bairroSug") ||
-      $("#bairrosSug") ||
-      $("#bairroList") ||
-      $("#sugBairro");
-
+    let box = $("#bairroSug");
     if(!box){
       box = document.createElement("div");
       box.id = "bairroSug";
@@ -904,8 +845,11 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
     const overlay = $("#checkoutOverlay");
     if(!overlay) return;
 
-    $("#ckTotalPix") && ($("#ckTotalPix").textContent = money(total()));
-    $("#ckFeeLine") && ($("#ckFeeLine").textContent = `Taxa: ${money(fee())}`);
+    const totalPix = $("#ckTotalPix");
+    if(totalPix) totalPix.textContent = money(total());
+
+    const feeLine = $("#ckFeeLine");
+    if(feeLine) feeLine.textContent = `Taxa: ${money(fee())}`;
 
     const txid = `LP${Date.now().toString().slice(-8)}`;
     const payload = buildPixPayload({
@@ -916,7 +860,9 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
       txid
     });
 
-    $("#ckPixPayload") && ($("#ckPixPayload").value = payload);
+    const ta = $("#ckPixPayload");
+    if(ta) ta.value = payload;
+
     const qr = $("#ckQrImg");
     if(qr) qr.src = qrUrlFromPayload(payload);
 
@@ -968,14 +914,12 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
     const v = validateAddrAndFee();
     if(!v.ok) return;
 
-    // cartão/débito: manda direto pro WhatsApp
     if(pay === "credit" || pay === "debit"){
       const text = buildOrderText(v.addr, pay, null);
       window.location.href = waLink(text);
       return;
     }
 
-    // pix: vai pro step pix
     goPix();
   }
 
@@ -991,45 +935,13 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
   }
 
   // =========================
-  // ✅ Openers/Closers
+  // ✅ Binds overlay (1 vez)
   // =========================
-  function bindCheckoutOpeners(){
-    // intercepta checkout.html e abre o overlay premium
-    $$('a[href="checkout.html"], a[href="./checkout.html"]').forEach(a => {
-      a.addEventListener("click", (e) => {
-        e.preventDefault();
-        openCheckout();
-      });
-    });
-
-    const stickyFinal = $("#stickyCTA a.cta.primary");
-    if(stickyFinal){
-      stickyFinal.addEventListener("click", (e) => {
-        e.preventDefault();
-        openCheckout();
-      });
-    }
-
-    $$('#cartDrawer a[href="checkout.html"]').forEach(a => {
-      a.addEventListener("click", (e) => {
-        e.preventDefault();
-        openCheckout();
-      });
-    });
-
-    // compat: se existir botão antigo chamando openPaymentSheet(total)
-    window.openPaymentSheet = function(){
-      openCheckout();
-    };
-  }
-
-  function bindCheckoutClosers(){
+  function bindOverlayButtons(){
     const overlay = ensureOverlay();
-    const ckClose  = $("#ckClose", overlay);
-    const ckCancel = $("#ckCancel", overlay);
 
-    ckClose?.addEventListener("click", closeCheckout);
-    ckCancel?.addEventListener("click", closeCheckout);
+    $("#ckClose", overlay)?.addEventListener("click", closeCheckout);
+    $("#ckCancel", overlay)?.addEventListener("click", closeCheckout);
 
     overlay.addEventListener("click", (e) => {
       if(e.target === overlay) closeCheckout();
@@ -1038,10 +950,6 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
     window.addEventListener("keydown", (e) => {
       if(e.key === "Escape" && overlay.classList.contains("is-open")) closeCheckout();
     });
-  }
-
-  function bindPayButtons(){
-    const overlay = ensureOverlay();
 
     $$(".ck-paybtn", overlay).forEach(btn => {
       btn.addEventListener("click", () => {
@@ -1054,13 +962,49 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
 
     $("#ckBackFromAddr", overlay)?.addEventListener("click", ()=> showStep(overlay, "pay"));
     $("#ckBackFromPix", overlay)?.addEventListener("click", ()=> showStep(overlay, "pay"));
-
     $("#ckAddrContinue", overlay)?.addEventListener("click", continueFromAddr);
-
     $("#ckCopyPix", overlay)?.addEventListener("click", copyPix);
     $("#ckPaid", overlay)?.addEventListener("click", paidAndSend);
 
     setTimeout(bindBairroAutocomplete, 0);
+  }
+
+  // =========================
+  // ✅ Openers globais (SEM DUPLICAR)
+  // =========================
+  function bindGlobalOpeners(){
+    // Único intercept para qualquer botão/link com data-open-checkout
+    document.addEventListener("click", (e) => {
+      const el = e.target?.closest?.("[data-open-checkout]");
+      if(!el) return;
+
+      // se existe overlay, abre SEM navegar
+      if(document.getElementById("checkoutOverlay")){
+        e.preventDefault();
+        e.stopPropagation();
+        openCheckout();
+        return;
+      }
+
+      // fallback: se for button, navega
+      if(el.tagName === "BUTTON"){
+        window.location.href = "checkout.html";
+      }
+      // se for <a>, deixa seguir href normal
+    }, true);
+
+    // COMBO (não interfere no checkout)
+    document.addEventListener("click", (e) => {
+      const el = e.target?.closest?.("[data-open-combo]");
+      if(!el) return;
+      const overlay = document.getElementById("comboOverlay");
+      if(overlay){
+        e.preventDefault();
+        overlay.classList.add("is-open");
+        overlay.setAttribute("aria-hidden", "false");
+      }
+      // sem overlay: segue href
+    }, true);
   }
 
   // =========================
@@ -1079,117 +1023,18 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
   function init(){
     ensureCheckoutStyles();
     ensureOverlay();
-    bindCheckoutOpeners();
-    bindCheckoutClosers();
-    bindPayButtons();
+    bindOverlayButtons();
+    bindGlobalOpeners();
     bindWaFloat();
+
+    if(getMode() !== "entrega") localStorage.setItem(LS.FEE, "0");
+    window.Cart?.renderAll?.();
 
     setTimeout(bindBairroAutocomplete, 0);
 
-    // se estiver em retirada, taxa zerada
-    if(getMode() !== "entrega") localStorage.setItem(LS.FEE, "0");
-
-    // garante UI do carrinho ok
-    window.Cart?.renderAll?.();
+    // compat: se algo antigo chamar openPaymentSheet()
+    window.openPaymentSheet = function(){ openCheckout(); };
   }
 
   window.addEventListener("DOMContentLoaded", init);
-})();
-// ===============================
-// CHECKOUT: abrir overlay (global)
-// fallback: ir para checkout.html
-// ===============================
-(() => {
-  function openCheckout(e){
-    const overlay = document.getElementById("checkoutOverlay");
-    if(overlay){
-      e?.preventDefault?.();
-      overlay.classList.add("is-open");
-      overlay.setAttribute("aria-hidden", "false");
-      return;
-    }
-    // fallback (se a página não tem overlay)
-    // deixa navegar normal para checkout.html
-  }
-
-  // Intercepta qualquer link/botão com data-open-checkout em QUALQUER página
-  document.addEventListener("click", (e) => {
-    const a = e.target?.closest?.("[data-open-checkout]");
-    if(!a) return;
-    openCheckout(e);
-  }, true);
-})();
-// COMBO: se existir overlay abre, se não existir navega pro combo.html
-(() => {
-  document.addEventListener("click", (e) => {
-    const el = e.target?.closest?.("[data-open-combo]");
-    if(!el) return;
-
-    const overlay = document.getElementById("comboOverlay");
-    if(overlay){
-      e.preventDefault();
-      overlay.classList.add("is-open");
-      overlay.setAttribute("aria-hidden", "false");
-    }
-    // se não tiver overlay, segue o href normalmente (combo.html)
-  }, true);
-})();
-// =======================================
-// FINALIZAR (sticky) -> abre checkout overlay
-// fallback -> vai para checkout.html
-// =======================================
-(() => {
-  function openCheckout(e){
-    const overlay = document.getElementById("checkoutOverlay");
-    if(overlay){
-      e?.preventDefault?.();
-      e?.stopPropagation?.();
-      overlay.classList.add("is-open");
-      overlay.setAttribute("aria-hidden","false");
-      return true;
-    }
-    return false;
-  }
-
-  document.addEventListener("click", (e) => {
-    const el = e.target?.closest?.("[data-open-checkout]");
-    if(!el) return;
-
-    // se existe overlay, abre e cancela navegação
-    if(openCheckout(e)) return;
-
-    // fallback: se for <button>, navega
-    if(el.tagName === "BUTTON"){
-      window.location.href = "checkout.html";
-    }
-  }, true);
-})();
-// =======================================
-// FINALIZAR -> abre checkout overlay
-// fallback -> vai para checkout.html
-// =======================================
-(() => {
-  function openCheckout(e){
-    const overlay = document.getElementById("checkoutOverlay");
-    if(overlay){
-      e?.preventDefault?.();
-      e?.stopPropagation?.();
-      overlay.classList.add("is-open");
-      overlay.setAttribute("aria-hidden","false");
-      return true;
-    }
-    return false;
-  }
-
-  document.addEventListener("click", (e) => {
-    const el = e.target?.closest?.("[data-open-checkout]");
-    if(!el) return;
-
-    if(openCheckout(e)) return;
-
-    // se não tiver overlay nessa página, navega
-    if(el.tagName === "BUTTON"){
-      window.location.href = "checkout.html";
-    }
-  }, true);
 })();
