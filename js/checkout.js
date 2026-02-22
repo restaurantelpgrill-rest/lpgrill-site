@@ -406,42 +406,56 @@
     $("#ckBackFromAddr", overlay)?.addEventListener("click", () => goStep("pay"));
     $("#ckBackFromPix", overlay)?.addEventListener("click", () => goStep("addr"));
 
-    // ===== GPS =====
-    btnGps?.addEventListener("click", async () => {
-      if (!isEntregaMode()) {
-        lastKm = 0; lastFee = 0;
-        if (elKmHint) elKmHint.textContent = "Modo Retirar: sem taxa de entrega.";
-        if (elFeeLine) elFeeLine.hidden = true;
-        if (elBlocked) elBlocked.hidden = true;
-        return;
-      }
+  // ===== GPS =====
+btnGps?.addEventListener("click", async () => {
 
-      if (elKmHint) elKmHint.textContent = "Calculando distância pelo GPS...";
-      if (elFeeLine) elFeeLine.hidden = true;
-      if (elBlocked) elBlocked.hidden = true;
+  // ✅ MODO RETIRAR: não usa GPS e zera taxa
+  if (!isEntregaMode()) {
+    lastKm = 0;
+    lastFee = 0;
 
-      setBusy(btnGps, true, "Calculando...");
-      try {
-        const res = await calcFeeWithGPS();
-        lastKm = res.km;
-        lastFee = res.fee;
+    // salva taxa 0 pro carrinho
+    localStorage.setItem("LPGRILL_FEE_V1", "0");
+    document.dispatchEvent(new CustomEvent("lp:cart-change"));
 
-        if (elKm) elKm.textContent = `${clamp(res.km, 0, 999).toFixed(1)} km`;
-        if (elFee) elFee.textContent = money(res.fee);
-        if (elFeeLine) elFeeLine.hidden = false;
-        if (elBlocked) elBlocked.hidden = !res.blocked;
+    if (elKmHint) elKmHint.textContent = "Modo Retirar: sem taxa de entrega.";
+    if (elFeeLine) elFeeLine.hidden = true;
+    if (elBlocked) elBlocked.hidden = true;
+    return;
+  }
 
-        if (elKmHint) {
-          elKmHint.textContent = res.blocked
-            ? `Fora do raio de ${CONFIG.maxKm} km. Entrega indisponível.`
-            : "Taxa calculada com base na sua localização.";
-        }
-      } catch {
-        if (elKmHint) elKmHint.textContent = "Não consegui acessar o GPS. Autorize a localização e tente novamente.";
-      } finally {
-        setBusy(btnGps, false);
-      }
-    });
+  // ✅ MODO ENTREGA: calcula pelo GPS
+  if (elKmHint) elKmHint.textContent = "Calculando distância pelo GPS...";
+  if (elFeeLine) elFeeLine.hidden = true;
+  if (elBlocked) elBlocked.hidden = true;
+
+  setBusy(btnGps, true, "Calculando...");
+  try {
+    const res = await calcFeeWithGPS();
+    lastKm = res.km;
+    lastFee = res.fee;
+
+    // ✅ salva taxa correta pro carrinho + atualiza UI
+    localStorage.setItem("LPGRILL_FEE_V1", String(lastFee));
+    document.dispatchEvent(new CustomEvent("lp:cart-change"));
+
+    if (elKm) elKm.textContent = `${clamp(res.km, 0, 999).toFixed(1)} km`;
+    if (elFee) elFee.textContent = money(res.fee);
+    if (elFeeLine) elFeeLine.hidden = false;
+    if (elBlocked) elBlocked.hidden = !res.blocked;
+
+    if (elKmHint) {
+      elKmHint.textContent = res.blocked
+        ? `Fora do raio de ${CONFIG.maxKm} km. Entrega indisponível.`
+        : "Taxa calculada com base na sua localização.";
+    }
+  } catch {
+    if (elKmHint) elKmHint.textContent =
+      "Não consegui acessar o GPS. Autorize a localização e tente novamente.";
+  } finally {
+    setBusy(btnGps, false);
+  }
+});
 
     // ===== Confirmar endereço / finalizar =====
     btnConfirm?.addEventListener("click", () => {
