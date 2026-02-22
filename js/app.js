@@ -1,8 +1,11 @@
-// js/app.js — LP Grill (Checkout Premium: endereço obrigatório + PIX QR/copia-cola + WhatsApp)
-// ✅ PIX chave configurada
-// ✅ Taxa entrega: R$ 1,00 por km (a partir Maria Tereza) com mínimo R$ 5,00
-// ✅ Valida raio 12 km (somente entrega)
-// ✅ Taxa entra no carrinho (localStorage LPGRILL_FEE_V1) e soma no total automaticamente
+// js/app.js — LP Grill (Checkout Premium v2)
+// ✅ Endereço obrigatório (entrega) + valida raio 12 km + taxa R$1/km (mín. R$5)
+// ✅ Taxa entra no carrinho (localStorage LPGRILL_FEE_V1) e soma no total
+// ✅ PIX (QR + copia/cola) com TXID
+// ✅ WhatsApp com pedido completo
+// ✅ NOVO DESIGNER (CSS premium injetado pelo JS)
+// ✅ SEM DUPLICAR MODAIS (remove o antigo payOverlay e substitui pelo checkoutOverlay)
+
 (() => {
   "use strict";
 
@@ -15,14 +18,13 @@
     .replaceAll('"',"&quot;").replaceAll("'","&#039;");
 
   // =========================
-  // ✅ CONFIG (JÁ PRONTO)
+  // ✅ CONFIG
   // =========================
   const CONFIG = {
     whatsappDDI55: "5531998832407",
     lojaNome: "LP Grill",
     lojaCidadeUF: "Belo Horizonte/MG",
 
-    // PIX (obrigatório p/ QR e copia/cola)
     pix: {
       chave: "e02484b0-c924-4d38-9af9-79af9ad97c3e",
       recebedor: "LP GRILL",
@@ -32,7 +34,6 @@
     entrega: {
       maxKm: 12,
       base: { lat: -19.818749, lng: -43.881194 }, // Maria Tereza
-      // taxa: R$ 1 por km (arredonda pra cima) e mínimo R$ 5
       feePerKm: 1,
       feeMin: 5,
 
@@ -66,7 +67,9 @@
     }
   };
 
-  // chaves LS usadas pelo cart.js
+  // =========================
+  // ✅ localStorage keys (compat)
+  // =========================
   const LS = {
     CART: "LPGRILL_CART_V3",
     MODE: "LPGRILL_MODE_V3",
@@ -77,7 +80,7 @@
   };
 
   // =========================
-  // ✅ Products
+  // ✅ Products resolver (compat com seu cart.js)
   // =========================
   function allProducts(){
     const d = window.DATA || {};
@@ -87,7 +90,6 @@
     return out;
   }
 
-  // ✅ usado pelo cart.js pra calcular subtotal
   window.findProduct = function(id){
     return allProducts().find(p => String(p.id) === String(id)) || null;
   };
@@ -142,7 +144,6 @@
     return CONFIG.entrega.bairros.find(b => b.name.toLowerCase() === n) || null;
   }
 
-  // prioridade: começa com → contém
   function suggestBairros(prefix){
     const p = String(prefix||"").trim().toLowerCase();
     if(!p) return [];
@@ -153,7 +154,6 @@
   }
 
   function calcDeliveryFeeFromKm(km){
-    // 1 real por km (arredonda pra cima) + mínimo 5
     const perKm = Number(CONFIG.entrega.feePerKm || 1);
     const min = Number(CONFIG.entrega.feeMin || 5);
     const kmBill = Math.max(1, Math.ceil(Number(km || 0)));
@@ -185,7 +185,7 @@
 
     const feeV = calcDeliveryFeeFromKm(km);
     localStorage.setItem(LS.FEE, String(feeV));
-    window.Cart?.renderAll?.(); // ✅ atualiza carrinho/sticky/total
+    window.Cart?.renderAll?.();
     return { ok:true, km, fee:feeV };
   }
 
@@ -233,7 +233,7 @@
 
   function qrUrlFromPayload(payload){
     const chl = encodeURIComponent(payload);
-    return `https://chart.googleapis.com/chart?cht=qr&chs=220x220&chld=M|1&chl=${chl}`;
+    return `https://chart.googleapis.com/chart?cht=qr&chs=240x240&chld=M|1&chl=${chl}`;
   }
 
   // =========================
@@ -300,9 +300,231 @@
   }
 
   // =========================
-  // ✅ Checkout Overlay (auto-create)
+  // ✅ NOVO DESIGNER (CSS Premium)
+  // =========================
+  function ensureCheckoutStyles(){
+    if(document.getElementById("lpCheckoutStyles")) return;
+    const st = document.createElement("style");
+    st.id = "lpCheckoutStyles";
+    st.textContent = `
+      :root{
+        --ck-bg: rgba(10,12,16,.55);
+        --ck-card: rgba(255,255,255,.92);
+        --ck-card2: rgba(255,255,255,.75);
+        --ck-txt:#0b1220;
+        --ck-mut: rgba(11,18,32,.65);
+        --ck-line: rgba(15,23,42,.12);
+        --ck-accent: #111827;
+        --ck-accent2:#0f172a;
+        --ck-ok:#16a34a;
+        --ck-warn:#f59e0b;
+        --ck-danger:#ef4444;
+        --ck-radius: 18px;
+        --ck-shadow: 0 18px 60px rgba(0,0,0,.22);
+      }
+
+      html.modal-open, body.modal-open{ overflow:hidden !important; }
+
+      .ck-overlay{
+        position:fixed; inset:0;
+        background: var(--ck-bg);
+        backdrop-filter: blur(10px);
+        -webkit-backdrop-filter: blur(10px);
+        display:none;
+        z-index: 9999;
+        padding: 18px;
+      }
+      .ck-overlay.is-open{ display:flex; align-items:flex-end; justify-content:center; }
+
+      .ck-sheet{
+        width:min(980px, 100%);
+        background: linear-gradient(180deg, var(--ck-card), var(--ck-card2));
+        border:1px solid rgba(255,255,255,.45);
+        border-radius: 24px;
+        box-shadow: var(--ck-shadow);
+        overflow:hidden;
+        transform: translateY(10px);
+        animation: ckUp .22s ease-out forwards;
+      }
+      @keyframes ckUp{ to{ transform: translateY(0); } }
+
+      .ck-head{
+        display:flex; align-items:center; justify-content:space-between;
+        padding: 16px 18px;
+        border-bottom: 1px solid var(--ck-line);
+        background: rgba(255,255,255,.82);
+      }
+      .ck-title{ font-weight: 1000; letter-spacing:-.02em; font-size: 16px; color: var(--ck-txt); }
+      .ck-sub{ font-size: 12px; color: var(--ck-mut); margin-top:2px; }
+      .ck-x{
+        border:1px solid var(--ck-line);
+        background: rgba(255,255,255,.9);
+        width: 40px; height:40px;
+        border-radius: 12px;
+        font-size: 16px;
+        cursor:pointer;
+      }
+
+      .ck-step{ padding: 16px 18px 18px; }
+
+      .ck-box{
+        border:1px solid var(--ck-line);
+        background: rgba(255,255,255,.88);
+        border-radius: var(--ck-radius);
+        padding: 14px;
+      }
+      .ck-k{ font-size: 12px; color: var(--ck-mut); font-weight: 800; text-transform: uppercase; letter-spacing:.08em; }
+      .ck-v{ font-size: 22px; font-weight: 1100; color: var(--ck-txt); margin-top: 4px; }
+      .ck-hint{ font-size: 12px; color: var(--ck-mut); margin-top: 6px; line-height: 1.35; }
+
+      .ck-paygrid{
+        display:grid;
+        grid-template-columns: repeat(3, 1fr);
+        gap: 10px;
+      }
+      @media (max-width: 720px){
+        .ck-overlay.is-open{ align-items:flex-end; }
+        .ck-sheet{ border-radius: 22px; }
+        .ck-paygrid{ grid-template-columns: 1fr; }
+      }
+
+      .ck-paybtn{
+        border:1px solid var(--ck-line);
+        background: rgba(255,255,255,.92);
+        border-radius: var(--ck-radius);
+        padding: 12px;
+        cursor:pointer;
+        display:flex; gap:10px; align-items:center;
+        transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+      }
+      .ck-paybtn:hover{ transform: translateY(-1px); box-shadow: 0 10px 26px rgba(0,0,0,.12); border-color: rgba(15,23,42,.22); }
+      .ck-ic{ width: 38px; height: 38px; border-radius: 14px; display:grid; place-items:center; background: rgba(15,23,42,.06); font-size: 18px; }
+      .ck-paytxt strong{ display:block; font-size: 14px; color: var(--ck-txt); }
+      .ck-paytxt small{ display:block; font-size: 12px; color: var(--ck-mut); margin-top:2px; }
+
+      .ck-actions{
+        display:flex; justify-content:flex-end; gap: 10px;
+        margin-top: 14px;
+      }
+      .ck-btn, .ck-back{
+        border:1px solid rgba(15,23,42,.14);
+        background: linear-gradient(180deg, rgba(15,23,42,.96), rgba(15,23,42,.88));
+        color:#fff;
+        border-radius: 14px;
+        padding: 10px 14px;
+        font-weight: 1000;
+        cursor:pointer;
+      }
+      .ck-btn:hover{ filter: brightness(1.02); }
+      .ck-btn.ghost, .ck-back.ghost{
+        background: rgba(255,255,255,.9);
+        color: var(--ck-txt);
+      }
+
+      .ck-field{ margin-top: 10px; }
+      .ck-lbl{ font-size: 12px; font-weight: 900; color: var(--ck-txt); margin-bottom: 6px; }
+      .ck-inp{
+        width: 100%;
+        border:1px solid rgba(15,23,42,.16);
+        background: rgba(255,255,255,.9);
+        border-radius: 14px;
+        padding: 12px 12px;
+        outline:none;
+        font-size: 14px;
+      }
+      .ck-inp:focus{ border-color: rgba(15,23,42,.32); box-shadow: 0 0 0 4px rgba(15,23,42,.07); }
+
+      .ck-row2{ display:grid; grid-template-columns: 1fr 140px; gap:10px; }
+      @media (max-width: 560px){ .ck-row2{ grid-template-columns: 1fr; } }
+
+      .ck-block{
+        margin-top: 12px;
+        padding: 10px 12px;
+        border-radius: 14px;
+        border: 1px solid rgba(239,68,68,.22);
+        background: rgba(239,68,68,.08);
+        color: #7f1d1d;
+        font-weight: 800;
+        font-size: 12px;
+      }
+
+      .ck-qrwrap{
+        display:grid;
+        grid-template-columns: 280px 1fr;
+        gap: 12px;
+        margin-top: 12px;
+      }
+      @media (max-width: 820px){
+        .ck-qrwrap{ grid-template-columns: 1fr; }
+      }
+      .ck-qrbox{
+        border:1px solid var(--ck-line);
+        background: rgba(255,255,255,.92);
+        border-radius: var(--ck-radius);
+        padding: 12px;
+        display:flex; align-items:center; justify-content:center;
+        min-height: 280px;
+      }
+      .ck-qr{ width: 240px; height:240px; object-fit: contain; }
+      .ck-copy{
+        border:1px solid var(--ck-line);
+        background: rgba(255,255,255,.92);
+        border-radius: var(--ck-radius);
+        padding: 12px;
+      }
+      .ck-textarea{
+        width:100%;
+        border:1px solid rgba(15,23,42,.16);
+        border-radius: 14px;
+        padding: 10px 12px;
+        background: rgba(255,255,255,.92);
+        font-size: 12px;
+        resize:none;
+        outline:none;
+        margin-top: 8px;
+      }
+      .ck-feeline{ margin-top: 6px; font-size: 12px; color: var(--ck-mut); }
+      .ck-warn{
+        border:1px solid rgba(245,158,11,.22);
+        background: rgba(245,158,11,.10);
+        color: #7c2d12;
+        padding: 10px 12px;
+        border-radius: 14px;
+        font-size: 12px;
+        font-weight: 800;
+      }
+
+      /* Sugestões bairros */
+      #bairroSug .ck-sugwrap{
+        display:flex; flex-wrap:wrap; gap:8px;
+        padding:10px; border-radius:14px;
+        border:1px solid rgba(15,23,42,.14);
+        background: rgba(255,255,255,.96);
+        box-shadow: 0 12px 28px rgba(0,0,0,.10);
+      }
+      #bairroSug .ck-sugbtn{
+        border:1px solid rgba(15,23,42,.16);
+        background:#fff; color:#0b1220;
+        border-radius:999px;
+        padding:8px 12px;
+        font-weight:1000;
+        cursor:pointer;
+      }
+      #bairroSug .ck-sugbtn:hover{
+        background: rgba(15,23,42,.05);
+      }
+    `;
+    document.head.appendChild(st);
+  }
+
+  // =========================
+  // ✅ Checkout Overlay (auto-create) — NOVO DESIGNER
   // =========================
   function ensureOverlay(){
+    // ✅ remove overlay antigo (payOverlay) se existir (do HTML antigo)
+    const old = $("#payOverlay");
+    if(old) old.remove();
+
     let overlay = $("#checkoutOverlay");
     if(overlay) return overlay;
 
@@ -326,7 +548,7 @@
           <div class="ck-box">
             <div class="ck-k">Total atual</div>
             <div class="ck-v" id="ckTotalPay">R$ 0,00</div>
-            <div class="ck-hint">Preencha o endereço para liberar pagamento/envio no WhatsApp.</div>
+            <div class="ck-hint">Para liberar pagamento e envio no WhatsApp, confirme o endereço.</div>
           </div>
 
           <div style="height:12px"></div>
@@ -354,11 +576,9 @@
         <!-- STEP: addr -->
         <section class="ck-step" data-step="addr" hidden>
           <div class="ck-box">
-            <div class="ck-k">Preencha o endereço</div>
+            <div class="ck-k">Endereço</div>
             <div class="ck-hint">Entrega: valida raio (${CONFIG.entrega.maxKm} km) e calcula taxa (R$ 1/km, mínimo R$ 5).</div>
           </div>
-
-          <div style="height:12px"></div>
 
           <div class="ck-field">
             <div class="ck-lbl">Seu nome</div>
@@ -381,7 +601,7 @@
             </div>
           </div>
 
-          <div class="ck-field ck-loc">
+          <div class="ck-field">
             <div class="ck-lbl">Bairro (com sugestão)</div>
             <input class="ck-inp" id="addrBairro" placeholder="Digite: mon..." autocomplete="off" />
             <div id="bairroSug" style="margin-top:8px; display:none"></div>
@@ -420,15 +640,18 @@
             </div>
             <div class="ck-copy">
               <div class="ck-k">PIX copia e cola</div>
-              <textarea class="ck-textarea" id="ckPixPayload" rows="6" readonly></textarea>
-              <div class="ck-actions" style="justify-content:flex-start; margin-top:10px;">
+              <textarea class="ck-textarea" id="ckPixPayload" rows="7" readonly></textarea>
+
+              <div class="ck-actions" style="justify-content:flex-start;">
                 <button class="ck-btn" id="ckCopyPix" type="button">Copiar</button>
                 <button class="ck-btn ghost" id="ckBackFromPix" type="button">Voltar</button>
               </div>
+
               <div class="ck-warn" style="margin-top:10px;">
                 Depois de pagar, clique em <strong>Pagamento concluído</strong> para enviar o pedido no WhatsApp.
               </div>
-              <div class="ck-actions" style="justify-content:flex-end; margin-top:10px;">
+
+              <div class="ck-actions">
                 <button class="ck-btn" id="ckPaid" type="button">Pagamento concluído</button>
               </div>
             </div>
@@ -459,7 +682,9 @@
   }
 
   function openCheckout(){
+    ensureCheckoutStyles();
     const overlay = ensureOverlay();
+
     overlay.classList.add("is-open");
     overlay.setAttribute("aria-hidden","false");
     lockScroll(true);
@@ -469,7 +694,6 @@
     $("#ckTotalPay") && ($("#ckTotalPay").textContent = money(total()));
     showStep(overlay, "pay");
 
-    // ✅ garante bind após abrir (DOM já existe)
     setTimeout(bindBairroAutocomplete, 0);
   }
 
@@ -499,9 +723,9 @@
     box.textContent = msg || "";
   }
 
-  function setFeePreviewText(text){
+  function setFeePreviewText(html){
     const el = $("#feePreviewText");
-    if(el) el.innerHTML = text || "Taxa: —";
+    if(el) el.innerHTML = html || "Taxa: —";
   }
 
   function validateAddrAndFee(){
@@ -553,8 +777,7 @@
   }
 
   // =========================
-  // ✅ Autocomplete bairro + cálculo dinâmico de taxa
-  // ✅ (blindado: funciona mesmo se o HTML do checkout mudar)
+  // ✅ Autocomplete bairro + taxa dinâmica
   // =========================
   function updateFeePreviewByBairroName(name){
     const mode = getMode();
@@ -582,7 +805,6 @@
   }
 
   function bindBairroAutocomplete(){
-    // acha o input do bairro (vários layouts)
     const inp =
       $("#addrBairro") ||
       $("#bairro") ||
@@ -591,11 +813,10 @@
       $$("input").find(i => (i.placeholder || "").toLowerCase().includes("bairro"));
 
     if(!inp){
-      console.warn("[bairro] input não encontrado (addrBairro/bairro/name=).");
+      console.warn("[bairro] input não encontrado.");
       return;
     }
 
-    // acha/cria o box de sugestões
     let box =
       $("#bairroSug") ||
       $("#bairrosSug") ||
@@ -610,7 +831,6 @@
       inp.insertAdjacentElement("afterend", box);
     }
 
-    // evita duplicar listeners
     if(inp.dataset.bairroBound === "1") return;
     inp.dataset.bairroBound = "1";
 
@@ -620,25 +840,11 @@
         box.innerHTML = "";
         return;
       }
-
       box.style.display = "block";
       box.innerHTML = `
-        <div style="
-          display:flex; flex-wrap:wrap; gap:8px;
-          padding:10px; border-radius:12px;
-          border:1px solid rgba(0,0,0,.12);
-          background:rgba(255,255,255,.98);
-          box-shadow:0 10px 24px rgba(0,0,0,.10);
-        ">
+        <div class="ck-sugwrap">
           ${list.map(b => `
-            <button type="button" data-bairro="${esc(b.name)}" style="
-              border:1px solid rgba(0,0,0,.14);
-              background:#fff; color:#111;
-              border-radius:999px;
-              padding:8px 12px;
-              font-weight:900;
-              cursor:pointer;
-            ">${esc(b.name)}</button>
+            <button type="button" class="ck-sugbtn" data-bairro="${esc(b.name)}">${esc(b.name)}</button>
           `).join("")}
         </div>
       `;
@@ -665,10 +871,9 @@
   }
 
   // =========================
-  // ✅ PIX step
+  // ✅ Fluxo: pay → addr → pix/whats
   // =========================
   function goPix(){
-    // endereço obrigatório antes do pix
     const v = validateAddrAndFee();
     if(!v.ok) return;
 
@@ -694,7 +899,6 @@
     if(qr) qr.src = qrUrlFromPayload(payload);
 
     localStorage.setItem(LS.PIX_TXID, txid);
-
     showStep(overlay, "pix");
   }
 
@@ -715,6 +919,7 @@
 
   function goAddr(pay){
     localStorage.setItem(LS.PAY, pay);
+
     const overlay = $("#checkoutOverlay");
     if(!overlay) return;
 
@@ -733,7 +938,6 @@
     updateFeePreviewByBairroName($("#addrBairro")?.value || "");
     showStep(overlay, "addr");
 
-    // ✅ garante bind ao entrar no step de endereço
     setTimeout(bindBairroAutocomplete, 0);
   }
 
@@ -742,14 +946,12 @@
     const v = validateAddrAndFee();
     if(!v.ok) return;
 
-    // cartão/débito: manda direto pro WhatsApp após endereço
     if(pay === "credit" || pay === "debit"){
       const text = buildOrderText(v.addr, pay, null);
       window.location.href = waLink(text);
       return;
     }
 
-    // pix: vai pro step pix
     goPix();
   }
 
@@ -765,7 +967,7 @@
   }
 
   // =========================
-  // ✅ Openers/Closers
+  // ✅ Bind openers/closers
   // =========================
   function bindCheckoutOpeners(){
     $$('a[href="checkout.html"], a[href="./checkout.html"]').forEach(a => {
@@ -789,6 +991,12 @@
         openCheckout();
       });
     });
+
+    // ✅ compat: se existir botão antigo chamando openPaymentSheet(total)
+    // agora ele abre o checkout premium correto.
+    window.openPaymentSheet = function(_totalNumber){
+      openCheckout();
+    };
   }
 
   function bindCheckoutClosers(){
@@ -814,7 +1022,7 @@
     $$(".ck-paybtn", overlay).forEach(btn => {
       btn.addEventListener("click", () => {
         const pay = btn.getAttribute("data-pay");
-        if(pay === "pix")    goAddr("pix");     // endereço antes
+        if(pay === "pix")    goAddr("pix");
         if(pay === "credit") goAddr("credit");
         if(pay === "debit")  goAddr("debit");
       });
@@ -828,7 +1036,6 @@
     $("#ckCopyPix", overlay)?.addEventListener("click", copyPix);
     $("#ckPaid", overlay)?.addEventListener("click", paidAndSend);
 
-    // ✅ garante bind inicial também
     setTimeout(bindBairroAutocomplete, 0);
   }
 
@@ -846,19 +1053,17 @@
   }
 
   function init(){
+    ensureCheckoutStyles();
     ensureOverlay();
     bindCheckoutOpeners();
     bindCheckoutClosers();
     bindPayButtons();
     bindWaFloat();
 
-    // ✅ tenta ligar já no carregamento (caso o checkout já exista)
     setTimeout(bindBairroAutocomplete, 0);
 
-    // se estiver em entrega mas sem bairro, taxa fica 0 até escolher
     if(getMode() !== "entrega") localStorage.setItem(LS.FEE, "0");
 
-    // garante UI do carrinho ok
     window.Cart?.renderAll?.();
   }
 
