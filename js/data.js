@@ -137,3 +137,31 @@
   // Debug opcional
   // console.log("DATA loaded:", window.DATA);
 })();
+window.DATA.combo = window.DATA.combo || [];
+
+window.DATA.combo.push(
+  {
+    id: "c1",
+    title: "Combo Econômico",
+    desc: "Marmita Tradicional + Coca Lata",
+    tag: "Economize",
+    price: 22.90,
+    img: "img/cat-finalizar.jpg"
+  },
+  {
+    id: "c2",
+    title: "Combo Executivo",
+    desc: "Marmita Carne + Guaraná",
+    tag: "Mais pedido",
+    price: 27.90,
+    img: "img/cat-finalizar.jpg"
+  },
+  {
+    id: "c3",
+    title: "Combo Família",
+    desc: "2 Marmitas + Refrigerante 2L",
+    tag: "Vale a pena",
+    price: 49.90,
+    img: "img/cat-finalizar.jpg"
+  }
+);
