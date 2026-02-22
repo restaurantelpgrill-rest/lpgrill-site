@@ -4,6 +4,8 @@
    ✔ reduz cards e tiles para caber no celular
    ✔ remove fundo rosa / deixa claro premium
    ✔ suporta imagens nas categorias (foto real)
+   ✔ FIX: barra fixa não tampa conteúdo
+   ✔ FIX: checkout não corta e respeita rolagem
    ========================================================== */
 
 :root{
@@ -28,6 +30,13 @@
 
   --shadow1: 0 10px 22px rgba(17,24,39,.08);
   --shadow2: 0 14px 40px rgba(17,24,39,.10);
+
+  /* ===== FIX BARRA INFERIOR ===== */
+  --bottomBarH: 92px; /* desktop */
+}
+
+@media (max-width: 640px){
+  :root{ --bottomBarH: 108px; } /* celular */
 }
 
 *{box-sizing:border-box}
@@ -42,6 +51,10 @@ body{
     linear-gradient(180deg, #ffffff, var(--bg));
   -webkit-font-smoothing:antialiased;
   text-rendering:optimizeLegibility;
+
+  /* ✅ FIX: garante que nada fica escondido atrás do sticky bottom */
+  padding-bottom: calc(var(--bottomBarH) + env(safe-area-inset-bottom, 0px));
+  overflow-x:hidden;
 }
 a{color:inherit;text-decoration:none}
 button{font-family:inherit}
@@ -52,7 +65,7 @@ p{margin:6px 0 0}
 .lp-wrap{
   max-width:980px;
   margin:0 auto;
-  padding:14px 14px 120px; /* espaço pra barra inferior */
+  padding:14px 14px calc(var(--bottomBarH) + 22px); /* ✅ FIX */
 }
 
 /* ============================================================
@@ -164,7 +177,6 @@ p{margin:6px 0 0}
 
 /* ============================================================
    HOME GRID (Categorias) — agora com IMAGEM real
-   Para usar: coloque data-img="img/cat-marmitas.jpg"
 ============================================================ */
 .grid,
 .lp-grid{
@@ -184,7 +196,7 @@ p{margin:6px 0 0}
   box-shadow: var(--shadow1);
   overflow:hidden;
   padding:14px;
-  min-height:108px; /* ↓ MENOR */
+  min-height:108px;
   display:flex;
   gap:12px;
   align-items:center;
@@ -199,7 +211,7 @@ p{margin:6px 0 0}
 .tile:active,
 .lp-card:active{ transform: scale(.99); }
 
-/* IMAGEM da categoria (substitui emoji/ícone infantil) */
+/* IMAGEM da categoria */
 .tile .tile-media,
 .lp-card .lp-media{
   width:54px;
@@ -223,7 +235,7 @@ p{margin:6px 0 0}
 .tile-title,
 .lp-card h3{
   margin:0;
-  font-size:18px;      /* ↓ MENOR */
+  font-size:18px;
   font-weight:950;
   letter-spacing:-.02em;
   line-height:1.05;
@@ -232,27 +244,26 @@ p{margin:6px 0 0}
 .lp-card p{
   margin:6px 0 0;
   color:var(--muted);
-  font-size:12.5px;   /* ↓ MENOR */
+  font-size:12.5px;
   line-height:1.25;
 }
 
-/* tile “Finalizar Pedido” menor e premium */
+/* tile “Finalizar Pedido” */
 .tile.highlight,
 .lp-card.checkout{
   border:2px solid rgba(22,163,74,.28);
   box-shadow: 0 18px 46px rgba(22,163,74,.10), var(--shadow1);
 }
 .tile.highlight .tile-title,
-.lp-card.checkout h3{ font-size:19px; } /* ↓ MENOR */
+.lp-card.checkout h3{ font-size:19px; }
 
-/* Desktop */
 @media (min-width: 860px){
   .grid, .lp-grid{ grid-template-columns: repeat(3, minmax(0,1fr)); }
   .tile, .lp-card{ min-height:120px; }
 }
 
 /* ============================================================
-   PRODUCTS (sua lista de produtos) — mantém e melhora
+   PRODUCTS
 ============================================================ */
 .product-grid{
   display:grid;
@@ -275,7 +286,7 @@ p{margin:6px 0 0}
   cursor:pointer;
 }
 .pimg{
-  width:78px; height:78px; /* ↓ menor */
+  width:78px; height:78px;
   border-radius:16px;
   border:1px solid rgba(17,24,39,.10);
   background: linear-gradient(180deg, rgba(127,29,29,.10), rgba(255,255,255,.85));
@@ -289,13 +300,13 @@ p{margin:6px 0 0}
 .pdesc{margin-top:6px; font-size:12px; color:var(--muted); line-height:1.35}
 
 /* ============================================================
-   WHATS FLOAT (menor no celular)
+   WHATS FLOAT
 ============================================================ */
 .wa-float,
 .lp-wa-fab{
   position:fixed; right:14px;
-  bottom:92px;
-  width:56px; height:56px; /* ↓ menor */
+  bottom: calc(var(--bottomBarH) + 12px);
+  width:56px; height:56px;
   border-radius:18px;
   background: radial-gradient(60px 60px at 30% 25%, rgba(255,255,255,.28), transparent 60%),
               linear-gradient(180deg, #2AF06F, var(--wa));
@@ -309,17 +320,21 @@ p{margin:6px 0 0}
 
 /* ============================================================
    STICKY CTA BOTTOM (Ver carrinho + Total + Finalizar)
-   ↓ reduz altura / fonte pra caber no telefone
 ============================================================ */
 .sticky-cta,
 .lp-bottom{
   position:fixed;
-  left:12px; right:12px; bottom:12px;
+  left:12px; right:12px;
+  bottom: calc(12px + env(safe-area-inset-bottom, 0px));
   z-index:75;
   display:flex; gap:10px;
   max-width:980px;
   margin:0 auto;
+
+  /* ✅ FIX: evita cortar sombras e respeita clique */
+  pointer-events:auto;
 }
+
 .cta,
 .lp-cartbox{
   flex:1;
@@ -327,16 +342,17 @@ p{margin:6px 0 0}
   background: rgba(255,255,255,.92);
   backdrop-filter: blur(10px);
   border-radius:16px;
-  padding:10px 12px;      /* ↓ menor */
+  padding:10px 12px;
   font-weight:950;
   cursor:pointer;
   display:flex;
   align-items:center;
   justify-content:space-between;
   box-shadow: var(--shadow1);
-  min-height:58px;        /* ↓ menor */
+  min-height:58px;
 }
 .cta .mini{font-size:12px;color:var(--muted)}
+
 .cta.primary,
 .lp-finalize{
   justify-content:center;
@@ -344,13 +360,14 @@ p{margin:6px 0 0}
   border:0;
   color:#fff;
   box-shadow: 0 18px 40px rgba(163,19,19,.28);
-  min-height:58px;        /* ↓ menor */
+  min-height:58px;
   border-radius:16px;
-  font-size:18px;         /* ↓ menor */
+  font-size:18px;
   font-weight:1000;
   letter-spacing:-.02em;
   padding: 0 12px;
 }
+
 @media (max-width:520px){
   .cta{ padding:10px 10px; min-height:56px; }
   .cta.primary{ font-size:17px; }
@@ -391,6 +408,7 @@ p{margin:6px 0 0}
 /* ============================================================
    CHECKOUT OVERLAY (light premium)
    (mantém .ck-* para seu checkout.js)
+   ✅ FIX: modal não corta / rolagem correta / safe-area
 ============================================================ */
 .ck-overlay{
   position:fixed; inset:0;
@@ -398,16 +416,19 @@ p{margin:6px 0 0}
   align-items:flex-end;
   justify-content:center;
   padding:14px;
+  padding-bottom: calc(14px + env(safe-area-inset-bottom, 0px));
   background: rgba(17,24,39,.55);
   backdrop-filter: blur(6px);
   z-index:9000;
 }
 .ck-overlay.is-open{ display:flex; }
 
+/* ✅ FIX: o corte acontecia porque o overflow estava no modal inteiro.
+   Agora: o modal não corta header; quem rola é o .ck-step (corpo). */
 .ck-modal, .ck-sheet{
   width:min(520px, 100%);
-  max-height: 92vh;
-  overflow:auto;
+  max-height: min(92vh, 760px);
+  overflow: hidden; /* ✅ FIX */
   background: linear-gradient(180deg, #eef0f3, #e7eaee);
   border:1px solid rgba(255,255,255,.75);
   border-radius: 26px;
@@ -419,6 +440,8 @@ p{margin:6px 0 0}
   display:flex; align-items:flex-start; justify-content:space-between; gap:12px;
   padding:14px 14px 10px;
   border-bottom:1px solid rgba(17,24,39,.08);
+  background: rgba(238,240,243,.85);
+  backdrop-filter: blur(10px);
 }
 .ck-title strong{font-size:18px; font-weight:1000; letter-spacing:-.02em}
 .ck-sub{font-size:12px; color:var(--muted); font-weight:800; margin-top:4px}
@@ -431,8 +454,14 @@ p{margin:6px 0 0}
   font-size:22px;
 }
 
-/* body */
-.ck-step{ padding:12px 14px 14px; }
+/* ✅ FIX: quem rola agora é o BODY do modal */
+.ck-step{
+  padding:12px 14px 14px;
+  overflow: auto;                 /* ✅ FIX */
+  max-height: calc(min(92vh, 760px) - 78px); /* header */
+  -webkit-overflow-scrolling: touch;
+}
+
 .ck-card, .ck-box{
   border:1px solid rgba(17,24,39,.10);
   background: rgba(255,255,255,.92);
@@ -451,9 +480,17 @@ p{margin:6px 0 0}
   background: rgba(255,255,255,.92);
   cursor:pointer;
   box-shadow: var(--shadow1);
+  transition: transform .08s ease, box-shadow .12s ease, border-color .12s ease;
 }
+.ck-pay:active, .ck-paybtn:active{ transform: scale(.99); }
 .ck-pay-title{font-weight:1000; font-size:15px}
 .ck-pay-desc{color:var(--muted); font-weight:800; font-size:12px}
+
+/* ✅ estado selecionado (para PIX/Crédito/Débito ficar “clicável”) */
+.ck-pay.is-active, .ck-paybtn.is-active{
+  border-color: rgba(22,163,74,.45);
+  box-shadow: 0 16px 36px rgba(22,163,74,.16);
+}
 
 /* inputs */
 .ck-field{ display:flex; flex-direction:column; gap:6px; margin-top:10px; }
@@ -470,7 +507,7 @@ p{margin:6px 0 0}
 /* buttons */
 .ck-actions{ display:flex; gap:10px; margin-top:12px; }
 .ck-btn{
-  height:54px; /* ↓ menor */
+  height:54px;
   border-radius: 18px;
   padding:0 12px;
   border:1px solid rgba(17,24,39,.10);
@@ -478,7 +515,11 @@ p{margin:6px 0 0}
   font-weight:1000;
   cursor:pointer;
   box-shadow: var(--shadow1);
+  transition: transform .08s ease, box-shadow .12s ease;
 }
+.ck-btn:hover{ transform: translateY(-1px); box-shadow: var(--shadow2); }
+.ck-btn:active{ transform: scale(.99); }
+
 .ck-btn.primary{
   border:0;
   background: linear-gradient(180deg, var(--red2), var(--red1));
@@ -487,6 +528,7 @@ p{margin:6px 0 0}
 }
 .ck-btn.full{ width:100%; }
 .ck-btn.ghost{ background: rgba(255,255,255,.92); }
+
 .ck-hint{ font-size:12px; color:var(--muted); font-weight:800; margin-top:8px; }
 .ck-fee{ margin-top:10px; display:flex; justify-content:space-between; gap:10px; font-size:12px; color:var(--muted); font-weight:900; }
 .ck-blocked{
@@ -496,4 +538,18 @@ p{margin:6px 0 0}
   border:1px solid rgba(211,47,47,.18);
   background: rgba(211,47,47,.08);
   font-size:12.5px;
+}
+
+/* ============================================================
+   EXTRA: melhora botões de adicionar (+ / -) caso existam
+============================================================ */
+.qbtn, .btn-add, .btn-minus, .qty-btn, .stepper button,
+button.add, button.minus{
+  transition: transform .08s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.qbtn:hover, .btn-add:hover, .btn-minus:hover, .qty-btn:hover,
+.stepper button:hover, button.add:hover, button.minus:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 12px 22px rgba(17,24,39,.12);
+  border-color: rgba(17,24,39,.18);
 }
