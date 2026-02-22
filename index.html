@@ -131,105 +131,55 @@
     <a class="cta primary" href="checkout.html" data-open-checkout>Finalizar</a>
   </div>
 
-  <!-- Drawer do carrinho -->
-  <aside class="drawer" id="cartDrawer" aria-hidden="true">
-    <div class="drawer-backdrop" id="closeCartBackdrop"></div>
+  <!-- =========================
+       CARRINHO (VISUAL NOVO)
+       mantém IDs do seu JS
+       ========================= -->
+
+  <!-- overlay/backdrop -->
+  <div class="cart-overlay drawer-backdrop" id="closeCartBackdrop"></div>
+
+  <!-- drawer -->
+  <aside class="drawer cart-drawer" id="cartDrawer" aria-hidden="true">
+
     <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="Carrinho">
-      <div class="drawer-head">
-        <div>
-          <h3>Seu carrinho</h3>
-          <p class="muted">Itens + taxa (se entrega)</p>
+
+      <!-- header premium -->
+      <div class="drawer-head cart-header">
+        <div class="cart-titlebox">
+          <h3 class="cart-title">Seu carrinho</h3>
+          <p class="cart-subtitle">Itens + taxa (se entrega)</p>
         </div>
-        <button class="icon-btn" id="closeCart" aria-label="Fechar" type="button">✕</button>
+        <button class="icon-btn cart-close" id="closeCart" aria-label="Fechar" type="button">✕</button>
       </div>
 
-      <div class="drawer-body">
-        <div class="delivery-toggle">
-          <button class="dt-btn" id="modeEntrega" type="button">🚚 Entrega</button>
+      <!-- body premium -->
+      <div class="drawer-body cart-body">
+        <div class="delivery-toggle cart-mode">
+          <button class="dt-btn is-active" id="modeEntrega" type="button">🚚 Entrega</button>
           <button class="dt-btn" id="modeRetirar" type="button">🏬 Retirar</button>
         </div>
 
-        <div id="cartItems"></div>
+        <!-- seu render.js/cart.js já preenche aqui -->
+        <div id="cartItems" class="cart-list"></div>
       </div>
 
-      <div class="drawer-foot">
-        <div class="totals">
-          <div class="row"><span>Subtotal</span><strong id="subTotal">R$ 0,00</strong></div>
-          <div class="row"><span>Taxa</span><strong id="deliveryFee">R$ 0,00</strong></div>
-          <div class="row total"><span>Total</span><strong id="grandTotal">R$ 0,00</strong></div>
-          <div class="mini muted">⏱️ Tempo médio: <span id="etaText">30–60 min</span></div>
+      <!-- footer premium -->
+      <div class="drawer-foot cart-footer">
+        <div class="totals cart-summary">
+          <div class="row cart-row"><span>Subtotal</span><strong id="subTotal">R$ 0,00</strong></div>
+          <div class="row cart-row"><span>Taxa</span><strong id="deliveryFee">R$ 0,00</strong></div>
+          <div class="row total cart-row"><span>Total</span><strong class="cart-total" id="grandTotal">R$ 0,00</strong></div>
+          <div class="mini muted cart-eta">⏱️ Tempo médio: <span id="etaText">30–60 min</span></div>
         </div>
 
-        <div class="drawer-actions">
-          <button class="btn light" id="clearCart" type="button">Limpar</button>
-<div class="cart-overlay" id="cartOverlay"></div>
-
-<aside class="cart-drawer" id="cartDrawer">
-  <div class="cart-header">
-    <div class="cart-titlebox">
-      <h3 class="cart-title">Seu carrinho</h3>
-      <div class="cart-subtitle">Itens + taxa (se entrega)</div>
-    </div>
-    <button class="cart-close" id="cartClose" aria-label="Fechar">✕</button>
-  </div>
-
-  <div class="cart-body">
-    <div class="cart-mode">
-      <button class="is-active" data-mode="delivery">🚚 Entrega</button>
-      <button data-mode="pickup">🏁 Retirar</button>
-    </div>
-
-    <div class="cart-list" id="cartList">
-      <!-- item exemplo -->
-      <div class="cart-item">
-        <div class="cart-item-top">
-          <div class="cart-item-info">
-            <p class="cart-item-name">Pudim</p>
-            <div class="cart-item-desc">1 × R$ 10,90</div>
-          </div>
-
-          <div class="cart-item-actions">
-            <button class="cart-remove" title="Remover" aria-label="Remover">🗑️</button>
-          </div>
-        </div>
-
-        <div class="cart-item-bottom">
-          <div>
-            <div class="cart-price">R$ 10,90</div>
-            <div class="cart-unit">unitário</div>
-          </div>
-
-          <div class="qty">
-            <button aria-label="Diminuir">−</button>
-            <div class="n">1</div>
-            <button aria-label="Aumentar">+</button>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <div class="cart-summary" id="cartSummary">
-      <div class="cart-row"><span>Subtotal</span><span>R$ 10,90</span></div>
-      <div class="cart-row"><span>Taxa</span><span>R$ 9,00</span></div>
-      <div class="cart-row">
-        <span>Total</span>
-        <span class="cart-total">R$ 19,90</span>
-      </div>
-      <div class="cart-eta">⏱️ Tempo médio: 30–60 min</div>
-    </div>
-  </div>
-
-  <div class="cart-footer">
-    <div class="cart-footer-actions">
-      <button class="btn-cart danger" id="cartClear">Limpar</button>
-      <button class="btn-cart primary" id="cartFinish">Finalizar</button>
-    </div>
-  </div>
-</aside>
+        <div class="drawer-actions cart-footer-actions">
+          <button class="btn light btn-cart danger" id="clearCart" type="button">Limpar</button>
           <!-- ✅ Finalizar no drawer também abre overlay -->
-          <a class="btn primary" href="checkout.html" data-open-checkout>Finalizar</a>
+          <a class="btn primary btn-cart primary" href="checkout.html" data-open-checkout>Finalizar</a>
         </div>
       </div>
+
     </div>
   </aside>
 
@@ -411,7 +361,6 @@
         }catch{}
       }
 
-      // abre o drawer clicando no CTA (um único ponto)
       function openCart(){
         const cta = document.getElementById("ctaOpenCart");
         cta?.click?.();
@@ -424,7 +373,6 @@
         });
       });
 
-      // atualiza badge quando carrinho muda
       document.addEventListener("lp:cart-change", syncBadge);
       syncBadge();
     })();
