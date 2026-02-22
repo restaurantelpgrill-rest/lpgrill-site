@@ -46,15 +46,31 @@
       { id:"s4", title:"Brigadeiro Gourmet", desc:"Unidade.", tag:"Un", price:4.50, img:"img/mockup.png" }
     ],
 
-    // ✅ COMBO (corrigido): agora existe e não quebra o JS
+    // ✅ COMBOS (fica aqui dentro — 100% compatível com normalize/merge)
     combo: [
       {
-        id: "combo-001",
+        id: "c1",
         title: "Combo Econômico",
-        desc: "1 Marmita + 1 Bebida (monte e economize)",
+        desc: "Marmita Tradicional + Coca Lata",
         tag: "Economize",
-        price: 0.00,                 // pode deixar 0 por enquanto
-        img: "img/cat-finalizar.jpg" // ou uma imagem sua
+        price: 22.90,
+        img: "img/cat-finalizar.jpg"
+      },
+      {
+        id: "c2",
+        title: "Combo Executivo",
+        desc: "Marmita Carne + Guaraná",
+        tag: "Mais pedido",
+        price: 27.90,
+        img: "img/cat-finalizar.jpg"
+      },
+      {
+        id: "c3",
+        title: "Combo Família",
+        desc: "2 Marmitas + Refrigerante 2L",
+        tag: "Vale a pena",
+        price: 49.90,
+        img: "img/cat-finalizar.jpg"
       }
     ]
   };
@@ -71,13 +87,10 @@
     const o = isObj(it) ? it : {};
     const id = String(o.id || `${prefix}${idx+1}`).trim();
 
-    // ✅ Mantém a estrutura original (title/desc/tag/price/img)
-    // ✅ Só garante que nunca vem vazio ou inválido
     const title = String(o.title || "Item").trim();
     const desc  = String(o.desc  || "").trim();
     const tag   = String(o.tag   || "").trim();
 
-    // img sempre existe (placeholder premium)
     const image = String(o.img || "img/mockup.png").trim();
 
     return { id, title, desc, tag, price: num(o.price), img: image };
@@ -97,7 +110,6 @@
   }
 
   function mergePreferAdmin(admin, base){
-    // Regra: se admin tiver categoria com itens, usa admin; senão fallback.
     const A = normalizeData(admin);
     const B = normalizeData(base);
 
@@ -125,43 +137,9 @@
   const admin = loadAdmin();
   const finalData = admin ? mergePreferAdmin(admin, fallback) : normalizeData(fallback);
 
-  // ✅ Exponha no global (mantém como está funcionando)
   window.DATA = finalData;
 
-  // ✅ Compat extra (sem mudar sua estrutura):
-  // Se algum arquivo antigo estiver lendo MENU.catalog, ele vai achar também.
   window.MENU = window.MENU || {};
   window.MENU.catalog = window.DATA;
   window.MENU.items = window.DATA;
-
-  // Debug opcional
-  // console.log("DATA loaded:", window.DATA);
 })();
-window.DATA.combo = window.DATA.combo || [];
-
-window.DATA.combo.push(
-  {
-    id: "c1",
-    title: "Combo Econômico",
-    desc: "Marmita Tradicional + Coca Lata",
-    tag: "Economize",
-    price: 22.90,
-    img: "img/cat-finalizar.jpg"
-  },
-  {
-    id: "c2",
-    title: "Combo Executivo",
-    desc: "Marmita Carne + Guaraná",
-    tag: "Mais pedido",
-    price: 27.90,
-    img: "img/cat-finalizar.jpg"
-  },
-  {
-    id: "c3",
-    title: "Combo Família",
-    desc: "2 Marmitas + Refrigerante 2L",
-    tag: "Vale a pena",
-    price: 49.90,
-    img: "img/cat-finalizar.jpg"
-  }
-);
