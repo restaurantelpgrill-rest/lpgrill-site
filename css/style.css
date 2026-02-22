@@ -665,3 +665,91 @@ button.add, button.minus{
   font-weight:1000;
   font-size:16px;
 }
+/* ===== LP Grill — Card com foto + stepper estilo app ===== */
+
+.lp-card{ background:transparent; border:0; padding:0; }
+.lp-cardrow{
+  display:flex;
+  align-items:stretch;
+  justify-content:space-between;
+  gap:14px;
+  background:#fff;
+  border:1px solid rgba(0,0,0,.10);
+  border-radius:18px;
+  padding:14px;
+  box-shadow: 0 8px 24px rgba(0,0,0,.06);
+}
+
+.lp-cardbody{ flex:1; min-width:0; }
+
+.lp-media{
+  width:108px;
+  height:108px;
+  border-radius:16px;
+  overflow:hidden;
+  background: rgba(0,0,0,.04);
+  flex:0 0 108px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.lp-img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+.lp-actions{ margin-top:10px; }
+
+/* Stepper: − [Adicionar + qtd] + */
+.lp-step{
+  display:grid;
+  grid-template-columns: 40px 1fr 40px;
+  gap:10px;
+  align-items:center;
+  max-width: 260px;
+}
+
+.lp-step-btn{
+  width:40px;
+  height:40px;
+  border-radius:12px;
+  border:1px solid rgba(0,0,0,.14);
+  background:#fff;
+  font-weight:900;
+  font-size:18px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.lp-step-btn.disabled{
+  opacity:.45;
+}
+
+.lp-step-mid{
+  height:40px;
+  border-radius:12px;
+  border:1px solid rgba(0,0,0,.12);
+  background:#fff;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:10px;
+  padding:0 12px;
+}
+
+.lp-step-text{
+  font-weight:900;
+  font-size:13px;
+  opacity:.85;
+}
+
+.lp-step-qty{
+  min-width:22px;
+  text-align:center;
+  font-weight:1000;
+  font-size:16px;
+}
