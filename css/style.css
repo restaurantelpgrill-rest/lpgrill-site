@@ -1277,3 +1277,90 @@ button.add, button.minus{
   .drawer-panel{ width: 94vw; }
   .drawer-actions{ flex-direction:column; }
 }
+/* ===== HERO MINI (preenche espaço vago) ===== */
+.hero-mini{
+  padding: 12px 16px 6px;
+}
+
+.hero-mini__card{
+  border-radius: 18px;
+  background: linear-gradient(180deg, rgba(180, 30, 30, .10), rgba(0,0,0,0));
+  border: 1px solid rgba(0,0,0,.06);
+  box-shadow: 0 10px 30px rgba(0,0,0,.06);
+  padding: 14px;
+  display: flex;
+  gap: 12px;
+  align-items: stretch;
+  justify-content: space-between;
+}
+
+.hero-mini__left{
+  min-width: 0;
+}
+
+.hero-mini__title{
+  font-weight: 900;
+  font-size: 16px;
+  letter-spacing: .2px;
+}
+
+.hero-mini__sub{
+  margin-top: 4px;
+  font-size: 12px;
+  opacity: .75;
+}
+
+.hero-mini__chips{
+  margin-top: 10px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 8px;
+}
+
+.hero-mini__chips .chip{
+  font-size: 12px;
+  padding: 7px 10px;
+  border-radius: 999px;
+  background: rgba(255,255,255,.8);
+  border: 1px solid rgba(0,0,0,.06);
+}
+
+.hero-mini__right{
+  width: 170px;
+  display: grid;
+  gap: 10px;
+}
+
+.hero-mini__search{
+  display: flex;
+  gap: 8px;
+  align-items: center;
+  padding: 10px 12px;
+  border-radius: 14px;
+  background: rgba(255,255,255,.86);
+  border: 1px solid rgba(0,0,0,.06);
+}
+
+.hero-mini__search input{
+  border: 0;
+  outline: none;
+  background: transparent;
+  width: 100%;
+  font-size: 13px;
+}
+
+.hero-mini__btn{
+  border: 0;
+  border-radius: 14px;
+  padding: 10px 12px;
+  font-weight: 900;
+  cursor: pointer;
+  background: linear-gradient(180deg, #c51616, #8e0f0f);
+  color: #fff;
+}
+
+@media (max-width: 520px){
+  .hero-mini{ padding: 10px 12px 0; }
+  .hero-mini__card{ flex-direction: column; }
+  .hero-mini__right{ width: 100%; }
+}
