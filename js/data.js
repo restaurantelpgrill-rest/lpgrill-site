@@ -44,6 +44,18 @@
       { id:"s2", title:"Pudim", desc:"Caseiro • cremoso.", tag:"Clássico", price:10.90, img:"img/mockup.png" },
       { id:"s3", title:"Mousse de Maracujá", desc:"Geladinho • leve.", tag:"Gelado", price:9.90, img:"img/mockup.png" },
       { id:"s4", title:"Brigadeiro Gourmet", desc:"Unidade.", tag:"Un", price:4.50, img:"img/mockup.png" }
+    ],
+
+    // ✅ COMBO (corrigido): agora existe e não quebra o JS
+    combo: [
+      {
+        id: "combo-001",
+        title: "Combo Econômico",
+        desc: "1 Marmita + 1 Bebida (monte e economize)",
+        tag: "Economize",
+        price: 0.00,                 // pode deixar 0 por enquanto
+        img: "img/cat-finalizar.jpg" // ou uma imagem sua
+      }
     ]
   };
 
@@ -72,13 +84,14 @@
   }
 
   function normalizeData(d){
-    const out = { marmitas: [], porcoes: [], bebidas: [], sobremesas: [] };
+    const out = { marmitas: [], porcoes: [], bebidas: [], sobremesas: [], combo: [] };
     const src = isObj(d) ? d : {};
 
     out.marmitas    = (Array.isArray(src.marmitas) ? src.marmitas : []).map((it,i)=> normalizeItem(it,i,"m"));
     out.porcoes     = (Array.isArray(src.porcoes) ? src.porcoes : []).map((it,i)=> normalizeItem(it,i,"p"));
     out.bebidas     = (Array.isArray(src.bebidas) ? src.bebidas : []).map((it,i)=> normalizeItem(it,i,"b"));
     out.sobremesas  = (Array.isArray(src.sobremesas) ? src.sobremesas : []).map((it,i)=> normalizeItem(it,i,"s"));
+    out.combo       = (Array.isArray(src.combo) ? src.combo : []).map((it,i)=> normalizeItem(it,i,"c"));
 
     return out;
   }
@@ -92,7 +105,8 @@
       marmitas:   A.marmitas.length   ? A.marmitas   : B.marmitas,
       porcoes:    A.porcoes.length    ? A.porcoes    : B.porcoes,
       bebidas:    A.bebidas.length    ? A.bebidas    : B.bebidas,
-      sobremesas: A.sobremesas.length ? A.sobremesas : B.sobremesas
+      sobremesas: A.sobremesas.length ? A.sobremesas : B.sobremesas,
+      combo:      A.combo.length      ? A.combo      : B.combo
     };
   }
 
@@ -123,11 +137,3 @@
   // Debug opcional
   // console.log("DATA loaded:", window.DATA);
 })();
-// ✅ 1 combo de teste (você troca depois)
-window.DATA.combo.push({
-  id: "combo-001",
-  title: "Combo Econômico",
-  desc: "1 Marmita + 1 Bebida (monte e economize)",
-  price: 0.00,                 // pode deixar 0 por enquanto
-  img: "img/cat-finalizar.jpg" // ou uma imagem sua
-});
