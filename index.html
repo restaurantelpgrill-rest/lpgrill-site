@@ -41,7 +41,7 @@
     }
   </style>
 
-  <!-- (Opcional) Wine Hero styles — pode manter -->
+  <!-- (Opcional) Tokens — pode manter -->
   <style>
     :root{
       --wine-900:#2A0E17;
@@ -69,28 +69,33 @@
   <main class="container">
     <div class="grid">
       <a class="tile" href="marmitas.html">
-        <div class="tile-ico">🍱</div><div class="tile-title">Marmitas</div>
+        <div class="tile-ico">🍱</div>
+        <div class="tile-title">Marmitas</div>
         <div class="tile-sub">Pratos do dia • bem servidos</div>
       </a>
 
       <a class="tile" href="porcoes.html">
-        <div class="tile-ico">🍟</div><div class="tile-title">Porções</div>
+        <div class="tile-ico">🍟</div>
+        <div class="tile-title">Porções</div>
         <div class="tile-sub">Perfeito pra compartilhar</div>
       </a>
 
       <a class="tile" href="bebidas.html">
-        <div class="tile-ico">🥤</div><div class="tile-title">Bebidas</div>
+        <div class="tile-ico">🥤</div>
+        <div class="tile-title">Bebidas</div>
         <div class="tile-sub">Geladas • do jeito certo</div>
       </a>
 
       <a class="tile" href="sobremesas.html">
-        <div class="tile-ico">🍰</div><div class="tile-title">Sobremesas</div>
+        <div class="tile-ico">🍰</div>
+        <div class="tile-title">Sobremesas</div>
         <div class="tile-sub">Finalize com chave de ouro</div>
       </a>
 
-      <!-- IMPORTANTE: checkout.html pode ser interceptado pelo app.js (checkout overlay) -->
+      <!-- ✅ O app.js intercepta checkout.html e abre o checkoutOverlay novo -->
       <a class="tile highlight" href="checkout.html">
-        <div class="tile-ico">✅</div><div class="tile-title">Finalizar Pedido</div>
+        <div class="tile-ico">✅</div>
+        <div class="tile-title">Finalizar Pedido</div>
         <div class="tile-sub">Enviar no WhatsApp</div>
       </a>
     </div>
@@ -141,57 +146,8 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- OVERLAY + BOTTOM SHEET (PAGAMENTO) — cole ANTES de </body> ✅ -->
-  <div id="payOverlay" class="lp-overlay" aria-hidden="true">
-    <div class="lp-sheet" role="dialog" aria-modal="true" aria-labelledby="payTitle">
-      <div class="lp-sheet-header">
-        <div>
-          <h2 id="payTitle" class="lp-sheet-title">Finalizar pedido</h2>
-          <p class="lp-sheet-sub">Pagamento • Endereço • WhatsApp</p>
-        </div>
-        <button class="lp-sheet-close" type="button" id="payClose" aria-label="Fechar">×</button>
-      </div>
-
-      <div class="lp-sheet-body">
-        <div class="lp-total">
-          <div class="label">Total atual</div>
-          <div class="value" id="payTotal">R$ 0,00</div>
-          <div class="hint">Preencha o endereço para liberar pagamento/envio no WhatsApp.</div>
-        </div>
-
-        <div class="lp-pay" role="list">
-          <button class="lp-pay-btn is-active" type="button" data-pay="pix" role="listitem">
-            <span class="ico"><img src="img/pix.svg" alt=""></span>
-            <span>
-              <div class="t">PIX</div>
-              <div class="d">QR + copia e cola</div>
-            </span>
-          </button>
-
-          <button class="lp-pay-btn" type="button" data-pay="credito" role="listitem">
-            <span class="ico"><img src="img/card.svg" alt=""></span>
-            <span>
-              <div class="t">Crédito</div>
-              <div class="d">vai pro WhatsApp</div>
-            </span>
-          </button>
-
-          <button class="lp-pay-btn" type="button" data-pay="debito" role="listitem">
-            <span class="ico"><img src="img/card.svg" alt=""></span>
-            <span>
-              <div class="t">Débito</div>
-              <div class="d">vai pro WhatsApp</div>
-            </span>
-          </button>
-        </div>
-      </div>
-
-      <div class="lp-sheet-footer">
-        <button class="lp-btn-cancel" type="button" id="payCancel">Cancelar</button>
-        <button class="lp-btn-confirm" type="button" id="payConfirm">Confirmar pagamento</button>
-      </div>
-    </div>
-  </div>
+  <!-- ✅ NÃO COLOQUE payOverlay AQUI
+       O checkout novo é criado automaticamente pelo js/app.js (checkoutOverlay) -->
 
   <!-- Admin gear -->
   <script>
@@ -208,11 +164,10 @@
     })();
   </script>
 
-  <!-- Scripts (ordem correta) -->
+  <!-- ✅ Scripts (ORDEM CERTA) -->
   <script src="js/data.js"></script>
-  <script src="js/cart.js"></script>
   <script src="js/render.js"></script>
+  <script src="js/cart.js"></script>
   <script src="js/app.js"></script>
-
 </body>
 </html>
