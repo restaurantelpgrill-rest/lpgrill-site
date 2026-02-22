@@ -1,5 +1,6 @@
 // js/data.js — LP Grill (fonte única de dados + fallback + admin/localStorage)
 // ✅ garante img, price numérico e categorias sempre presentes
+// ✅ compat: Combo aparece mesmo se o render usar "combo" ou "combos"
 (() => {
   const STORE_KEY = "LPGRILL_DATA_ADMIN_V1";
 
@@ -46,32 +47,11 @@
       { id:"s4", title:"Brigadeiro Gourmet", desc:"Unidade.", tag:"Un", price:4.50, img:"img/mockup.png" }
     ],
 
-    // ✅ COMBOS (fica aqui dentro — 100% compatível com normalize/merge)
+    // ✅ COMBO (dados)
     combo: [
-      {
-        id: "c1",
-        title: "Combo Econômico",
-        desc: "Marmita Tradicional + Coca Lata",
-        tag: "Economize",
-        price: 22.90,
-        img: "img/cat-finalizar.jpg"
-      },
-      {
-        id: "c2",
-        title: "Combo Executivo",
-        desc: "Marmita Carne + Guaraná",
-        tag: "Mais pedido",
-        price: 27.90,
-        img: "img/cat-finalizar.jpg"
-      },
-      {
-        id: "c3",
-        title: "Combo Família",
-        desc: "2 Marmitas + Refrigerante 2L",
-        tag: "Vale a pena",
-        price: 49.90,
-        img: "img/cat-finalizar.jpg"
-      }
+      { id:"c1", title:"Combo Econômico", desc:"Marmita Tradicional + Coca Lata", tag:"Economize", price:22.90, img:"img/cat-finalizar.jpg" },
+      { id:"c2", title:"Combo Executivo", desc:"Marmita Carne + Guaraná", tag:"Mais pedido", price:27.90, img:"img/cat-finalizar.jpg" },
+      { id:"c3", title:"Combo Família", desc:"2 Marmitas + Refrigerante 2L", tag:"Vale a pena", price:49.90, img:"img/cat-finalizar.jpg" }
     ]
   };
 
@@ -90,21 +70,25 @@
     const title = String(o.title || "Item").trim();
     const desc  = String(o.desc  || "").trim();
     const tag   = String(o.tag   || "").trim();
-
     const image = String(o.img || "img/mockup.png").trim();
 
     return { id, title, desc, tag, price: num(o.price), img: image };
   }
 
   function normalizeData(d){
-    const out = { marmitas: [], porcoes: [], bebidas: [], sobremesas: [], combo: [] };
+    // ✅ inclui combo e também combos (compat)
+    const out = { marmitas: [], porcoes: [], bebidas: [], sobremesas: [], combo: [], combos: [] };
     const src = isObj(d) ? d : {};
 
     out.marmitas    = (Array.isArray(src.marmitas) ? src.marmitas : []).map((it,i)=> normalizeItem(it,i,"m"));
     out.porcoes     = (Array.isArray(src.porcoes) ? src.porcoes : []).map((it,i)=> normalizeItem(it,i,"p"));
     out.bebidas     = (Array.isArray(src.bebidas) ? src.bebidas : []).map((it,i)=> normalizeItem(it,i,"b"));
     out.sobremesas  = (Array.isArray(src.sobremesas) ? src.sobremesas : []).map((it,i)=> normalizeItem(it,i,"s"));
-    out.combo       = (Array.isArray(src.combo) ? src.combo : []).map((it,i)=> normalizeItem(it,i,"c"));
+
+    // ✅ aceita tanto src.combo quanto src.combos
+    const comboSrc = Array.isArray(src.combo) ? src.combo : (Array.isArray(src.combos) ? src.combos : []);
+    out.combo      = comboSrc.map((it,i)=> normalizeItem(it,i,"c"));
+    out.combos     = out.combo; // alias
 
     return out;
   }
@@ -113,13 +97,17 @@
     const A = normalizeData(admin);
     const B = normalizeData(base);
 
-    return {
+    const merged = {
       marmitas:   A.marmitas.length   ? A.marmitas   : B.marmitas,
       porcoes:    A.porcoes.length    ? A.porcoes    : B.porcoes,
       bebidas:    A.bebidas.length    ? A.bebidas    : B.bebidas,
       sobremesas: A.sobremesas.length ? A.sobremesas : B.sobremesas,
       combo:      A.combo.length      ? A.combo      : B.combo
     };
+
+    // ✅ alias compat
+    merged.combos = merged.combo;
+    return merged;
   }
 
   function loadAdmin(){
@@ -128,7 +116,7 @@
       if(!raw) return null;
       const d = JSON.parse(raw);
       return isObj(d) ? d : null;
-    }catch(e){
+    }catch{
       return null;
     }
   }
@@ -136,6 +124,12 @@
   // ========== Build final DATA ==========
   const admin = loadAdmin();
   const finalData = admin ? mergePreferAdmin(admin, fallback) : normalizeData(fallback);
+
+  // ✅ GARANTE combo mesmo se admin vier quebrado
+  if (!Array.isArray(finalData.combo) || !finalData.combo.length){
+    finalData.combo = normalizeData(fallback).combo;
+  }
+  finalData.combos = finalData.combo; // alias final
 
   window.DATA = finalData;
 
