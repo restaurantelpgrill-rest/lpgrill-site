@@ -3,17 +3,20 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Finalizar</title>
+  <title>Finalizar — LP Grill</title>
   <link rel="stylesheet" href="css/style.css" />
 
   <style>
-    /* BLOCO PAGAMENTO (leve, claro, padrão premium) */
+    /* ============================
+       Checkout Page — Premium (claro)
+       ============================ */
     .paylock{
       margin-top:12px;
-      padding:12px 14px;
-      border-radius:14px;
+      padding:14px 14px;
+      border-radius:16px;
       border:1px solid rgba(0,0,0,.10);
-      background: rgba(255,255,255,.85);
+      background: rgba(255,255,255,.90);
+      box-shadow: 0 14px 36px rgba(0,0,0,.10);
     }
     .paylock-top{
       display:flex; align-items:center; justify-content:space-between; gap:10px; flex-wrap:wrap;
@@ -39,15 +42,53 @@
       color: rgba(80,55,15,1);
     }
     .pay-actions{
-      display:flex; gap:10px; flex-wrap:wrap; margin-top:10px;
+      display:flex; gap:10px; flex-wrap:wrap; margin-top:12px;
     }
     .pay-note{
-      margin-top:8px;
+      margin-top:10px;
       font-size: 12px;
-      opacity: .8;
+      opacity: .85;
       line-height: 1.5;
     }
     .hidden{ display:none !important; }
+
+    .ck-wrap{ margin-top: 14px; }
+    .ck-grid{ display:grid; grid-template-columns: 1fr; gap: 10px; }
+
+    .ck-row2{ display:grid; grid-template-columns: 1fr 140px; gap: 10px; }
+    @media (max-width:560px){
+      .ck-row2{ grid-template-columns: 1fr; }
+    }
+
+    .ck-help{
+      font-size:12px;
+      opacity:.78;
+      margin-top:8px;
+      line-height:1.45;
+    }
+
+    /* Sugestões de bairro */
+    #bairroSug{
+      margin-top:8px;
+      display:none;
+    }
+    #bairroSug .wrap{
+      display:flex; flex-wrap:wrap; gap:8px;
+      padding:10px;
+      border-radius:14px;
+      border:1px solid rgba(0,0,0,.12);
+      background: rgba(255,255,255,.98);
+      box-shadow: 0 12px 28px rgba(0,0,0,.10);
+    }
+    #bairroSug button{
+      border:1px solid rgba(0,0,0,.14);
+      background:#fff;
+      color:#111;
+      border-radius:999px;
+      padding:8px 12px;
+      font-weight:900;
+      cursor:pointer;
+    }
   </style>
 </head>
 
@@ -57,7 +98,7 @@
     <a class="back" href="index.html">← Voltar ao Menu</a>
     <div class="page-title">
       <h1>Finalizar</h1>
-      <p>Enviar no WhatsApp</p>
+      <p>Pagamento Pix • Endereço • WhatsApp</p>
     </div>
     <span></span>
   </header>
@@ -71,7 +112,7 @@
         <span id="payPill" class="pay-pill wait">⏳ Pendente</span>
       </div>
 
-      <div id="payLockText" style="margin-top:6px; opacity:.85;">
+      <div id="payLockText" style="margin-top:8px; opacity:.88;">
         Verificando pagamento...
       </div>
 
@@ -83,7 +124,7 @@
       </div>
 
       <div class="pay-note">
-        O envio do pedido só libera quando o pagamento estiver <b>concluído</b> para o total atual.
+        O envio do pedido só libera quando o pagamento estiver <b>concluído</b> para o <b>total atual</b>.
       </div>
     </section>
 
@@ -98,25 +139,47 @@
     <!-- ITENS -->
     <div id="cartItems"></div>
 
-    <!-- FORM -->
-    <section class="checkout-form" style="margin-top:14px">
+    <!-- FORM (premium) -->
+    <section class="checkout-form ck-wrap">
       <h2>Dados para entrega/retirada</h2>
 
-      <label>Nome
-        <input id="cName" type="text" placeholder="Seu nome" required>
-      </label>
+      <div class="ck-grid">
+        <label>Nome
+          <input id="cName" type="text" placeholder="Seu nome" required>
+        </label>
 
-      <label>WhatsApp (cliente)
-        <input id="cPhone" type="tel" placeholder="(31) 9xxxx-xxxx" required>
-      </label>
+        <label>WhatsApp (cliente)
+          <input id="cPhone" type="tel" placeholder="(31) 9xxxx-xxxx" required>
+        </label>
 
-      <label>Endereço completo (obrigatório para entrega)
-        <input id="cAddress" type="text" placeholder="Rua, número, bairro, referência">
-      </label>
+        <div class="ck-row2">
+          <label>Rua
+            <input id="cRua" type="text" placeholder="Ex: Rua João Lemos">
+          </label>
 
-      <label>Observações
-        <textarea id="cObs" rows="3" placeholder="Sem cebola, ponto da carne, etc."></textarea>
-      </label>
+          <label>Número
+            <input id="cNum" type="text" placeholder="Ex: 74">
+          </label>
+        </div>
+
+        <label>Bairro (com sugestão)
+          <input id="cBairro" type="text" placeholder="Digite: são..." autocomplete="off">
+          <div id="bairroSug"></div>
+          <div class="ck-help" id="feeHint">Taxa: —</div>
+        </label>
+
+        <label>Complemento (opcional)
+          <input id="cComp" type="text" placeholder="Apto, bloco...">
+        </label>
+
+        <label>Referência (opcional)
+          <input id="cRef" type="text" placeholder="Perto de...">
+        </label>
+
+        <label>Observações
+          <textarea id="cObs" rows="3" placeholder="Sem cebola, ponto da carne, etc."></textarea>
+        </label>
+      </div>
 
       <div style="display:flex; gap:10px; margin-top:12px">
         <a class="btn light" href="index.html" style="flex:1">Voltar</a>
@@ -130,23 +193,40 @@
 
   </main>
 
+  <!-- ✅ ORDEM CERTA: data → render → cart  (NÃO carregar app.js aqui) -->
   <script src="js/data.js"></script>
+  <script src="js/render.js"></script>
   <script src="js/cart.js"></script>
-  <script src="js/app.js"></script>
 
   <script>
   (() => {
-    // === CHAVES DO SEU PROJETO ===
-    const CART_KEY = "LPGRILL_CART_V3";
-    const MODE_KEY = "LPGRILL_MODE_V3";
+    // =========================
+    // CHAVES DO PROJETO
+    // =========================
+    const CART_KEY    = "LPGRILL_CART_V3";
+    const MODE_KEY    = "LPGRILL_MODE_V3";
+    const FEE_KEY     = "LPGRILL_FEE_V1";          // ✅ taxa real calculada pelo app/cart
     const PAYMENT_KEY = "LPGRILL_PAYMENT_V1";
 
-    const STORE_WA = "5531999999999"; // <<< coloque o WhatsApp real da loja aqui (DDI55)
+    // ✅ WhatsApp real da loja (DDI55)
+    const STORE_WA = "5531998832407";
+
     const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
     const $ = (s)=> document.querySelector(s);
 
+    const esc = (s)=> String(s ?? "")
+      .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+      .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+
     const readCart = ()=>{ try{ return JSON.parse(localStorage.getItem(CART_KEY)||"{}"); }catch(e){ return {}; } };
     const readMode = ()=> (localStorage.getItem(MODE_KEY)||"entrega");
+
+    function readFee(){
+      const mode = readMode();
+      if(mode !== "entrega") return 0;
+      const f = Number(localStorage.getItem(FEE_KEY) || "0");
+      return Number.isFinite(f) ? f : 0;
+    }
 
     function parseBRL(text){
       if(!text) return 0;
@@ -210,9 +290,8 @@
     }
 
     function buildCatalog(){
-      // monta lista de produtos a partir do window.DATA
       const all = [];
-      for(const k in window.DATA){
+      for(const k in (window.DATA||{})){
         if(Array.isArray(window.DATA[k])) all.push(...window.DATA[k]);
       }
       return all;
@@ -221,10 +300,10 @@
     function renderCartAndTotals(){
       const cart = readCart();
       const mode = readMode();
-      const fee = (mode === "entrega") ? 5 : 0;
+      const fee = (mode === "entrega") ? readFee() : 0;
 
       const all = buildCatalog();
-      const find = (id)=> all.find(p => p.id === id);
+      const find = (id)=> all.find(p => String(p.id) === String(id));
 
       let sub = 0;
 
@@ -234,16 +313,17 @@
       wrap.innerHTML = entries.map(([id,q])=>{
         const p = find(id);
         if(!p) return "";
-        sub += p.price * q;
+        const price = Number(p.promo && p.promoPrice ? p.promoPrice : p.price) || 0;
+        sub += price * Number(q||0);
 
         return `
           <div class="citem">
             <div class="citem-top">
               <div>
-                <div class="cname">${p.title}</div>
-                <div class="cdesc">${q} × ${money(p.price)}</div>
+                <div class="cname">${esc(p.title)}</div>
+                <div class="cdesc">${q} × ${money(price)}</div>
               </div>
-              <strong>${money(p.price*q)}</strong>
+              <strong>${money(price*Number(q||0))}</strong>
             </div>
           </div>`;
       }).join("") || `<div class="muted" style="padding:10px 2px">Seu carrinho está vazio.</div>`;
@@ -253,9 +333,15 @@
       $("#grandTotal").textContent = money(sub + fee);
       $("#etaText").textContent = "30–60 min";
 
-      // trava se não tiver pago para o total atual
       const total = sub + fee;
       lockUI(!isPaidForTotal(total), total);
+
+      // atualiza dica da taxa
+      const hint = $("#feeHint");
+      if(hint){
+        if(mode !== "entrega") hint.innerHTML = `Taxa: <b>${money(0)}</b> (retirada)`;
+        else hint.innerHTML = `Taxa: <b>${money(fee)}</b> (entrega)`;
+      }
 
       return { cart, sub, fee, total, all, find, mode };
     }
@@ -263,20 +349,25 @@
     function validateForm(mode){
       const name = ($("#cName").value || "").trim();
       const phone = ($("#cPhone").value || "").trim();
-      const address = ($("#cAddress").value || "").trim();
+
+      const rua = ($("#cRua").value || "").trim();
+      const num = ($("#cNum").value || "").trim();
+      const bairro = ($("#cBairro").value || "").trim();
+      const comp = ($("#cComp").value || "").trim();
+      const ref  = ($("#cRef").value || "").trim();
 
       if(!name) return { ok:false, msg:"Informe seu nome." };
       if(!phone) return { ok:false, msg:"Informe seu WhatsApp." };
-      if(mode === "entrega" && !address) return { ok:false, msg:"Informe o endereço (entrega)." };
 
-      return { ok:true, name, phone, address };
+      if(mode === "entrega"){
+        if(!rua || !num || !bairro){
+          return { ok:false, msg:"Para entrega, preencha Rua, Número e Bairro." };
+        }
+      }
+
+      return { ok:true, name, phone, rua, num, bairro, comp, ref };
     }
 
-    function encodeWA(text){
-      return encodeURIComponent(text);
-    }
-
-    // Intercepta envio se tentar forçar (extra segurança)
     function hardBlockIfNotPaid(total){
       if(!isPaidForTotal(total)){
         alert("Finalize o pagamento no Pix para liberar o pedido.");
@@ -286,14 +377,65 @@
       return false;
     }
 
-    // Init render
-    let state = renderCartAndTotals();
+    // =========================
+    // Autocomplete bairro (usa lista do app.js? aqui vamos usar lista básica pelo fee já calculado)
+    // =========================
+    const BAIRROS = [
+      "Aarão Reis","Primeiro de Maio","Novo Aarão Reis","Heliópolis","São Gabriel","Belmonte","Monte Azul",
+      "Ribeiro de Abreu","Paulo VI","Nazaré","Guarani","Tupi","Floramar","Minaslândia","Jaqueline","Juliana",
+      "Jardim Felicidade","Copacabana","Serra Verde","Planalto","Capitão Eduardo","Itapoã","Venda Nova (Centro)",
+      "Rio Branco","Santa Mônica"
+    ];
 
-    // Revalida periodicamente (se carrinho mudar em outra aba)
+    function suggest(prefix){
+      const p = String(prefix||"").trim().toLowerCase();
+      if(!p) return [];
+      const all = BAIRROS.slice();
+      const starts = all.filter(n => n.toLowerCase().startsWith(p));
+      const contains = all.filter(n => !n.toLowerCase().startsWith(p) && n.toLowerCase().includes(p));
+      return [...starts, ...contains].slice(0, 8);
+    }
+
+    function bindBairro(){
+      const inp = $("#cBairro");
+      const box = $("#bairroSug");
+      if(!inp || !box) return;
+
+      function render(list){
+        if(!list.length){
+          box.style.display = "none";
+          box.innerHTML = "";
+          return;
+        }
+        box.style.display = "block";
+        box.innerHTML = `
+          <div class="wrap">
+            ${list.map(n=>`<button type="button" data-b="${esc(n)}">${esc(n)}</button>`).join("")}
+          </div>
+        `;
+      }
+
+      const onInput = () => render(suggest(inp.value || ""));
+      inp.addEventListener("input", onInput);
+      inp.addEventListener("focus", onInput);
+
+      box.addEventListener("click", (e)=>{
+        const btn = e.target.closest("[data-b]");
+        if(!btn) return;
+        inp.value = btn.getAttribute("data-b") || "";
+        render([]);
+      });
+    }
+
+    // Init
+    bindBairro();
+
+    // Render inicial + revalidações
+    let state = renderCartAndTotals();
     setInterval(() => { state = renderCartAndTotals(); }, 700);
     window.addEventListener("storage", () => { state = renderCartAndTotals(); });
 
-    // Reset pagamento (admin/uso interno)
+    // Reset pagamento
     $("#btnResetPayment").addEventListener("click", ()=>{
       localStorage.removeItem(PAYMENT_KEY);
       state = renderCartAndTotals();
@@ -320,15 +462,18 @@
 
       const obs = ($("#cObs").value || "").trim();
 
-      // Monta mensagem completa
+      // Monta mensagem
       let msg = "";
       msg += "🍔 *Pedido LP Grill*%0A";
-      msg += `👤 Nome: ${form.name}%0A`;
-      msg += `📱 WhatsApp: ${form.phone}%0A`;
-      msg += `🚚 Modalidade: ${state.mode.toUpperCase()}%0A`;
+      msg += `👤 Nome: ${encodeURIComponent(form.name)}%0A`;
+      msg += `📱 WhatsApp: ${encodeURIComponent(form.phone)}%0A`;
+      msg += `🚚 Modalidade: ${encodeURIComponent(state.mode.toUpperCase())}%0A`;
 
       if(state.mode === "entrega"){
-        msg += `📍 Endereço: ${form.address}%0A`;
+        const addr = `${form.rua}, Nº ${form.num} — ${form.bairro}`;
+        msg += `📍 Endereço: ${encodeURIComponent(addr)}%0A`;
+        if(form.comp) msg += `🏢 Compl.: ${encodeURIComponent(form.comp)}%0A`;
+        if(form.ref)  msg += `🧭 Ref.: ${encodeURIComponent(form.ref)}%0A`;
       }else{
         msg += `📍 Endereço: (Retirar na loja)%0A`;
       }
@@ -336,30 +481,29 @@
       msg += "%0A🧾 *Itens*%0A";
       for(const [id,q] of Object.entries(state.cart)){
         const p = state.find(id);
-        if(p) msg += `• ${q}x ${p.title}%0A`;
+        if(p) msg += `• ${q}x ${encodeURIComponent(p.title)}%0A`;
       }
 
-      msg += `%0ASubtotal: ${money(state.sub)}%0A`;
-      msg += `Taxa: ${money(state.fee)}%0A`;
-      msg += `*Total: ${money(state.total)}*%0A`;
+      msg += `%0ASubtotal: ${encodeURIComponent(money(state.sub))}%0A`;
+      msg += `Taxa: ${encodeURIComponent(money(state.fee))}%0A`;
+      msg += `*Total: ${encodeURIComponent(money(state.total))}*%0A`;
 
       // pagamento
       try{
         const pay = JSON.parse(localStorage.getItem(PAYMENT_KEY)||"{}");
         msg += `%0A✅ Pagamento: PIX (confirmado)%0A`;
-        msg += `Valor pago: ${money(pay.amount || state.total)}%0A`;
+        msg += `Valor pago: ${encodeURIComponent(money(pay.amount || state.total))}%0A`;
       }catch(e){
         msg += `%0A✅ Pagamento: PIX (confirmado)%0A`;
       }
 
       if(obs){
-        msg += `%0A📝 Obs: ${obs}%0A`;
+        msg += `%0A📝 Obs: ${encodeURIComponent(obs)}%0A`;
       }
 
       const url = `https://wa.me/${STORE_WA}?text=${msg}`;
       window.open(url, "_blank");
     });
-
   })();
   </script>
 
