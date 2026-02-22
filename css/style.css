@@ -1,4 +1,9 @@
 /* LP Grill — style.css (Premium light / Wine) */
+/* ✅ COMPLETO + COM DESIGN SYSTEM iFood-like
+   ✅ Substitui o checkout dark por checkout light premium (igual ao seu menu)
+   ✅ Mantém suas classes (.ck-*) para você NÃO precisar mexer no HTML amanhã
+*/
+
 :root{
   --bg:#fbfbfd;
   --card:#ffffff;
@@ -10,8 +15,18 @@
   --red:#ef4444;
   --green:#22c55e;
 
+  /* iFood-like surfaces (nem claro nem escuro) */
+  --sheet-bg1:#eef0f3;
+  --sheet-bg2:#e7eaee;
+  --sheet-card: rgba(255,255,255,.92);
+
   --shadow: 0 18px 44px rgba(17, 24, 39, .10);
+  --shadow2: 0 10px 26px rgba(17,24,39,.10);
+  --shadow3: 0 22px 55px rgba(17,24,39,.14);
+
   --radius:18px;
+  --radius2:22px;
+  --radius3:28px;
 }
 
 *{box-sizing:border-box}
@@ -549,7 +564,8 @@ body::before{
 .admin-gear:hover{ opacity: 1; }
 
 /* ============================================================
-   ✅ Checkout overlay (UMA vez só)
+   ✅ Checkout overlay (SUBSTITUÍDO: agora LIGHT iFood-like)
+   Mantém as mesmas classes .ck-* do seu HTML/JS
 ============================================================ */
 .ck-overlay{
   position:fixed; inset:0;
@@ -557,156 +573,236 @@ body::before{
   align-items:flex-end;
   justify-content:center;
   padding:16px;
-  background:rgba(0,0,0,.55);
+  background: rgba(17,24,39,.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
   z-index:9000; /* acima do drawer (5000) */
 }
 .ck-overlay.is-open{ display:flex; }
 
+/* bottom sheet */
 .ck-sheet{
-  width:min(720px, 100%);
+  width:min(520px, 100%);
   max-height: 92vh;
   overflow:auto;
-  background:#0f1115;
-  color:#fff;
-  border:1px solid rgba(255,255,255,.10);
-  border-radius:18px;
-  box-shadow: 0 16px 50px rgba(0,0,0,.55);
+  background: linear-gradient(180deg, var(--sheet-bg1), var(--sheet-bg2));
+  color: var(--text);
+  border:1px solid rgba(255,255,255,.75);
+  border-radius: 32px;
+  box-shadow: var(--shadow3);
 }
+
+/* header */
 .ck-head{
   display:flex;
-  align-items:center;
+  align-items:flex-start;
   justify-content:space-between;
-  padding:16px 16px 10px;
-  border-bottom:1px solid rgba(255,255,255,.08);
+  gap:12px;
+  padding:18px 18px 12px;
+  border-bottom:1px solid rgba(17,24,39,.08);
 }
-.ck-title{ font-size:18px; font-weight:800; letter-spacing:.2px; }
-.ck-sub{ font-size:12px; opacity:.75; margin-top:2px; }
+.ck-title{
+  font-size:26px;
+  font-weight:1000;
+  letter-spacing:-.03em;
+}
+.ck-sub{
+  font-size:13px;
+  color: var(--muted);
+  font-weight:800;
+  margin-top:6px;
+}
 .ck-x{
-  width:38px; height:38px; border-radius:12px;
-  border:1px solid rgba(255,255,255,.12);
-  background:transparent; color:#fff;
+  width:48px; height:48px; border-radius:18px;
+  border:1px solid rgba(17,24,39,.10);
+  background: rgba(255,255,255,.90);
+  color: var(--text);
   cursor:pointer;
+  box-shadow: var(--shadow2);
+  font-size:24px;
+  line-height:1;
 }
-.ck-step{ padding:16px; }
 
-.ck-paygrid{ display:grid; grid-template-columns: 1fr; gap:10px; }
-@media (min-width:560px){ .ck-paygrid{ grid-template-columns: 1fr 1fr 1fr; } }
-.ck-paybtn{
-  display:flex; gap:10px; align-items:center;
-  padding:14px;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,.12);
-  background:rgba(255,255,255,.04);
-  color:#fff;
-  cursor:pointer;
-  transition: transform .12s ease, background .12s ease, border-color .12s ease;
-}
-.ck-paybtn:hover{
-  transform: translateY(-1px);
-  background:rgba(255,255,255,.06);
-  border-color: rgba(255,255,255,.18);
-}
-.ck-ic{ font-size:18px; }
-.ck-paytxt strong{ display:block; font-size:14px; }
-.ck-paytxt small{ display:block; font-size:12px; opacity:.75; margin-top:2px; }
+/* body */
+.ck-step{ padding:14px 18px 18px; }
 
+/* total box (se você usa .ck-box pra resumo) */
 .ck-box{
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.03);
-  border-radius:18px;
-  padding:14px;
+  border:1px solid rgba(17,24,39,.10);
+  background: var(--sheet-card);
+  border-radius: 26px;
+  padding:16px;
+  box-shadow: var(--shadow2);
 }
+
+/* linhas */
 .ck-row{
   display:grid; gap:10px;
   grid-template-columns: 1fr 1fr;
   margin-bottom:12px;
 }
-.ck-k{ font-size:12px; opacity:.75; }
-.ck-v{ font-size:15px; font-weight:800; margin-top:4px; }
+.ck-k{ font-size:12px; color:var(--muted); font-weight:800; }
+.ck-v{ font-size:18px; font-weight:1000; margin-top:4px; color: var(--text); }
 
+/* grade de pagamento */
+.ck-paygrid{
+  display:grid;
+  grid-template-columns: 1fr;
+  gap:12px;
+  margin-top:14px;
+}
+@media (min-width:560px){
+  .ck-paygrid{ grid-template-columns: 1fr; }
+}
+
+/* botões de pagamento (cards) */
+.ck-paybtn{
+  display:flex;
+  gap:14px;
+  align-items:center;
+  padding:16px;
+  border-radius: 26px;
+  border:1px solid rgba(17,24,39,.10);
+  background: var(--sheet-card);
+  color: var(--text);
+  cursor:pointer;
+  box-shadow: var(--shadow2);
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.ck-paybtn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 16px 36px rgba(17,24,39,.14);
+  border-color: rgba(127,29,29,.18);
+}
+.ck-paybtn:active{ transform: translateY(1px); }
+.ck-ic{
+  width:40px;
+  height:40px;
+  border-radius:14px;
+  border:1px solid rgba(17,24,39,.10);
+  background: linear-gradient(180deg, #ffffff, #f3f4f6);
+  box-shadow: 0 10px 18px rgba(17,24,39,.08);
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  font-size:18px;
+}
+.ck-paytxt strong{ display:block; font-size:18px; font-weight:1000; letter-spacing:-.02em; }
+.ck-paytxt small{ display:block; font-size:13px; color:var(--muted); font-weight:800; margin-top:4px; }
+
+/* estado selecionado (se seu JS aplica .active) */
+.ck-paybtn.active,
+.ck-paybtn.is-active{
+  border-color: rgba(239,68,68,.28);
+  box-shadow: 0 18px 40px rgba(239,68,68,.12);
+  background: linear-gradient(180deg, rgba(255,255,255,.96), rgba(239,68,68,.06));
+}
+
+/* QR / copia e cola (mantém, mas agora claro) */
 .ck-qrwrap{
   display:grid;
   gap:12px;
   grid-template-columns: 1fr;
-  margin: 10px 0 12px;
+  margin: 14px 0 12px;
 }
-@media (min-width:720px){ .ck-qrwrap{ grid-template-columns: 260px 1fr; } }
+@media (min-width:720px){
+  .ck-qrwrap{ grid-template-columns: 260px 1fr; }
+}
 .ck-qrbox{
-  border:1px solid rgba(255,255,255,.12);
-  background:rgba(0,0,0,.20);
-  border-radius:16px;
+  border:1px solid rgba(17,24,39,.10);
+  background: rgba(255,255,255,.92);
+  border-radius: 20px;
   padding:12px;
   display:flex;
   align-items:center;
   justify-content:center;
   min-height:260px;
+  box-shadow: var(--shadow2);
 }
 .ck-qr{ width:220px; height:220px; }
 
 .ck-copy .ck-k{ margin-bottom:6px; }
 .ck-textarea{
   width:100%;
-  border-radius:14px;
+  border-radius: 16px;
   padding:10px 12px;
-  border:1px solid rgba(255,255,255,.12);
-  background:rgba(0,0,0,.25);
-  color:#fff;
+  border:1px solid rgba(17,24,39,.10);
+  background: rgba(255,255,255,.92);
+  color: var(--text);
   resize:none;
+  box-shadow: var(--shadow2);
 }
+
+/* alerta/warn agora claro */
 .ck-warn{
-  border:1px solid rgba(255,255,255,.10);
-  background:rgba(255,255,255,.04);
-  border-radius:16px;
+  border:1px solid rgba(17,24,39,.10);
+  background: rgba(255,255,255,.92);
+  border-radius: 20px;
   padding:12px;
   font-size:13px;
   line-height:1.35;
-  opacity:.95;
+  color: var(--muted);
+  box-shadow: var(--shadow2);
 }
 
+/* campos */
 .ck-field{ display:flex; flex-direction:column; gap:6px; margin-bottom:10px; }
-.ck-lbl{ font-size:12px; opacity:.78; }
+.ck-lbl{ font-size:12px; color:var(--muted); font-weight:800; }
 .ck-inp{
-  height:44px;
-  border-radius:14px;
+  height:46px;
+  border-radius: 16px;
   padding:0 12px;
-  border:1px solid rgba(255,255,255,.12);
-  background:rgba(0,0,0,.25);
-  color:#fff;
+  border:1px solid rgba(17,24,39,.10);
+  background: rgba(255,255,255,.92);
+  color: var(--text);
+  box-shadow: var(--shadow2);
 }
 .ck-row2{ display:grid; gap:10px; grid-template-columns: 1fr; }
 @media(min-width:560px){ .ck-row2{ grid-template-columns: 1fr 1fr; } }
 
 .ck-actions{
-  display:flex;
-  gap:10px;
+  display:grid;
+  grid-template-columns: 1fr 1.35fr;
+  gap:12px;
   justify-content:flex-end;
   margin-top:12px;
 }
+
+/* botões do footer (cancelar / confirmar) */
 .ck-btn, .ck-back{
-  height:44px;
-  border-radius:14px;
+  height:64px;
+  border-radius: 22px;
   padding:0 14px;
-  border:1px solid rgba(255,255,255,.14);
-  background:#fff;
-  color:#0b0d10;
-  font-weight:800;
+  border:1px solid rgba(17,24,39,.10);
+  background: rgba(255,255,255,.92);
+  color: var(--text);
+  font-weight:1000;
   cursor:pointer;
+  box-shadow: var(--shadow2);
+}
+.ck-btn.primary{
+  border:none;
+  background: linear-gradient(180deg, var(--red), var(--wine));
+  color:#fff;
+  box-shadow: 0 16px 30px rgba(127,29,29,.26);
 }
 .ck-btn.ghost, .ck-back.ghost{
-  background:transparent;
-  color:#fff;
+  background: rgba(255,255,255,.92);
+  color: var(--text);
 }
 
 .ck-loc{ margin-top:8px; }
-.ck-hint{ font-size:12px; opacity:.7; margin-top:8px; }
-.ck-feeline{ margin-top:10px; font-size:13px; opacity:.95; }
+.ck-hint{ font-size:12px; color:var(--muted); font-weight:800; margin-top:8px; }
+.ck-feeline{ margin-top:10px; font-size:13px; color:var(--muted); font-weight:800; }
 .ck-block{
   margin-top:10px;
   padding:12px;
-  border-radius:16px;
-  border:1px solid rgba(255,255,255,.14);
-  background:rgba(255,40,40,.12);
+  border-radius: 20px;
+  border:1px solid rgba(239,68,68,.18);
+  background: rgba(239,68,68,.08);
   font-size:13px;
+  color: var(--text);
+  box-shadow: var(--shadow2);
 }
 
 /* Toast */
@@ -729,6 +825,7 @@ html.modal-open, body.modal-open{
   overflow: hidden !important;
   height: 100%;
 }
+
 /* ============================================================
    ✅ FIX: botões não sobrepõem textos (lp-card)
    Cole no FINAL do style.css
@@ -746,15 +843,15 @@ html.modal-open, body.modal-open{
 }
 .lp-top{ align-items:flex-start; }
 .lp-desc{
-  min-height:auto; /* não força altura estranha */
+  min-height:auto;
 }
 
 /* ações sempre embaixo e organizadas */
 .lp-actions{
-  margin-top:auto;            /* empurra p/ baixo */
+  margin-top:auto;
   display:flex;
   align-items:center;
-  justify-content:space-between; /* qty na esquerda, botão na direita */
+  justify-content:space-between;
   gap:10px;
   padding-top:10px;
   border-top:1px solid rgba(17,24,39,.08);
