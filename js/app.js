@@ -1,11 +1,10 @@
-// js/app.js — LP Grill (Checkout Premium v2)
+// js/app.js — LP Grill (Checkout Premium v2.1)
 // ✅ Endereço obrigatório (entrega) + valida raio 12 km + taxa R$1/km (mín. R$5)
-// ✅ Taxa entra no carrinho (localStorage LPGRILL_FEE_V1) e soma no total
+// ✅ Taxa entra no carrinho (localStorage LPGRILL_FEE_V1) e soma no total automaticamente
 // ✅ PIX (QR + copia/cola) com TXID
 // ✅ WhatsApp com pedido completo
 // ✅ NOVO DESIGNER (CSS premium injetado pelo JS)
-// ✅ SEM DUPLICAR MODAIS (remove o antigo payOverlay e substitui pelo checkoutOverlay)
-
+// ✅ SEM DUPLICAR MODAIS: remove payOverlay antigo e IGNORA scripts antigos via compat
 (() => {
   "use strict";
 
@@ -67,9 +66,7 @@
     }
   };
 
-  // =========================
-  // ✅ localStorage keys (compat)
-  // =========================
+  // chaves LS usadas pelo cart.js
   const LS = {
     CART: "LPGRILL_CART_V3",
     MODE: "LPGRILL_MODE_V3",
@@ -80,7 +77,7 @@
   };
 
   // =========================
-  // ✅ Products resolver (compat com seu cart.js)
+  // ✅ Products resolver (compat com seu render/cart)
   // =========================
   function allProducts(){
     const d = window.DATA || {};
@@ -90,6 +87,7 @@
     return out;
   }
 
+  // usado pelo cart.js
   window.findProduct = function(id){
     return allProducts().find(p => String(p.id) === String(id)) || null;
   };
@@ -144,6 +142,7 @@
     return CONFIG.entrega.bairros.find(b => b.name.toLowerCase() === n) || null;
   }
 
+  // prioridade: começa com → contém
   function suggestBairros(prefix){
     const p = String(prefix||"").trim().toLowerCase();
     if(!p) return [];
@@ -154,6 +153,7 @@
   }
 
   function calcDeliveryFeeFromKm(km){
+    // R$ 1 por km (arredonda pra cima) + mínimo R$ 5
     const perKm = Number(CONFIG.entrega.feePerKm || 1);
     const min = Number(CONFIG.entrega.feeMin || 5);
     const kmBill = Math.max(1, Math.ceil(Number(km || 0)));
@@ -274,6 +274,7 @@
 
     const head = `*Pedido — ${CONFIG.lojaNome}*\n`;
     const modeTxt = mode === "entrega" ? "🚚 Entrega" : "🏬 Retirar";
+
     const parts = [
       head,
       `*Modo:* ${modeTxt}`,
@@ -304,229 +305,247 @@
   // =========================
   function ensureCheckoutStyles(){
     if(document.getElementById("lpCheckoutStyles")) return;
+
     const st = document.createElement("style");
     st.id = "lpCheckoutStyles";
     st.textContent = `
-      :root{
-        --ck-bg: rgba(10,12,16,.55);
-        --ck-card: rgba(255,255,255,.92);
-        --ck-card2: rgba(255,255,255,.75);
-        --ck-txt:#0b1220;
-        --ck-mut: rgba(11,18,32,.65);
-        --ck-line: rgba(15,23,42,.12);
-        --ck-accent: #111827;
-        --ck-accent2:#0f172a;
-        --ck-ok:#16a34a;
-        --ck-warn:#f59e0b;
-        --ck-danger:#ef4444;
-        --ck-radius: 18px;
-        --ck-shadow: 0 18px 60px rgba(0,0,0,.22);
-      }
+:root{
+  --ck-bg: rgba(10,12,16,.58);
+  --ck-card: rgba(255,255,255,.94);
+  --ck-card2: rgba(255,255,255,.78);
+  --ck-txt:#0b1220;
+  --ck-mut: rgba(11,18,32,.68);
+  --ck-line: rgba(15,23,42,.12);
+  --ck-accent: #111827;
+  --ck-shadow: 0 18px 60px rgba(0,0,0,.22);
+  --ck-radius: 18px;
+}
 
-      html.modal-open, body.modal-open{ overflow:hidden !important; }
+html.modal-open, body.modal-open{ overflow:hidden !important; }
 
-      .ck-overlay{
-        position:fixed; inset:0;
-        background: var(--ck-bg);
-        backdrop-filter: blur(10px);
-        -webkit-backdrop-filter: blur(10px);
-        display:none;
-        z-index: 9999;
-        padding: 18px;
-      }
-      .ck-overlay.is-open{ display:flex; align-items:flex-end; justify-content:center; }
+.ck-overlay{
+  position:fixed; inset:0;
+  background: var(--ck-bg);
+  backdrop-filter: blur(10px);
+  -webkit-backdrop-filter: blur(10px);
+  display:none;
+  z-index: 9999;
+  padding: 18px;
+}
+.ck-overlay.is-open{ display:flex; align-items:flex-end; justify-content:center; }
 
-      .ck-sheet{
-        width:min(980px, 100%);
-        background: linear-gradient(180deg, var(--ck-card), var(--ck-card2));
-        border:1px solid rgba(255,255,255,.45);
-        border-radius: 24px;
-        box-shadow: var(--ck-shadow);
-        overflow:hidden;
-        transform: translateY(10px);
-        animation: ckUp .22s ease-out forwards;
-      }
-      @keyframes ckUp{ to{ transform: translateY(0); } }
+.ck-sheet{
+  width:min(980px, 100%);
+  background: linear-gradient(180deg, var(--ck-card), var(--ck-card2));
+  border:1px solid rgba(255,255,255,.45);
+  border-radius: 24px;
+  box-shadow: var(--ck-shadow);
+  overflow:hidden;
+  transform: translateY(10px);
+  animation: ckUp .22s ease-out forwards;
+}
+@keyframes ckUp{ to{ transform: translateY(0); } }
 
-      .ck-head{
-        display:flex; align-items:center; justify-content:space-between;
-        padding: 16px 18px;
-        border-bottom: 1px solid var(--ck-line);
-        background: rgba(255,255,255,.82);
-      }
-      .ck-title{ font-weight: 1000; letter-spacing:-.02em; font-size: 16px; color: var(--ck-txt); }
-      .ck-sub{ font-size: 12px; color: var(--ck-mut); margin-top:2px; }
-      .ck-x{
-        border:1px solid var(--ck-line);
-        background: rgba(255,255,255,.9);
-        width: 40px; height:40px;
-        border-radius: 12px;
-        font-size: 16px;
-        cursor:pointer;
-      }
+.ck-head{
+  display:flex; align-items:center; justify-content:space-between;
+  padding: 16px 18px;
+  border-bottom: 1px solid var(--ck-line);
+  background: rgba(255,255,255,.86);
+}
+.ck-title{ font-weight: 1000; letter-spacing:-.02em; font-size: 16px; color: var(--ck-txt); }
+.ck-sub{ font-size: 12px; color: var(--ck-mut); margin-top:2px; }
 
-      .ck-step{ padding: 16px 18px 18px; }
+.ck-x{
+  border:1px solid var(--ck-line);
+  background: rgba(255,255,255,.94);
+  width: 40px; height:40px;
+  border-radius: 12px;
+  font-size: 16px;
+  cursor:pointer;
+}
 
-      .ck-box{
-        border:1px solid var(--ck-line);
-        background: rgba(255,255,255,.88);
-        border-radius: var(--ck-radius);
-        padding: 14px;
-      }
-      .ck-k{ font-size: 12px; color: var(--ck-mut); font-weight: 800; text-transform: uppercase; letter-spacing:.08em; }
-      .ck-v{ font-size: 22px; font-weight: 1100; color: var(--ck-txt); margin-top: 4px; }
-      .ck-hint{ font-size: 12px; color: var(--ck-mut); margin-top: 6px; line-height: 1.35; }
+.ck-step{ padding: 16px 18px 18px; }
 
-      .ck-paygrid{
-        display:grid;
-        grid-template-columns: repeat(3, 1fr);
-        gap: 10px;
-      }
-      @media (max-width: 720px){
-        .ck-overlay.is-open{ align-items:flex-end; }
-        .ck-sheet{ border-radius: 22px; }
-        .ck-paygrid{ grid-template-columns: 1fr; }
-      }
+.ck-box{
+  border:1px solid var(--ck-line);
+  background: rgba(255,255,255,.90);
+  border-radius: var(--ck-radius);
+  padding: 14px;
+}
+.ck-k{
+  font-size: 12px;
+  color: var(--ck-mut);
+  font-weight: 900;
+  text-transform: uppercase;
+  letter-spacing:.08em;
+}
+.ck-v{ font-size: 22px; font-weight: 1100; color: var(--ck-txt); margin-top: 4px; }
+.ck-hint{ font-size: 12px; color: var(--ck-mut); margin-top: 6px; line-height: 1.35; }
 
-      .ck-paybtn{
-        border:1px solid var(--ck-line);
-        background: rgba(255,255,255,.92);
-        border-radius: var(--ck-radius);
-        padding: 12px;
-        cursor:pointer;
-        display:flex; gap:10px; align-items:center;
-        transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
-      }
-      .ck-paybtn:hover{ transform: translateY(-1px); box-shadow: 0 10px 26px rgba(0,0,0,.12); border-color: rgba(15,23,42,.22); }
-      .ck-ic{ width: 38px; height: 38px; border-radius: 14px; display:grid; place-items:center; background: rgba(15,23,42,.06); font-size: 18px; }
-      .ck-paytxt strong{ display:block; font-size: 14px; color: var(--ck-txt); }
-      .ck-paytxt small{ display:block; font-size: 12px; color: var(--ck-mut); margin-top:2px; }
+.ck-paygrid{ display:grid; grid-template-columns: repeat(3, 1fr); gap: 10px; }
+@media (max-width: 720px){
+  .ck-overlay.is-open{ align-items:flex-end; }
+  .ck-sheet{ border-radius: 22px; }
+  .ck-paygrid{ grid-template-columns: 1fr; }
+}
 
-      .ck-actions{
-        display:flex; justify-content:flex-end; gap: 10px;
-        margin-top: 14px;
-      }
-      .ck-btn, .ck-back{
-        border:1px solid rgba(15,23,42,.14);
-        background: linear-gradient(180deg, rgba(15,23,42,.96), rgba(15,23,42,.88));
-        color:#fff;
-        border-radius: 14px;
-        padding: 10px 14px;
-        font-weight: 1000;
-        cursor:pointer;
-      }
-      .ck-btn:hover{ filter: brightness(1.02); }
-      .ck-btn.ghost, .ck-back.ghost{
-        background: rgba(255,255,255,.9);
-        color: var(--ck-txt);
-      }
+.ck-paybtn{
+  border:1px solid var(--ck-line);
+  background: rgba(255,255,255,.94);
+  border-radius: var(--ck-radius);
+  padding: 12px;
+  cursor:pointer;
+  display:flex; gap:10px; align-items:center;
+  transition: transform .12s ease, box-shadow .12s ease, border-color .12s ease;
+}
+.ck-paybtn:hover{
+  transform: translateY(-1px);
+  box-shadow: 0 10px 26px rgba(0,0,0,.12);
+  border-color: rgba(15,23,42,.22);
+}
+.ck-ic{
+  width: 38px; height: 38px;
+  border-radius: 14px;
+  display:grid; place-items:center;
+  background: rgba(15,23,42,.06);
+  font-size: 18px;
+}
+.ck-paytxt strong{ display:block; font-size: 14px; color: var(--ck-txt); }
+.ck-paytxt small{ display:block; font-size: 12px; color: var(--ck-mut); margin-top:2px; }
 
-      .ck-field{ margin-top: 10px; }
-      .ck-lbl{ font-size: 12px; font-weight: 900; color: var(--ck-txt); margin-bottom: 6px; }
-      .ck-inp{
-        width: 100%;
-        border:1px solid rgba(15,23,42,.16);
-        background: rgba(255,255,255,.9);
-        border-radius: 14px;
-        padding: 12px 12px;
-        outline:none;
-        font-size: 14px;
-      }
-      .ck-inp:focus{ border-color: rgba(15,23,42,.32); box-shadow: 0 0 0 4px rgba(15,23,42,.07); }
+.ck-actions{ display:flex; justify-content:flex-end; gap: 10px; margin-top: 14px; }
 
-      .ck-row2{ display:grid; grid-template-columns: 1fr 140px; gap:10px; }
-      @media (max-width: 560px){ .ck-row2{ grid-template-columns: 1fr; } }
+.ck-btn, .ck-back{
+  border:1px solid rgba(15,23,42,.14);
+  background: linear-gradient(180deg, rgba(15,23,42,.96), rgba(15,23,42,.88));
+  color:#fff;
+  border-radius: 14px;
+  padding: 10px 14px;
+  font-weight: 1000;
+  cursor:pointer;
+}
+.ck-btn:hover{ filter: brightness(1.02); }
+.ck-btn.ghost, .ck-back.ghost{
+  background: rgba(255,255,255,.92);
+  color: var(--ck-txt);
+}
 
-      .ck-block{
-        margin-top: 12px;
-        padding: 10px 12px;
-        border-radius: 14px;
-        border: 1px solid rgba(239,68,68,.22);
-        background: rgba(239,68,68,.08);
-        color: #7f1d1d;
-        font-weight: 800;
-        font-size: 12px;
-      }
+.ck-field{ margin-top: 10px; }
+.ck-lbl{ font-size: 12px; font-weight: 900; color: var(--ck-txt); margin-bottom: 6px; }
+.ck-inp{
+  width: 100%;
+  border:1px solid rgba(15,23,42,.16);
+  background: rgba(255,255,255,.92);
+  border-radius: 14px;
+  padding: 12px 12px;
+  outline:none;
+  font-size: 14px;
+}
+.ck-inp:focus{
+  border-color: rgba(15,23,42,.32);
+  box-shadow: 0 0 0 4px rgba(15,23,42,.07);
+}
 
-      .ck-qrwrap{
-        display:grid;
-        grid-template-columns: 280px 1fr;
-        gap: 12px;
-        margin-top: 12px;
-      }
-      @media (max-width: 820px){
-        .ck-qrwrap{ grid-template-columns: 1fr; }
-      }
-      .ck-qrbox{
-        border:1px solid var(--ck-line);
-        background: rgba(255,255,255,.92);
-        border-radius: var(--ck-radius);
-        padding: 12px;
-        display:flex; align-items:center; justify-content:center;
-        min-height: 280px;
-      }
-      .ck-qr{ width: 240px; height:240px; object-fit: contain; }
-      .ck-copy{
-        border:1px solid var(--ck-line);
-        background: rgba(255,255,255,.92);
-        border-radius: var(--ck-radius);
-        padding: 12px;
-      }
-      .ck-textarea{
-        width:100%;
-        border:1px solid rgba(15,23,42,.16);
-        border-radius: 14px;
-        padding: 10px 12px;
-        background: rgba(255,255,255,.92);
-        font-size: 12px;
-        resize:none;
-        outline:none;
-        margin-top: 8px;
-      }
-      .ck-feeline{ margin-top: 6px; font-size: 12px; color: var(--ck-mut); }
-      .ck-warn{
-        border:1px solid rgba(245,158,11,.22);
-        background: rgba(245,158,11,.10);
-        color: #7c2d12;
-        padding: 10px 12px;
-        border-radius: 14px;
-        font-size: 12px;
-        font-weight: 800;
-      }
+.ck-row2{ display:grid; grid-template-columns: 1fr 140px; gap:10px; }
+@media (max-width: 560px){ .ck-row2{ grid-template-columns: 1fr; } }
 
-      /* Sugestões bairros */
-      #bairroSug .ck-sugwrap{
-        display:flex; flex-wrap:wrap; gap:8px;
-        padding:10px; border-radius:14px;
-        border:1px solid rgba(15,23,42,.14);
-        background: rgba(255,255,255,.96);
-        box-shadow: 0 12px 28px rgba(0,0,0,.10);
-      }
-      #bairroSug .ck-sugbtn{
-        border:1px solid rgba(15,23,42,.16);
-        background:#fff; color:#0b1220;
-        border-radius:999px;
-        padding:8px 12px;
-        font-weight:1000;
-        cursor:pointer;
-      }
-      #bairroSug .ck-sugbtn:hover{
-        background: rgba(15,23,42,.05);
-      }
+.ck-block{
+  margin-top: 12px;
+  padding: 10px 12px;
+  border-radius: 14px;
+  border: 1px solid rgba(239,68,68,.22);
+  background: rgba(239,68,68,.08);
+  color: #7f1d1d;
+  font-weight: 800;
+  font-size: 12px;
+}
+
+.ck-qrwrap{ display:grid; grid-template-columns: 280px 1fr; gap: 12px; margin-top: 12px; }
+@media (max-width: 820px){ .ck-qrwrap{ grid-template-columns: 1fr; } }
+
+.ck-qrbox{
+  border:1px solid var(--ck-line);
+  background: rgba(255,255,255,.94);
+  border-radius: var(--ck-radius);
+  padding: 12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  min-height: 280px;
+}
+.ck-qr{ width: 240px; height:240px; object-fit: contain; }
+
+.ck-copy{
+  border:1px solid var(--ck-line);
+  background: rgba(255,255,255,.94);
+  border-radius: var(--ck-radius);
+  padding: 12px;
+}
+
+.ck-textarea{
+  width:100%;
+  border:1px solid rgba(15,23,42,.16);
+  border-radius: 14px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,.94);
+  font-size: 12px;
+  resize:none;
+  outline:none;
+  margin-top: 8px;
+}
+
+.ck-feeline{ margin-top: 6px; font-size: 12px; color: var(--ck-mut); }
+
+.ck-warn{
+  border:1px solid rgba(245,158,11,.22);
+  background: rgba(245,158,11,.10);
+  color: #7c2d12;
+  padding: 10px 12px;
+  border-radius: 14px;
+  font-size: 12px;
+  font-weight: 900;
+}
+
+/* Sugestões bairros */
+#bairroSug .ck-sugwrap{
+  display:flex; flex-wrap:wrap; gap:8px;
+  padding:10px;
+  border-radius:14px;
+  border:1px solid rgba(15,23,42,.14);
+  background: rgba(255,255,255,.96);
+  box-shadow: 0 12px 28px rgba(0,0,0,.10);
+}
+#bairroSug .ck-sugbtn{
+  border:1px solid rgba(15,23,42,.16);
+  background:#fff;
+  color:#0b1220;
+  border-radius:999px;
+  padding:8px 12px;
+  font-weight:1000;
+  cursor:pointer;
+}
+#bairroSug .ck-sugbtn:hover{ background: rgba(15,23,42,.05); }
     `;
     document.head.appendChild(st);
   }
 
   // =========================
-  // ✅ Checkout Overlay (auto-create) — NOVO DESIGNER
+  // ✅ Checkout Overlay (auto-create) — SEM DUPLICAR
   // =========================
   function ensureOverlay(){
-    // ✅ remove overlay antigo (payOverlay) se existir (do HTML antigo)
+    // remove modal antigo se existir
     const old = $("#payOverlay");
     if(old) old.remove();
 
     let overlay = $("#checkoutOverlay");
-    if(overlay) return overlay;
+    if(overlay){
+      // se existir mas não tem os IDs que precisamos, recria
+      if(!$("#ckTotalPay", overlay) || !$("#addrBairro", overlay) || !$("#ckPixPayload", overlay)){
+        overlay.innerHTML = "";
+      } else {
+        return overlay;
+      }
+    }
 
     overlay = document.createElement("div");
     overlay.id = "checkoutOverlay";
@@ -548,7 +567,7 @@
           <div class="ck-box">
             <div class="ck-k">Total atual</div>
             <div class="ck-v" id="ckTotalPay">R$ 0,00</div>
-            <div class="ck-hint">Para liberar pagamento e envio no WhatsApp, confirme o endereço.</div>
+            <div class="ck-hint">Preencha o endereço para liberar pagamento/envio no WhatsApp.</div>
           </div>
 
           <div style="height:12px"></div>
@@ -580,6 +599,8 @@
             <div class="ck-hint">Entrega: valida raio (${CONFIG.entrega.maxKm} km) e calcula taxa (R$ 1/km, mínimo R$ 5).</div>
           </div>
 
+          <div style="height:12px"></div>
+
           <div class="ck-field">
             <div class="ck-lbl">Seu nome</div>
             <input class="ck-inp" id="addrNome" placeholder="Ex: Paulo" />
@@ -601,7 +622,7 @@
             </div>
           </div>
 
-          <div class="ck-field">
+          <div class="ck-field ck-loc">
             <div class="ck-lbl">Bairro (com sugestão)</div>
             <input class="ck-inp" id="addrBairro" placeholder="Digite: mon..." autocomplete="off" />
             <div id="bairroSug" style="margin-top:8px; display:none"></div>
@@ -640,9 +661,9 @@
             </div>
             <div class="ck-copy">
               <div class="ck-k">PIX copia e cola</div>
-              <textarea class="ck-textarea" id="ckPixPayload" rows="7" readonly></textarea>
+              <textarea class="ck-textarea" id="ckPixPayload" rows="6" readonly></textarea>
 
-              <div class="ck-actions" style="justify-content:flex-start;">
+              <div class="ck-actions" style="justify-content:flex-start; margin-top:10px;">
                 <button class="ck-btn" id="ckCopyPix" type="button">Copiar</button>
                 <button class="ck-btn ghost" id="ckBackFromPix" type="button">Voltar</button>
               </div>
@@ -651,7 +672,7 @@
                 Depois de pagar, clique em <strong>Pagamento concluído</strong> para enviar o pedido no WhatsApp.
               </div>
 
-              <div class="ck-actions">
+              <div class="ck-actions" style="justify-content:flex-end; margin-top:10px;">
                 <button class="ck-btn" id="ckPaid" type="button">Pagamento concluído</button>
               </div>
             </div>
@@ -794,7 +815,7 @@
       return;
     }
     if(!r.ok && r.reason === "bairro"){
-      setFeePreviewText(`Escolha um bairro da sugestão para calcular a taxa.`);
+      setFeePreviewText("Escolha um bairro da sugestão para calcular a taxa.");
       return;
     }
     if(!r.ok && r.reason === "raio"){
@@ -813,7 +834,7 @@
       $$("input").find(i => (i.placeholder || "").toLowerCase().includes("bairro"));
 
     if(!inp){
-      console.warn("[bairro] input não encontrado.");
+      console.warn("[bairro] input não encontrado (addrBairro/bairro/name=).");
       return;
     }
 
@@ -840,11 +861,14 @@
         box.innerHTML = "";
         return;
       }
+
       box.style.display = "block";
       box.innerHTML = `
         <div class="ck-sugwrap">
           ${list.map(b => `
-            <button type="button" class="ck-sugbtn" data-bairro="${esc(b.name)}">${esc(b.name)}</button>
+            <button type="button" class="ck-sugbtn" data-bairro="${esc(b.name)}">
+              ${esc(b.name)}
+            </button>
           `).join("")}
         </div>
       `;
@@ -866,8 +890,6 @@
       render([]);
       updateFeePreviewByBairroName(inp.value);
     });
-
-    console.log("[bairro] autocomplete ligado ✅", inp.id || inp.name || inp.placeholder);
   }
 
   // =========================
@@ -899,6 +921,7 @@
     if(qr) qr.src = qrUrlFromPayload(payload);
 
     localStorage.setItem(LS.PIX_TXID, txid);
+
     showStep(overlay, "pix");
   }
 
@@ -919,7 +942,6 @@
 
   function goAddr(pay){
     localStorage.setItem(LS.PAY, pay);
-
     const overlay = $("#checkoutOverlay");
     if(!overlay) return;
 
@@ -946,12 +968,14 @@
     const v = validateAddrAndFee();
     if(!v.ok) return;
 
+    // cartão/débito: manda direto pro WhatsApp
     if(pay === "credit" || pay === "debit"){
       const text = buildOrderText(v.addr, pay, null);
       window.location.href = waLink(text);
       return;
     }
 
+    // pix: vai pro step pix
     goPix();
   }
 
@@ -967,9 +991,10 @@
   }
 
   // =========================
-  // ✅ Bind openers/closers
+  // ✅ Openers/Closers
   // =========================
   function bindCheckoutOpeners(){
+    // intercepta checkout.html e abre o overlay premium
     $$('a[href="checkout.html"], a[href="./checkout.html"]').forEach(a => {
       a.addEventListener("click", (e) => {
         e.preventDefault();
@@ -992,9 +1017,8 @@
       });
     });
 
-    // ✅ compat: se existir botão antigo chamando openPaymentSheet(total)
-    // agora ele abre o checkout premium correto.
-    window.openPaymentSheet = function(_totalNumber){
+    // compat: se existir botão antigo chamando openPaymentSheet(total)
+    window.openPaymentSheet = function(){
       openCheckout();
     };
   }
@@ -1062,8 +1086,10 @@
 
     setTimeout(bindBairroAutocomplete, 0);
 
+    // se estiver em retirada, taxa zerada
     if(getMode() !== "entrega") localStorage.setItem(LS.FEE, "0");
 
+    // garante UI do carrinho ok
     window.Cart?.renderAll?.();
   }
 
