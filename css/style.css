@@ -1443,3 +1443,22 @@ button.add, button.minus{
     width:100%;
   }
 }
+/* some o "vazio" quando a barra está vazia */
+#infoBar:empty{
+  display:none !important;
+  padding:0 !important;
+  margin:0 !important;
+}
+
+/* aproxima o hero do topo */
+.hero-mini{
+  margin-top: 12px !important;
+}
+
+@media (max-width: 520px){
+  .hero-mini{ margin-top: 8px !important; }
+}
+
+.hero-mini__right{ width:100% !important; }
+.hero-mini__search{ width:100% !important; }
+.hero-mini__search input{ width:100% !important; }
