@@ -162,7 +162,70 @@
 
         <div class="drawer-actions">
           <button class="btn light" id="clearCart" type="button">Limpar</button>
+<div class="cart-overlay" id="cartOverlay"></div>
 
+<aside class="cart-drawer" id="cartDrawer">
+  <div class="cart-header">
+    <div class="cart-titlebox">
+      <h3 class="cart-title">Seu carrinho</h3>
+      <div class="cart-subtitle">Itens + taxa (se entrega)</div>
+    </div>
+    <button class="cart-close" id="cartClose" aria-label="Fechar">✕</button>
+  </div>
+
+  <div class="cart-body">
+    <div class="cart-mode">
+      <button class="is-active" data-mode="delivery">🚚 Entrega</button>
+      <button data-mode="pickup">🏁 Retirar</button>
+    </div>
+
+    <div class="cart-list" id="cartList">
+      <!-- item exemplo -->
+      <div class="cart-item">
+        <div class="cart-item-top">
+          <div class="cart-item-info">
+            <p class="cart-item-name">Pudim</p>
+            <div class="cart-item-desc">1 × R$ 10,90</div>
+          </div>
+
+          <div class="cart-item-actions">
+            <button class="cart-remove" title="Remover" aria-label="Remover">🗑️</button>
+          </div>
+        </div>
+
+        <div class="cart-item-bottom">
+          <div>
+            <div class="cart-price">R$ 10,90</div>
+            <div class="cart-unit">unitário</div>
+          </div>
+
+          <div class="qty">
+            <button aria-label="Diminuir">−</button>
+            <div class="n">1</div>
+            <button aria-label="Aumentar">+</button>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="cart-summary" id="cartSummary">
+      <div class="cart-row"><span>Subtotal</span><span>R$ 10,90</span></div>
+      <div class="cart-row"><span>Taxa</span><span>R$ 9,00</span></div>
+      <div class="cart-row">
+        <span>Total</span>
+        <span class="cart-total">R$ 19,90</span>
+      </div>
+      <div class="cart-eta">⏱️ Tempo médio: 30–60 min</div>
+    </div>
+  </div>
+
+  <div class="cart-footer">
+    <div class="cart-footer-actions">
+      <button class="btn-cart danger" id="cartClear">Limpar</button>
+      <button class="btn-cart primary" id="cartFinish">Finalizar</button>
+    </div>
+  </div>
+</aside>
           <!-- ✅ Finalizar no drawer também abre overlay -->
           <a class="btn primary" href="checkout.html" data-open-checkout>Finalizar</a>
         </div>
