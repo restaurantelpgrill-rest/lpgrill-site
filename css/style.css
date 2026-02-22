@@ -942,3 +942,27 @@ button,
 .icon-btn{
   -webkit-tap-highlight-color: transparent;
 }
+/* ===== PADRÃO IGUAL BOTÃO VOLTAR ===== */
+.btn-clean,
+.qty-btn,
+.add-btn {
+  border: 1px solid #dcdcdc;
+  background: #fff;
+  border-radius: 10px;
+  height: 34px;
+  padding: 0 12px;
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: 0.2s;
+}
+
+.btn-clean:hover,
+.qty-btn:hover,
+.add-btn:hover {
+  background: #f5f5f5;
+}
