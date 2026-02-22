@@ -942,27 +942,58 @@ button,
 .icon-btn{
   -webkit-tap-highlight-color: transparent;
 }
-/* ===== PADRÃO IGUAL BOTÃO VOLTAR ===== */
-.btn-clean,
-.qty-btn,
-.add-btn {
+/* ===== CARRINHO: botão REMOVER bonito e alinhado ===== */
+.cart .remove-item,
+.cart .btn-remove,
+.cart button[data-action="remove"],
+.cart .item-remove {
   border: 1px solid #dcdcdc;
   background: #fff;
-  border-radius: 10px;
-  height: 34px;
-  padding: 0 12px;
+  border-radius: 14px;
+  height: 38px;
+  padding: 0 14px;
   font-size: 14px;
-  font-weight: 500;
-  color: #333;
+  font-weight: 600;
+  color: #111;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+  cursor: pointer;
+}
+
+.cart .remove-item:active,
+.cart .btn-remove:active,
+.cart button[data-action="remove"]:active,
+.cart .item-remove:active {
+  transform: translateY(1px);
+}
+/* ===== MENU: controles de adicionar (igual Voltar ao Menu) ===== */
+.menu .qty-btn,
+.menu .add-btn,
+.menu .btn-add,
+.menu button[data-action="dec"],
+.menu button[data-action="inc"],
+.menu button[data-action="add"]{
+  border: 1px solid #dcdcdc;
+  background: #fff;
+  border-radius: 14px;
+  height: 38px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
   cursor: pointer;
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  transition: 0.2s;
+  line-height: 1;
 }
 
-.btn-clean:hover,
-.qty-btn:hover,
-.add-btn:hover {
-  background: #f5f5f5;
+/* Deixar o “-” e “+” quadradinhos e bonitos */
+.menu button[data-action="dec"],
+.menu button[data-action="inc"],
+.menu .qty-btn{
+  width: 42px;
+  padding: 0;
 }
