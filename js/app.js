@@ -669,7 +669,7 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
               </div>
 
               <div class="ck-warn" style="margin-top:10px;">
-                Depois de pagar, clique em <strong>Pagamento concluído</strong> para enviar o pedido no WhatsApp.
+              Após o efeutuar o pagamento envie o comprovante no whatsapp para confirmação, sem o comprovante seu pedido não será entregue  , clique em <strong>Pagamento concluído</strong> para enviar o pedido no WhatsApp.
               </div>
 
               <div class="ck-actions" style="justify-content:flex-end; margin-top:10px;">
