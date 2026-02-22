@@ -1164,3 +1164,32 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
     }
   }, true);
 })();
+// =======================================
+// FINALIZAR -> abre checkout overlay
+// fallback -> vai para checkout.html
+// =======================================
+(() => {
+  function openCheckout(e){
+    const overlay = document.getElementById("checkoutOverlay");
+    if(overlay){
+      e?.preventDefault?.();
+      e?.stopPropagation?.();
+      overlay.classList.add("is-open");
+      overlay.setAttribute("aria-hidden","false");
+      return true;
+    }
+    return false;
+  }
+
+  document.addEventListener("click", (e) => {
+    const el = e.target?.closest?.("[data-open-checkout]");
+    if(!el) return;
+
+    if(openCheckout(e)) return;
+
+    // se não tiver overlay nessa página, navega
+    if(el.tagName === "BUTTON"){
+      window.location.href = "checkout.html";
+    }
+  }, true);
+})();
