@@ -1119,3 +1119,18 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
     openCheckout(e);
   }, true);
 })();
+// COMBO: se existir overlay abre, se não existir navega pro combo.html
+(() => {
+  document.addEventListener("click", (e) => {
+    const el = e.target?.closest?.("[data-open-combo]");
+    if(!el) return;
+
+    const overlay = document.getElementById("comboOverlay");
+    if(overlay){
+      e.preventDefault();
+      overlay.classList.add("is-open");
+      overlay.setAttribute("aria-hidden", "false");
+    }
+    // se não tiver overlay, segue o href normalmente (combo.html)
+  }, true);
+})();
