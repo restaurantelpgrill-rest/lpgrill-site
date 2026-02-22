@@ -1,11 +1,16 @@
-// js/cart.js — LP Grill (Carrinho V3) ✅ corrigido (sem loop infinito)
+// js/cart.js — LP Grill (Carrinho V3) ✅ (com evento lp:cart-change)
 (() => {
   const CART_KEY = "LPGRILL_CART_V3";
   const MODE_KEY = "LPGRILL_MODE_V3"; // entrega | retirar
-  const FEE_KEY  = "LPGRILL_FEE_V1";  // taxa salva pelo checkout
+  const FEE_KEY  = "LPGRILL_FEE_V1";  // taxa salva pelo checkout (ou reset no retirar)
 
   const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
   const $ = (s, r=document)=> r.querySelector(s);
+
+  function emitChange(){
+    // ✅ padrão para toda UI se atualizar (badge, sticky, etc.)
+    document.dispatchEvent(new CustomEvent("lp:cart-change"));
+  }
 
   function readCart(){
     try { return JSON.parse(localStorage.getItem(CART_KEY) || "{}"); }
@@ -94,8 +99,12 @@
 
   function renderTopUI(){
     const count = cartCount();
-    $("#cartCount") && ($("#cartCount").textContent = String(count));
-    $("#ctaTotal")  && ($("#ctaTotal").textContent = money(total()));
+
+    // se existir algum contador em outras telas, atualiza (não depende disso)
+    const cartCountEl = $("#cartCount");
+    if(cartCountEl) cartCountEl.textContent = String(count);
+
+    $("#ctaTotal") && ($("#ctaTotal").textContent = money(total()));
 
     const sticky = $("#stickyCTA");
     if(sticky) sticky.hidden = (count <= 0);
@@ -127,13 +136,13 @@
                 <div class="cname">${p.title}</div>
                 <div class="cdesc">${q} × ${money(p.price)}</div>
               </div>
-              <button class="qbtn remove" data-action="remove">remover</button>
+              <button class="qbtn remove" data-action="remove" type="button">remover</button>
             </div>
             <div class="ccontrols">
               <div class="qty">
-                <button class="qbtn" data-action="dec">-</button>
+                <button class="qbtn" data-action="dec" type="button">-</button>
                 <strong>${q}</strong>
-                <button class="qbtn" data-action="add">+</button>
+                <button class="qbtn" data-action="add" type="button">+</button>
               </div>
               <strong>${money(line)}</strong>
             </div>
@@ -157,11 +166,17 @@
     setModeActiveUI();
     renderTopUI();
     renderDrawer();
+
     // ✅ se existir vitrine com qty/seleção, pede pra render.js atualizar
     window.renderCardsQty?.();
+
+    // ✅ notifica UI externa (badge do header, etc.)
+    emitChange();
   }
 
   function bind(){
+    // ✅ o index padronizado pode clicar em data-open-cart
+    // mas manter ids também (compatibilidade)
     $("#openCart")?.addEventListener("click", openDrawer);
     $("#ctaOpenCart")?.addEventListener("click", openDrawer);
 
@@ -181,7 +196,7 @@
       renderAll();
     });
 
-    // Delegação de eventos do carrinho (sem onclick inline)
+    // Delegação de eventos do carrinho
     $("#cartItems")?.addEventListener("click", (e)=>{
       const btn = e.target.closest("[data-action]");
       if(!btn) return;
