@@ -123,3 +123,11 @@
   // Debug opcional
   // console.log("DATA loaded:", window.DATA);
 })();
+// ✅ 1 combo de teste (você troca depois)
+window.DATA.combo.push({
+  id: "combo-001",
+  title: "Combo Econômico",
+  desc: "1 Marmita + 1 Bebida (monte e economize)",
+  price: 0.00,                 // pode deixar 0 por enquanto
+  img: "img/cat-finalizar.jpg" // ou uma imagem sua
+});
