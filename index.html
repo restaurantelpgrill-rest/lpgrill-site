@@ -56,7 +56,7 @@
       <p>Escolha uma categoria para começar</p>
     </div>
 
-    <!-- ✅ topo abre o MESMO carrinho -->
+    <!-- topo abre o MESMO carrinho -->
     <button class="cart-btn" id="openCart" data-open-cart type="button" aria-label="Carrinho">
       <span class="cart-ico">🛒</span>
       <span class="cart-badge" id="cartBadge" hidden>0</span>
@@ -65,9 +65,9 @@
 
   <div class="container subinfo" id="infoBar"></div>
 
-  <!-- ✅ HERO MINI (preenche o vazio) -->
   <main class="container">
 
+    <!-- HERO MINI (sem botão "Ver carrinho") -->
     <section class="hero-mini">
       <div class="hero-mini__card">
         <div class="hero-mini__left">
@@ -86,7 +86,11 @@
             <span>🔎</span>
             <input id="searchMenu" type="search" placeholder="Buscar no cardápio..." />
           </label>
+        </div>
+      </div>
+    </section>
 
+    <!-- CATEGORIAS -->
     <div class="grid">
 
       <a class="tile" href="marmitas.html">
@@ -121,7 +125,6 @@
         </div>
       </a>
 
-      <!-- ✅ COMBO: página correta -->
       <a class="tile highlight" href="combo.html">
         <div class="tile-media"><img src="img/cat-finalizar.jpg" alt="Combo"></div>
         <div>
@@ -135,9 +138,10 @@
     <a class="wa-float" id="waFloat" href="#" aria-label="WhatsApp">
       <img src="img/whatsapp.png" alt="WhatsApp">
     </a>
+
   </main>
 
-  <!-- ✅ Barra inferior -->
+  <!-- Barra inferior -->
   <div class="sticky-cta" id="stickyCTA" hidden>
     <button class="cta" id="ctaOpenCart" data-open-cart type="button">
       <span>
@@ -152,9 +156,7 @@
     </button>
   </div>
 
-  <!-- =================================================
-       ✅ CARRINHO ÚNICO
-       ================================================= -->
+  <!-- CARRINHO ÚNICO -->
   <aside class="drawer" id="cartDrawer" aria-hidden="true">
     <div class="drawer-backdrop" id="closeCartBackdrop"></div>
 
@@ -347,7 +349,7 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script src="js/checkout.js"></script>
 
-  <!-- ✅ Badge -->
+  <!-- Badge -->
   <script>
     (() => {
       const badge = document.getElementById("cartBadge");
