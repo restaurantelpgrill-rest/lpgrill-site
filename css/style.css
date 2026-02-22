@@ -1341,26 +1341,105 @@ button.add, button.minus{
   border: 1px solid rgba(0,0,0,.06);
 }
 
+/* ===== HERO MINI ===== */
+
+.hero-mini{
+  margin: 14px 0 22px;
+}
+
+.hero-mini__card{
+  display:flex;
+  justify-content:space-between;
+  align-items:center;
+  gap:16px;
+  background:#ffffff;
+  border-radius:16px;
+  padding:16px 18px;
+  box-shadow:0 6px 18px rgba(0,0,0,.06);
+  flex-wrap:wrap;
+}
+
+/* esquerda */
+.hero-mini__left{
+  display:flex;
+  flex-direction:column;
+  gap:6px;
+}
+
+.hero-mini__title{
+  font-weight:700;
+  font-size:16px;
+}
+
+.hero-mini__sub{
+  font-size:13px;
+  color:#666;
+}
+
+.hero-mini__chips{
+  display:flex;
+  gap:8px;
+  flex-wrap:wrap;
+  margin-top:6px;
+}
+
+.chip{
+  background:#f3f3f3;
+  padding:4px 10px;
+  border-radius:999px;
+  font-size:12px;
+}
+
+/* direita */
+.hero-mini__right{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+/* busca */
+.hero-mini__search{
+  display:flex;
+  align-items:center;
+  gap:6px;
+  background:#f7f7f7;
+  border-radius:999px;
+  padding:6px 12px;
+}
+
 .hero-mini__search input{
-  border: 0;
-  outline: none;
-  background: transparent;
-  width: 100%;
-  font-size: 13px;
+  border:none;
+  outline:none;
+  background:transparent;
+  font-size:13px;
+  width:140px;
 }
 
+/* botão carrinho */
 .hero-mini__btn{
-  border: 0;
-  border-radius: 14px;
-  padding: 10px 12px;
-  font-weight: 900;
-  cursor: pointer;
-  background: linear-gradient(180deg, #c51616, #8e0f0f);
-  color: #fff;
+  background:#c91c1c;
+  color:#fff;
+  border:none;
+  border-radius:999px;
+  padding:8px 14px;
+  font-size:13px;
+  font-weight:600;
+  cursor:pointer;
 }
 
-@media (max-width: 520px){
-  .hero-mini{ padding: 10px 12px 0; }
-  .hero-mini__card{ flex-direction: column; }
-  .hero-mini__right{ width: 100%; }
+/* responsivo */
+@media (max-width:600px){
+  .hero-mini__card{
+    flex-direction:column;
+    align-items:flex-start;
+  }
+
+  .hero-mini__right{
+    width	job:100%;
+    justify-content:space-between;
+  }
+
+  .hero-mini__search input{
+    width:100%;
+  }
 }
