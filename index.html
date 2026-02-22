@@ -88,7 +88,7 @@
         <div class="tile-sub">Finalize com chave de ouro</div>
       </a>
 
-      <!-- IMPORTANTE: checkout.html é interceptado pelo app.js e abre o checkout overlay -->
+      <!-- IMPORTANTE: checkout.html pode ser interceptado pelo app.js (checkout overlay) -->
       <a class="tile highlight" href="checkout.html">
         <div class="tile-ico">✅</div><div class="tile-title">Finalizar Pedido</div>
         <div class="tile-sub">Enviar no WhatsApp</div>
@@ -141,8 +141,57 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- ✅ NÃO coloque checkoutOverlay aqui.
-       O app.js já cria o overlay correto (UM SÓ) e liga tudo (bairro, pix, etc). -->
+  <!-- OVERLAY + BOTTOM SHEET (PAGAMENTO) — cole ANTES de </body> ✅ -->
+  <div id="payOverlay" class="lp-overlay" aria-hidden="true">
+    <div class="lp-sheet" role="dialog" aria-modal="true" aria-labelledby="payTitle">
+      <div class="lp-sheet-header">
+        <div>
+          <h2 id="payTitle" class="lp-sheet-title">Finalizar pedido</h2>
+          <p class="lp-sheet-sub">Pagamento • Endereço • WhatsApp</p>
+        </div>
+        <button class="lp-sheet-close" type="button" id="payClose" aria-label="Fechar">×</button>
+      </div>
+
+      <div class="lp-sheet-body">
+        <div class="lp-total">
+          <div class="label">Total atual</div>
+          <div class="value" id="payTotal">R$ 0,00</div>
+          <div class="hint">Preencha o endereço para liberar pagamento/envio no WhatsApp.</div>
+        </div>
+
+        <div class="lp-pay" role="list">
+          <button class="lp-pay-btn is-active" type="button" data-pay="pix" role="listitem">
+            <span class="ico"><img src="img/pix.svg" alt=""></span>
+            <span>
+              <div class="t">PIX</div>
+              <div class="d">QR + copia e cola</div>
+            </span>
+          </button>
+
+          <button class="lp-pay-btn" type="button" data-pay="credito" role="listitem">
+            <span class="ico"><img src="img/card.svg" alt=""></span>
+            <span>
+              <div class="t">Crédito</div>
+              <div class="d">vai pro WhatsApp</div>
+            </span>
+          </button>
+
+          <button class="lp-pay-btn" type="button" data-pay="debito" role="listitem">
+            <span class="ico"><img src="img/card.svg" alt=""></span>
+            <span>
+              <div class="t">Débito</div>
+              <div class="d">vai pro WhatsApp</div>
+            </span>
+          </button>
+        </div>
+      </div>
+
+      <div class="lp-sheet-footer">
+        <button class="lp-btn-cancel" type="button" id="payCancel">Cancelar</button>
+        <button class="lp-btn-confirm" type="button" id="payConfirm">Confirmar pagamento</button>
+      </div>
+    </div>
+  </div>
 
   <!-- Admin gear -->
   <script>
