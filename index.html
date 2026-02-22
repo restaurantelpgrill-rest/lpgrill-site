@@ -56,7 +56,7 @@
       <p>Escolha uma categoria para começar</p>
     </div>
 
-    <!-- ✅ padrão único: data-open-cart -->
+    <!-- ✅ topo abre o MESMO carrinho -->
     <button class="cart-btn" id="openCart" data-open-cart type="button" aria-label="Carrinho">
       <span class="cart-ico">🛒</span>
       <span class="cart-badge" id="cartBadge" hidden>0</span>
@@ -66,7 +66,6 @@
   <div class="container subinfo" id="infoBar"></div>
 
   <main class="container">
-
     <div class="grid">
 
       <a class="tile" href="marmitas.html">
@@ -101,13 +100,15 @@
         </div>
       </a>
 
-      <a class="tile highlight" href="combo.html" data-open-combo>
-  <div class="tile-media"><img src="img/cat-finalizar.jpg" alt="Combo"></div>
-  <div>
-    <div class="tile-title">Combo</div>
-    <div class="tile-sub">Monte e economize</div>
-  </div>
-</a>
+      <!-- ✅ COMBO: página correta (evita 404) -->
+      <a class="tile highlight" href="combos.html">
+        <div class="tile-media"><img src="img/cat-finalizar.jpg" alt="Combo"></div>
+        <div>
+          <div class="tile-title">Combo</div>
+          <div class="tile-sub">Monte e economize</div>
+        </div>
+      </a>
+
     </div>
 
     <a class="wa-float" id="waFloat" href="#" aria-label="WhatsApp">
@@ -115,7 +116,7 @@
     </a>
   </main>
 
-  <!-- ✅ Barra inferior -->
+  <!-- ✅ Barra inferior (no index você pode manter os 2 botões, pois está funcionando) -->
   <div class="sticky-cta" id="stickyCTA" hidden>
     <button class="cta" id="ctaOpenCart" data-open-cart type="button">
       <span>
@@ -125,68 +126,57 @@
       <strong id="ctaTotal">R$ 0,00</strong>
     </button>
 
-    <!-- ✅ Finalizar aqui também abre overlay (sem navegação) -->
-<button class="cta primary" id="ctaCheckout" type="button" data-open-checkout>
-  Finalizar
-</button>  
+    <button class="cta primary" id="ctaCheckout" type="button" data-open-checkout>
+      Finalizar
+    </button>
   </div>
 
-  <!-- =========================
-       CARRINHO (VISUAL NOVO)
-       mantém IDs do seu JS
-       ========================= -->
-
-  <!-- overlay/backdrop -->
-  <div class="cart-overlay drawer-backdrop" id="closeCartBackdrop"></div>
-
-  <!-- drawer -->
-  <aside class="drawer cart-drawer" id="cartDrawer" aria-hidden="true">
+  <!-- =================================================
+       ✅ CARRINHO ÚNICO (PADRÃO do seu cart.js)
+       (sem carrinhos extras / sem IDs duplicados)
+       ================================================= -->
+  <aside class="drawer" id="cartDrawer" aria-hidden="true">
+    <div class="drawer-backdrop" id="closeCartBackdrop"></div>
 
     <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="Carrinho">
-
-      <!-- header premium -->
-      <div class="drawer-head cart-header">
-        <div class="cart-titlebox">
-          <h3 class="cart-title">Seu carrinho</h3>
-          <p class="cart-subtitle">Itens + taxa (se entrega)</p>
+      <div class="drawer-head">
+        <div>
+          <h3>Seu carrinho</h3>
+          <p class="muted">Itens + taxa (se entrega)</p>
         </div>
-        <button class="icon-btn cart-close" id="closeCart" aria-label="Fechar" type="button">✕</button>
+        <button class="icon-btn" id="closeCart" aria-label="Fechar" type="button">✕</button>
       </div>
 
-      <!-- body premium -->
-      <div class="drawer-body cart-body">
-        <div class="delivery-toggle cart-mode">
-          <button class="dt-btn is-active" id="modeEntrega" type="button">🚚 Entrega</button>
+      <div class="drawer-body">
+        <div class="delivery-toggle">
+          <button class="dt-btn" id="modeEntrega" type="button">🚚 Entrega</button>
           <button class="dt-btn" id="modeRetirar" type="button">🏬 Retirar</button>
         </div>
 
-        <!-- seu render.js/cart.js já preenche aqui -->
-        <div id="cartItems" class="cart-list"></div>
+        <div id="cartItems"></div>
       </div>
 
-      <!-- footer premium -->
-      <div class="drawer-foot cart-footer">
-        <div class="totals cart-summary">
-          <div class="row cart-row"><span>Subtotal</span><strong id="subTotal">R$ 0,00</strong></div>
-          <div class="row cart-row"><span>Taxa</span><strong id="deliveryFee">R$ 0,00</strong></div>
-          <div class="row total cart-row"><span>Total</span><strong class="cart-total" id="grandTotal">R$ 0,00</strong></div>
-          <div class="mini muted cart-eta">⏱️ Tempo médio: <span id="etaText">30–60 min</span></div>
+      <div class="drawer-foot">
+        <div class="totals">
+          <div class="row"><span>Subtotal</span><strong id="subTotal">R$ 0,00</strong></div>
+          <div class="row"><span>Taxa</span><strong id="deliveryFee">R$ 0,00</strong></div>
+          <div class="row total"><span>Total</span><strong id="grandTotal">R$ 0,00</strong></div>
+          <div class="mini muted">⏱️ Tempo médio: <span id="etaText">30–60 min</span></div>
         </div>
 
-        <div class="drawer-actions cart-footer-actions">
-          <button class="btn light btn-cart danger" id="clearCart" type="button">Limpar</button>
-          <!-- ✅ Finalizar no drawer também abre overlay -->
-        <div class="cta-fixed">
-        <button class="btn primary" id="openCart">Ver carrinho</button>
+        <div class="drawer-actions">
+          <button class="btn light" id="clearCart" type="button">Limpar</button>
+
+          <!-- ✅ botão Finalizar DENTRO do carrinho (padrão e funcionando) -->
+          <a class="btn primary" href="checkout.html" data-open-checkout>Finalizar</a>
         </div>
       </div>
-
     </div>
   </aside>
 
   <div class="toast" id="toast"></div>
 
-  <!-- CHECKOUT OVERLAY -->
+  <!-- CHECKOUT OVERLAY (mantém como está) -->
   <div id="checkoutOverlay" class="ck-overlay" aria-hidden="true">
     <div class="ck-modal" role="dialog" aria-modal="true" aria-label="Finalizar pedido">
       <header class="ck-head">
@@ -340,7 +330,7 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script src="js/checkout.js"></script>
 
-  <!-- ✅ Padronização final: abrir carrinho e badge sem setInterval -->
+  <!-- ✅ Badge (sem quebrar clique) -->
   <script>
     (() => {
       const badge = document.getElementById("cartBadge");
@@ -361,18 +351,6 @@
           }
         }catch{}
       }
-
-      function openCart(){
-        const cta = document.getElementById("ctaOpenCart");
-        cta?.click?.();
-      }
-
-      document.querySelectorAll("[data-open-cart]").forEach(el=>{
-        el.addEventListener("click", (e)=>{
-          e.preventDefault();
-          openCart();
-        });
-      });
 
       document.addEventListener("lp:cart-change", syncBadge);
       syncBadge();
