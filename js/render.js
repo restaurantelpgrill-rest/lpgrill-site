@@ -1,3 +1,5 @@
+ta ai meu render adicione no local certo !! e me devolva pronto ! 
+
 // js/render.js — LP Grill (Cards com foto + seleção (qty) + carrinho compatível com cart.js V3)
 (() => {
   const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
@@ -6,7 +8,7 @@
     .replaceAll('"',"&quot;").replaceAll("'","&#039;");
 
   function normalizeData(){
-    const d = window.DATA || {};
+    const d = window.DATA || {}; quero as fotos , e o botão adicionar igual o botão voltar ao menu  
     return {
       marmitas: Array.isArray(d.marmitas) ? d.marmitas : [],
       porcoes: Array.isArray(d.porcoes) ? d.porcoes : [],
@@ -49,57 +51,35 @@
     return `<div class="lp-price"><span class="lp-now">${money(finalPrice)}</span></div>`;
   }
 
-  // ✅ CONTROLE “APP”: − [Adicionar + qtd] +
   function controlsHtml(p){
     const q = qtyInCart(p.id);
     const disabled = !!p.soldOut;
-
     if(disabled){
       return `<button class="lp-btn disabled" type="button" disabled>Indisponível</button>`;
     }
-
-    const decDisabled = q <= 0 ? "disabled" : "";
-    const decAria = q <= 0 ? `aria-disabled="true"` : "";
-    const decType = q <= 0 ? `type="button" disabled` : `type="button"`;
-
-    return `
-      <div class="lp-step" role="group" aria-label="Quantidade">
-        <button ${decType} class="lp-step-btn ${decDisabled}" ${decAria} data-dec="${esc(p.id)}">−</button>
-
-        <button type="button" class="lp-step-mid" data-add="${esc(p.id)}" aria-label="Adicionar">
-          <span class="lp-step-text">Adicionar</span>
-          <span class="lp-step-qty">${q}</span>
-        </button>
-
-        <button type="button" class="lp-step-btn" data-add="${esc(p.id)}">+</button>
-      </div>
-    `;
+    if(q > 0){
+      return `
+        <div class="lp-qty">
+          <button type="button" class="lp-qtybtn" data-dec="${esc(p.id)}">−</button>
+          <div class="lp-qnum">${q}</div>
+          <button type="button" class="lp-qtybtn" data-add="${esc(p.id)}">+</button>
+        </div>
+      `;
+    }
+    return `<button class="lp-btn" type="button" data-add="${esc(p.id)}">Adicionar</button>`;
   }
 
-  // ✅ CARD COM FOTO REAL (não “quadrado vazio”)
   function cardHtml(p){
-    const img = (p.img && String(p.img).trim()) ? String(p.img).trim() : "img/mockup.png";
-
+    const img = (p.img && String(p.img).trim()) ? p.img : "img/mockup.png";
     return `
       <article class="lp-card" data-id="${esc(p.id)}">
-        <div class="lp-cardrow">
-          <div class="lp-cardbody">
-            ${badgeHtml(p)}
-            <h3 class="lp-title">${esc(p.title)}</h3>
-            ${priceHtml(p)}
-            ${p.desc ? `<p class="lp-desc">${esc(p.desc)}</p>` : ``}
-            <div class="lp-actions">${controlsHtml(p)}</div>
-          </div>
-
-          <div class="lp-media">
-            <img
-              class="lp-img"
-              src="${esc(img)}"
-              alt="${esc(p.title)}"
-              loading="lazy"
-              onerror="this.onerror=null; this.src='img/mockup.png';"
-            />
-          </div>
+        <div class="lp-cardimg" style="background-image:url('${esc(img)}')"></div>
+        <div class="lp-cardbody">
+          ${badgeHtml(p)}
+          <h3 class="lp-title">${esc(p.title)}</h3>
+          ${priceHtml(p)}
+          ${p.desc ? `<p class="lp-desc">${esc(p.desc)}</p>` : ``}
+          <div class="lp-actions">${controlsHtml(p)}</div>
         </div>
       </article>
     `;
@@ -115,7 +95,6 @@
     if(!card) return;
     const p = allProducts().find(x => x.id === id);
     if(!p) return;
-
     const tmp = document.createElement("div");
     tmp.innerHTML = cardHtml(p).trim();
     const next = tmp.firstElementChild;
@@ -124,14 +103,12 @@
 
   function bindCardActions(container){
     if(!container) return;
-
     container.addEventListener("click", (e)=>{
       const addBtn = e.target.closest("[data-add]");
       const decBtn = e.target.closest("[data-dec]");
 
       if(addBtn){
         const id = addBtn.getAttribute("data-add");
-        if(!id) return;
         window.Cart?.add?.(id);
         refreshCard(container, id);
         window.Cart?.renderAll?.();
@@ -140,7 +117,6 @@
 
       if(decBtn){
         const id = decBtn.getAttribute("data-dec");
-        if(!id) return;
         window.Cart?.dec?.(id);
         refreshCard(container, id);
         window.Cart?.renderAll?.();
@@ -163,16 +139,13 @@
   window.renderCategory = function(categoryKey, containerId){
     const el = document.getElementById(containerId);
     if(!el) return;
-
     const d = normalizeData();
     const items = Array.isArray(d[categoryKey]) ? d[categoryKey] : [];
-
     if(!items.length){
       el.innerHTML = `<div class="lp-empty">Sem itens nesta categoria.</div>`;
       window.Cart?.renderAll?.();
       return;
     }
-
     el.innerHTML = items.map(cardHtml).join("");
     bindCardActions(el);
     window.Cart?.renderAll?.();
@@ -181,16 +154,13 @@
   window.renderHighlights = function(categoryKey, containerId, limit=4){
     const el = document.getElementById(containerId);
     if(!el) return;
-
     const d = normalizeData();
     const items = Array.isArray(d[categoryKey]) ? d[categoryKey] : [];
-
     if(!items.length){
       el.innerHTML = `<div class="lp-empty">Sem itens.</div>`;
       window.Cart?.renderAll?.();
       return;
     }
-
     el.innerHTML = items.slice(0, limit).map(cardHtml).join("");
     bindCardActions(el);
     window.Cart?.renderAll?.();
