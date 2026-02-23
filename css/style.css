@@ -997,3 +997,101 @@ button,
   width: 42px;
   padding: 0;
 }
+/* ===============================
+   MARMITAS / MENU - ARRUMO GERAL
+   Foto ao lado + botões clean
+================================ */
+
+/* Grid de cards */
+.menu-grid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap:16px;
+}
+
+@media (max-width: 900px){
+  .menu-grid{ grid-template-columns: 1fr; }
+}
+
+/* Card (tenta pegar qualquer card comum) */
+.menu-grid > *{
+  background:#fff;
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:18px;
+  padding:16px;
+  box-shadow: 0 10px 26px rgba(0,0,0,.06);
+}
+
+/* Dentro do card: vira 2 colunas (texto | foto) */
+.menu-grid > *{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+}
+
+/* BLOCO DA FOTO: manda pra direita */
+.menu-grid img{
+  width:92px;
+  height:92px;
+  object-fit:cover;
+  border-radius:16px;
+  flex: 0 0 92px;
+  align-self:center;
+}
+
+/* Textos não “invadem” a foto */
+.menu-grid h3,
+.menu-grid h2,
+.menu-grid .title{
+  margin:0;
+}
+
+/* Área de controles: alinhar botões */
+.menu-grid .controls,
+.menu-grid .qty-control,
+.menu-grid .actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:10px;
+  flex-wrap:wrap;
+}
+
+/* Botões (igual Voltar ao Menu) */
+.menu-grid button{
+  border: 1px solid #dcdcdc;
+  background: #fff;
+  border-radius: 14px;
+  height: 38px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.menu-grid button:active{ transform: translateY(1px); }
+
+/* Botões + e - com tamanho fixo */
+.menu-grid button.plus,
+.menu-grid button.minus,
+.menu-grid button[data-action="inc"],
+.menu-grid button[data-action="dec"]{
+  width:42px;
+  padding:0;
+}
+
+/* Número do contador (se tiver span/label no meio) */
+.menu-grid .qty,
+.menu-grid .qty-number,
+.menu-grid .count{
+  min-width: 26px;
+  text-align:center;
+  font-weight:700;
+  color:#111;
+}
