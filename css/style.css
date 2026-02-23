@@ -1509,3 +1509,28 @@ button,
   height:100%;
   object-fit:cover;
 }
+/* ============================
+   FIX — SOMENTE MARMITAS
+   Fotos distorcidas/pequenas
+   ============================ */
+
+.page-marmitas .product-card img,
+.page-marmitas .product-card .pimg,
+.page-marmitas .product-card .thumb img,
+.page-marmitas .product-card .photo img{
+  width: 88px !important;
+  height: 88px !important;
+  object-fit: cover !important;
+  border-radius: 14px !important;
+  display: block !important;
+}
+
+/* se tiver algum container de foto “redondo”, neutraliza */
+.page-marmitas .product-card .thumb,
+.page-marmitas .product-card .photo{
+  width: 88px !important;
+  height: 88px !important;
+  border-radius: 14px !important;
+  overflow: hidden !important;
+  flex: 0 0 88px !important;
+}
