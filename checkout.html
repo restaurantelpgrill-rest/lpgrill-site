@@ -376,7 +376,27 @@
       }
       return false;
     }
+<!-- ===== PIX QR CODE ===== -->
+<div id="pixBox" class="pix-box" hidden>
 
+  <h3>Pagamento via Pix</h3>
+
+  <img src="img/pix.png" alt="QR Code Pix" class="pix-img">
+
+  <p class="pix-key">
+    Chave Pix:
+    <strong id="pixKey">31998064556</strong>
+  </p>
+
+  <button type="button" id="copyPix" class="pix-copy">
+    Copiar chave Pix
+  </button>
+
+  <p class="pix-info">
+    Após o pagamento, envie o comprovante pelo WhatsApp para liberar seu pedido.
+  </p>
+
+</div>
     // =========================
     // Autocomplete bairro (usa lista do app.js? aqui vamos usar lista básica pelo fee já calculado)
     // =========================
