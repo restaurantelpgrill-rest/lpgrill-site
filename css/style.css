@@ -1172,3 +1172,27 @@ button,
 #listMarmitas .add-btn{
   min-width:110px;
 }
+/* Foto ao lado do Adicionar (sem mudar o botão) */
+.qty--withthumb{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.addwrap{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+/* miniatura */
+.add-thumb{
+  width:44px;
+  height:44px;
+  border-radius:12px;
+  object-fit:cover;
+  border:1px solid rgba(0,0,0,.10);
+  box-shadow: 0 4px 12px rgba(0,0,0,.10);
+}
+/* opcional: esconder a foto antiga do card se ela estiver duplicada */
+.prod-img{ display:none; }
