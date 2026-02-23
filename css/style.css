@@ -1534,3 +1534,35 @@ button,
   overflow: hidden !important;
   flex: 0 0 88px !important;
 }
+/* PIX BOX */
+
+.pix-box{
+  margin-top:16px;
+  padding:16px;
+  border-radius:16px;
+  background:#fff;
+  border:1px solid rgba(0,0,0,.08);
+  text-align:center;
+}
+
+.pix-img{
+  width:180px;
+  margin:10px auto;
+  display:block;
+}
+
+.pix-copy{
+  margin-top:10px;
+  background:#16a34a;
+  color:#fff;
+  border:none;
+  padding:10px 16px;
+  border-radius:10px;
+  font-weight:600;
+}
+
+.pix-info{
+  font-size:13px;
+  color:#555;
+  margin-top:8px;
+}
