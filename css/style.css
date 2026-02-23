@@ -1,11 +1,13 @@
+
 /* ==========================================================
    LP GRILL — PREMIUM LIGHT / iFood-like (MOBILE FIRST)
    ✔ padroniza todas páginas
-   ✔ cards premium
-   ✔ foto do produto grande e à direita (fora dos botões)
-   ✔ stepper + / - padrão Marmitas
+   ✔ reduz cards e tiles para caber no celular
+   ✔ remove fundo rosa / deixa claro premium
+   ✔ suporta imagens nas categorias (foto real)
    ✔ FIX: barra fixa não tampa conteúdo
-   ✔ FIX: checkout overlay não corta
+   ✔ FIX: checkout não corta e respeita rolagem
+   ✔ FIX: sem conflitos de drawer/cart/qty
    ========================================================== */
 
 /* =========================
@@ -138,7 +140,8 @@ p{ margin:6px 0 0; }
 }
 
 /* ============================================================
-   TOP BANNER (FULL BLEED REAL)
+   TOP BANNER (FOTO NOVA) — FULL BLEED REAL
+   ✅ funciona mesmo com container/padding
 ============================================================ */
 .top-banner{
   position: relative;
@@ -148,6 +151,7 @@ p{ margin:6px 0 0; }
   display: grid;
   place-items: center;
 
+  /* só arredonda embaixo (fica premium) */
   border-bottom-left-radius: 18px;
   border-bottom-right-radius: 18px;
 
@@ -155,6 +159,7 @@ p{ margin:6px 0 0; }
   box-shadow: 0 10px 28px rgba(0,0,0,.06);
 }
 
+/* garante que o banner “encoste” logo abaixo do header */
 .pagebar + .top-banner{ margin-top: 0; }
 
 .top-banner img{
@@ -165,6 +170,7 @@ p{ margin:6px 0 0; }
   object-position: center;
 }
 
+/* FULL BLEED: ocupa 100vw mesmo fora do container */
 .top-banner.full-bleed{
   width: 100vw;
   margin-left: calc(50% - 50vw);
@@ -425,9 +431,7 @@ p{ margin:6px 0 0; }
 }
 
 /* ============================================================
-   PRODUCTS (cards) — PADRÃO MARMITAS (FIX)
-   ✅ foto pequena quadrada no canto (fora dos botões)
-   ✅ stepper +/− bonito e igual
+   PRODUCTS (cards)
 ============================================================ */
 .product-grid{
   display:grid;
@@ -440,61 +444,33 @@ p{ margin:6px 0 0; }
 }
 
 .product{
-  position:relative;                 /* ✅ permite fixar a foto no canto */
   background: rgba(255,255,255,.94);
   border:1px solid rgba(17,24,39,.10);
   border-radius: var(--radius2);
   box-shadow: var(--shadow1);
   overflow:hidden;
-
+  display:flex;
+  gap:12px;
   padding:12px;
-  padding-bottom:14px;
-  padding-right: 98px;              /* ✅ reserva espaço pra foto no canto */
 }
 
-.pbody{ min-width:0; }
-
+.pimg{
+  width:78px; height:78px;
+  border-radius:16px;
+  border:1px solid rgba(17,24,39,.10);
+  background: linear-gradient(180deg, rgba(127,29,29,.10), rgba(255,255,255,.85));
+  object-fit:cover;
+  box-shadow: 0 10px 18px rgba(17,24,39,.10);
+}
+.pbody{ flex:1; min-width:0; }
 .ptitle{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
 .ptitle strong{ font-size:14px; font-weight:950; }
 .price{ font-weight:950; color: var(--wine); }
 .pdesc{ margin-top:6px; font-size:12px; color:var(--muted); line-height:1.35; }
 
-/* ✅ FOTO: pequena, quadrada, no canto inferior direito */
-.pimg{
-  position:absolute;
-  right:12px;
-  bottom:12px;
-
-  width:74px;
-  height:74px;
-  border-radius:16px;
-  object-fit:cover;
-
-  border:1px solid rgba(17,24,39,.12);
-  background:#fff;
-  box-shadow: 0 12px 22px rgba(17,24,39,.14);
-}
-
-/* Mobile: ajusta levemente */
-@media (max-width:520px){
-  .product{ padding-right: 90px; }
-  .pimg{
-    width:68px;
-    height:68px;
-    border-radius:14px;
-  }
-  /* mantém a thumb pequena */
-.lp-step-thumb{
-  display:block !important;
-}
-
-/* remove QUALQUER imagem grande do card */
-.product img:not(.lp-step-thumb){
-  display:none !important;
-}
-
 /* ============================================================
-   ✅ MENU STEPPER (−  Adicionar X  +) — IGUAL MARMITAS
+   ✅ MENU STEPPER (−  Adicionar X  +) — SEM CONFLITO COM CARRINHO
+   (funciona se seu HTML usar .qty dentro do card do produto)
 ============================================================ */
 .product .qty{
   display:inline-flex;
@@ -524,19 +500,17 @@ p{ margin:6px 0 0; }
 }
 .product .qty button:active{ transform: scale(.99); }
 
-/* - e + quadrados */
 .product .qty button:first-child,
 .product .qty button:last-child{
   width:38px;
-  padding:0;
   font-size:18px;
   display:grid;
   place-items:center;
   line-height:1;
 }
 
-/* Botão do meio */
 .product .qty button:nth-child(2){
+  width:auto;
   min-width:120px;
   padding:0 12px;
   font-size:13px;
@@ -545,17 +519,6 @@ p{ margin:6px 0 0; }
   border-color: rgba(127,29,29,.18);
 }
 
-/* Compatibilidade se alguma página usar data-action */
-.product .qty button[data-action="inc"],
-.product .qty button[data-action="dec"]{
-  width:38px;
-  padding:0;
-  font-size:18px;
-}
-.product .qty button[data-action="add"]{
-  min-width:120px;
-  padding:0 12px;
-}
 /* ============================================================
    WHATS FLOAT
 ============================================================ */
@@ -754,7 +717,7 @@ p{ margin:6px 0 0; }
 .cname{ font-weight:1000; font-size:15px; letter-spacing:-.01em; }
 .cdesc{ font-size:12.5px; color:var(--muted); margin-top:4px; line-height:1.35; }
 
-/* ✅ QUANTIDADE DO CARRINHO — SÓ NO DRAWER */
+/* ✅ QUANTIDADE DO CARRINHO — SÓ NO DRAWER (não quebra menu) */
 .drawer .qty{
   display:flex;
   align-items:center;
@@ -980,8 +943,7 @@ button,
 .icon-btn{
   -webkit-tap-highlight-color: transparent;
 }
-
-/* (Opcional) botão remover bonito — se existir no seu carrinho */
+/* ===== CARRINHO: botão REMOVER bonito e alinhado ===== */
 .cart .remove-item,
 .cart .btn-remove,
 .cart button[data-action="remove"],
@@ -1000,9 +962,355 @@ button,
   line-height: 1;
   cursor: pointer;
 }
+
 .cart .remove-item:active,
 .cart .btn-remove:active,
 .cart button[data-action="remove"]:active,
 .cart .item-remove:active {
   transform: translateY(1px);
 }
+/* ===== MENU: controles de adicionar (igual Voltar ao Menu) ===== */
+.menu .qty-btn,
+.menu .add-btn,
+.menu .btn-add,
+.menu button[data-action="dec"],
+.menu button[data-action="inc"],
+.menu button[data-action="add"]{
+  border: 1px solid #dcdcdc;
+  background: #fff;
+  border-radius: 14px;
+  height: 38px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+/* Deixar o “-” e “+” quadradinhos e bonitos */
+.menu button[data-action="dec"],
+.menu button[data-action="inc"],
+.menu .qty-btn{
+  width: 42px;
+  padding: 0;
+}
+/* ===============================
+   MARMITAS / MENU - ARRUMO GERAL
+   Foto ao lado + botões clean
+================================ */
+
+/* Grid de cards */
+.menu-grid{
+  display:grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap:16px;
+}
+
+@media (max-width: 900px){
+  .menu-grid{ grid-template-columns: 1fr; }
+}
+
+/* Card (tenta pegar qualquer card comum) */
+.menu-grid > *{
+  background:#fff;
+  border:1px solid rgba(0,0,0,.08);
+  border-radius:18px;
+  padding:16px;
+  box-shadow: 0 10px 26px rgba(0,0,0,.06);
+}
+
+/* Dentro do card: vira 2 colunas (texto | foto) */
+.menu-grid > *{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+}
+
+/* BLOCO DA FOTO: manda pra direita */
+.menu-grid img{
+  width:92px;
+  height:92px;
+  object-fit:cover;
+  border-radius:16px;
+  flex: 0 0 92px;
+  align-self:center;
+}
+
+/* Textos não “invadem” a foto */
+.menu-grid h3,
+.menu-grid h2,
+.menu-grid .title{
+  margin:0;
+}
+
+/* Área de controles: alinhar botões */
+.menu-grid .controls,
+.menu-grid .qty-control,
+.menu-grid .actions{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  margin-top:10px;
+  flex-wrap:wrap;
+}
+
+/* Botões (igual Voltar ao Menu) */
+.menu-grid button{
+  border: 1px solid #dcdcdc;
+  background: #fff;
+  border-radius: 14px;
+  height: 38px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+.menu-grid button:active{ transform: translateY(1px); }
+
+/* Botões + e - com tamanho fixo */
+.menu-grid button.plus,
+.menu-grid button.minus,
+.menu-grid button[data-action="inc"],
+.menu-grid button[data-action="dec"]{
+  width:42px;
+  padding:0;
+}
+
+/* Número do contador (se tiver span/label no meio) */
+.menu-grid .qty,
+.menu-grid .qty-number,
+.menu-grid .count{
+  min-width: 26px;
+  text-align:center;
+  font-weight:700;
+  color:#111;
+}
+/* ================================
+   MARMITAS: corrigir SOMENTE foto + botões
+   (sem mexer no carrinho/checkout)
+=================================== */
+
+/* 1) Card vira 2 colunas: texto à esquerda / foto à direita */
+#listMarmitas > *{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+}
+
+/* garante que o texto não “empurre” a foto pra baixo */
+#listMarmitas > * > :first-child{ flex:1; min-width:0; }
+
+/* 2) FOTO: fica à direita, tamanho fixo e alinhada */
+#listMarmitas img{
+  width:92px;
+  height:92px;
+  object-fit:cover;
+  border-radius:16px;
+  flex: 0 0 92px;
+  align-self:center;
+  margin:0 !important;
+}
+
+/* 3) Área dos botões (qualquer bloco de ação/quantidade dentro do card) */
+#listMarmitas .controls,
+#listMarmitas .actions,
+#listMarmitas .qty,
+#listMarmitas .qty-control,
+#listMarmitas [class*="qty"],
+#listMarmitas [class*="control"],
+#listMarmitas [class*="action"]{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+/* 4) BOTÕES do menu: estilo igual “Voltar ao Menu” (clean) */
+#listMarmitas button,
+#listMarmitas .btn{
+  border: 1px solid #dcdcdc;
+  background: #fff;
+  border-radius: 14px;
+  height: 38px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+#listMarmitas button:active,
+#listMarmitas .btn:active{
+  transform: translateY(1px);
+}
+
+/* 5) Botões + e - com tamanho fixo (se tiver data-action) */
+#listMarmitas button[data-action="inc"],
+#listMarmitas button[data-action="dec"]{
+  width:42px;
+  padding:0;
+}
+
+/* 6) Se seu “Adicionar” estiver com texto tipo "Adicionar 0", segura tamanho */
+#listMarmitas button[data-action="add"],
+#listMarmitas button.add,
+#listMarmitas .add-btn{
+  min-width:110px;
+}
+/* Foto ao lado do Adicionar (sem mudar o botão) */
+.qty--withthumb{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+.addwrap{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+/* miniatura */
+.add-thumb{
+  width:44px;
+  height:44px;
+  border-radius:12px;
+  object-fit:cover;
+  border:1px solid rgba(0,0,0,.10);
+  box-shadow: 0 4px 12px rgba(0,0,0,.10);
+}
+/* opcional: esconder a foto antiga do card se ela estiver duplicada */
+.prod-img{ display:none; }
+/* ✅ Thumb ao lado do "Adicionar" (mais visível) */
+.lp-step-mid{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+/* a thumb fica no fim, sem empurrar texto */
+.lp-step-thumb{
+  width:52px;          /* MAIS VISÍVEL */
+  height:52px;
+  border-radius:14px;
+  object-fit:cover;
+  flex:0 0 auto;
+  border:1px solid rgba(0,0,0,.12);
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+}
+/* remove a foto pequena antiga */
+.lp-media{
+  display:none;
+}
+.lp-step-thumb{
+  width:58px;
+  height:58px;
+  border-radius:16px;
+  object-fit:cover;
+  border:1px solid rgba(0,0,0,.12);
+  box-shadow: 0 8px 20px rgba(0,0,0,.15);
+}
+.lp-step-mid{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding-right:6px;
+}
+/* ===== Foto ao lado do "Adicionar" — versão premium (sem cortar) ===== */
+
+/* garante que o stepper tenha altura certa */
+.lp-step{
+  align-items:center;
+  gap:10px;
+}
+
+/* botão do meio vira uma “pílula” que comporta a foto */
+.lp-step-mid{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  min-height:56px;     /* altura suficiente */
+  padding:8px 10px;    /* espaço interno */
+  overflow:hidden;     /* não deixa a imagem escapar */
+}
+
+/* deixa texto e quantidade sempre visíveis */
+.lp-step-text,
+.lp-step-qty{
+  display:inline-flex;
+  align-items:center;
+  line-height:1;
+}
+
+/* FOTO: grande mas controlada */
+.lp-step-thumb{
+  width:52px;          /* tamanho ideal */
+  height:52px;
+  border-radius:14px;
+  object-fit:cover;
+  flex:0 0 auto;
+
+  border:1px solid rgba(0,0,0,.12);
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+}
+
+/* opcional: em telas muito pequenas, reduz um pouco */
+@media (max-width: 420px){
+  .lp-step-mid{ min-height:52px; padding:7px 9px; }
+  .lp-step-thumb{ width:48px; height:48px; border-radius:13px; }
+}
+/* ===== Stepper com foto fixa ao lado (premium / não quebra) ===== */
+.lp-step.lp-step--thumb{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+/* botão da foto (ao lado dos botoes + e - somente foto ) */
+.lp-step-photo{
+  width:70px;
+  height:70px;
+  border-radius:20px;
+  padding:0;
+  border:1px solid rgba(0,0,0,.10);
+  background: rgba(255,255,255,.95);
+  box-shadow: 0 12px 23px rgba(0,0,0,.12);
+  overflow:hidden;
+  flex:0 0 auto;
+  display:grid;
+  place-items:center;
+  cursor:pointer;
+}
+
+/* imagem dentro do quadrado */
+.lp-step-thumb{
+  width:90%;
+  height:100%;
+  object-fit:cover;
+  display:block;
+}
+
+/* em celular pequeno, reduz um pouco */
+@media (max-width: 420px){
+  .lp-step-photo{ width:60px; height:60px; border-radius:14px; }
+}
+
+/* remove a foto antiga do card (se ainda não fez) */
+.lp-media{ display:none; }
