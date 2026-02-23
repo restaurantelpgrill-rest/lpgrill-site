@@ -1169,7 +1169,7 @@ button,
 /* garante que o texto não “empurre” a foto pra baixo */
 #listMarmitas > * > :first-child{ flex:1; min-width:0; }
 
-/* 2) FOTO: fica à direita, tamanho fixo e alinhada */
+/* 2) FOTO: fica à direita fora dos botões, tamanho fixo e alinhada */
 #listMarmitas img{
   width:92px;
   height:92px;
@@ -1254,7 +1254,7 @@ button,
 }
 /* opcional: esconder a foto antiga do card se ela estiver duplicada */
 .prod-img{ display:none; }
-/* ✅ Thumb ao lado do "Adicionar" (mais visível) */
+/* ✅ Thumb ao lado direito fora do "Adicionar" (mais visível) */
 .lp-step-mid{
   display:flex;
   align-items:center;
@@ -1289,7 +1289,7 @@ button,
   gap:12px;
   padding-right:6px;
 }
-/* ===== Foto ao lado do "Adicionar" — versão premium (sem cortar) ===== */
+/* ===== Foto ao lado direito fora do "Adicionar" — versão premium (sem cortar) ===== */
 
 /* garante que o stepper tenha altura certa */
 .lp-step{
@@ -1297,8 +1297,8 @@ button,
   gap:10px;
 }
 
-/* botão do meio vira uma “pílula” que comporta a foto */
-.lp-step-mid{
+/* botão do meio vira uma “pílula”  */
+{
   display:flex;
   align-items:center;
   justify-content:center;
