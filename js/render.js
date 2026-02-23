@@ -1,4 +1,6 @@
-// js/render.js — LP Grill (Cards com foto + stepper iFood-like) compatível com cart.js V3
+// js/render.js — LP Grill (Cards com foto + stepper iFood-like)
+// ✅ Foto maior e MAIS visível ao lado do "Adicionar" em TODAS as categorias
+// compatível com cart.js V3
 (() => {
   const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
   const esc = (s)=> String(s ?? "")
@@ -36,6 +38,14 @@
     return 0;
   }
 
+  // ✅ Resolve imagem do produto (aceita p.img ou p.foto)
+  function getImg(p){
+    const raw = (p?.img && String(p.img).trim())
+      ? String(p.img).trim()
+      : ((p?.foto && String(p.foto).trim()) ? String(p.foto).trim() : "");
+    return raw || "img/mockup.png";
+  }
+
   function badgeHtml(p){
     const promoOn = p?.promo && p?.promoPrice != null && Number(p.promoPrice) > 0;
     const parts = [];
@@ -60,7 +70,7 @@
     return `<div class="lp-price"><span class="lp-now">${money(finalPrice)}</span></div>`;
   }
 
-  // ✅ Stepper “app”: − [Adicionar QTD] +
+  // ✅ Stepper “app”: − [Adicionar QTD + FOTO] +
   function controlsHtml(p){
     const q = qtyInCart(p.id);
     const disabled = !!p.soldOut;
@@ -70,6 +80,8 @@
     }
 
     const canDec = q > 0;
+    const img = getImg(p);
+    const title = p.title || p.name || "";
 
     return `
       <div class="lp-step" role="group" aria-label="Quantidade">
@@ -81,6 +93,13 @@
         <button type="button" class="lp-step-mid" data-add="${esc(p.id)}" aria-label="Adicionar">
           <span class="lp-step-text">Adicionar</span>
           <span class="lp-step-qty">${q}</span>
+
+          <!-- ✅ Foto ao lado do "Adicionar" (maior e mais visível) -->
+          <img class="lp-step-thumb"
+            src="${esc(img)}"
+            alt="${esc(title)}"
+            loading="lazy"
+            onerror="this.onerror=null; this.src='img/mockup.png';">
         </button>
 
         <button type="button" class="lp-step-btn" data-add="${esc(p.id)}">+</button>
@@ -88,9 +107,9 @@
     `;
   }
 
-  // ✅ Card com FOTO real (img)
+  // ✅ Card com FOTO real (img) + Stepper com foto do lado do Adicionar
   function cardHtml(p){
-    const img = (p.img && String(p.img).trim()) ? String(p.img).trim() : "img/mockup.png";
+    const img = getImg(p);
     const title = p.title || p.name || "";
     return `
       <article class="lp-card" data-id="${esc(p.id)}">
