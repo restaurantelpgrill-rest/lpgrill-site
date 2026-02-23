@@ -483,6 +483,14 @@ p{ margin:6px 0 0; }
     height:68px;
     border-radius:14px;
   }
+  /* mantém a thumb pequena */
+.lp-step-thumb{
+  display:block !important;
+}
+
+/* remove QUALQUER imagem grande do card */
+.product img:not(.lp-step-thumb){
+  display:none !important;
 }
 
 /* ============================================================
