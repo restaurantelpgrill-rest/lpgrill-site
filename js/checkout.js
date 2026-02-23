@@ -380,7 +380,7 @@
       });
     }
 
-    const pixBox = document.getElementById("pixBox");
+    const pixBox = document.getElementById("pixbox");
 
 document.querySelectorAll('input[name="pagamento"]').forEach(opt => {
   opt.addEventListener("change", () => {
