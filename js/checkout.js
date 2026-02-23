@@ -380,6 +380,14 @@
       });
     }
 
+    const pixBox = document.getElementById("pixBox");
+
+document.querySelectorAll('input[name="pagamento"]').forEach(opt => {
+  opt.addEventListener("change", () => {
+    pixBox.hidden = opt.value !== "pix";
+  });
+});
+    
     // ===== Escolha pagamento: agora fica bonito + toggle =====
     payButtons.forEach(btn => {
       btn.addEventListener("click", () => {
