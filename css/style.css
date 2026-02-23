@@ -1444,8 +1444,8 @@ button,
 
 /* FOTO AO LADO (quadrada) */
 .lp-step-photo{
-  width:64px;
-  height:64px;
+  width:84px;
+  height:84px;
   border-radius:16px;
   padding:0;
   border:1px solid rgba(17,24,39,.12);
@@ -1485,7 +1485,7 @@ button,
 .lp-step-photo{
   position: absolute;
   right: 14px;
-  top: 50%;
+  top: 17%;
   transform: translateY(-50%);
 
   width: 64px;
@@ -1498,6 +1498,11 @@ button,
   z-index: 2;
 }
 
+@media (max-width: 600px){
+  .lp-step-photo{
+    top: 22%;
+  }
+}
 /* imagem dentro da foto */
 .lp-step-thumb{
   width:100%;
