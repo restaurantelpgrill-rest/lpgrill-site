@@ -1213,3 +1213,21 @@ button,
   border:1px solid rgba(0,0,0,.12);
   box-shadow: 0 8px 18px rgba(0,0,0,.12);
 }
+/* remove a foto pequena antiga */
+.lp-media{
+  display:none;
+}
+.lp-step-thumb{
+  width:58px;
+  height:58px;
+  border-radius:16px;
+  object-fit:cover;
+  border:1px solid rgba(0,0,0,.12);
+  box-shadow: 0 8px 20px rgba(0,0,0,.15);
+}
+.lp-step-mid{
+  display:flex;
+  align-items:center;
+  gap:12px;
+  padding-right:6px;
+}
