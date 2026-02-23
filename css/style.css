@@ -1095,3 +1095,80 @@ button,
   font-weight:700;
   color:#111;
 }
+/* ================================
+   MARMITAS: corrigir SOMENTE foto + botões
+   (sem mexer no carrinho/checkout)
+=================================== */
+
+/* 1) Card vira 2 colunas: texto à esquerda / foto à direita */
+#listMarmitas > *{
+  display:flex;
+  align-items:flex-start;
+  justify-content:space-between;
+  gap:14px;
+}
+
+/* garante que o texto não “empurre” a foto pra baixo */
+#listMarmitas > * > :first-child{ flex:1; min-width:0; }
+
+/* 2) FOTO: fica à direita, tamanho fixo e alinhada */
+#listMarmitas img{
+  width:92px;
+  height:92px;
+  object-fit:cover;
+  border-radius:16px;
+  flex: 0 0 92px;
+  align-self:center;
+  margin:0 !important;
+}
+
+/* 3) Área dos botões (qualquer bloco de ação/quantidade dentro do card) */
+#listMarmitas .controls,
+#listMarmitas .actions,
+#listMarmitas .qty,
+#listMarmitas .qty-control,
+#listMarmitas [class*="qty"],
+#listMarmitas [class*="control"],
+#listMarmitas [class*="action"]{
+  display:flex;
+  align-items:center;
+  gap:8px;
+  flex-wrap:wrap;
+}
+
+/* 4) BOTÕES do menu: estilo igual “Voltar ao Menu” (clean) */
+#listMarmitas button,
+#listMarmitas .btn{
+  border: 1px solid #dcdcdc;
+  background: #fff;
+  border-radius: 14px;
+  height: 38px;
+  padding: 0 14px;
+  font-size: 14px;
+  font-weight: 600;
+  color: #111;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  line-height: 1;
+}
+
+#listMarmitas button:active,
+#listMarmitas .btn:active{
+  transform: translateY(1px);
+}
+
+/* 5) Botões + e - com tamanho fixo (se tiver data-action) */
+#listMarmitas button[data-action="inc"],
+#listMarmitas button[data-action="dec"]{
+  width:42px;
+  padding:0;
+}
+
+/* 6) Se seu “Adicionar” estiver com texto tipo "Adicionar 0", segura tamanho */
+#listMarmitas button[data-action="add"],
+#listMarmitas button.add,
+#listMarmitas .add-btn{
+  min-width:110px;
+}
