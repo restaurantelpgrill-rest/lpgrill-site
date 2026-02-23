@@ -523,6 +523,24 @@ p{ margin:6px 0 0; }
     border-radius: 14px;
     right: 10px;
   }
+   /* ===== FOTO PADRÃO NO CANTO (todas as páginas) ===== */
+.lp-step-photo{
+  width: 64px;
+  height: 64px;
+  border-radius: 16px;
+  overflow: hidden;
+  background: #fff;
+  display: grid;
+  place-items: center;
+}
+
+.lp-step-thumb{
+  width: 100%;
+  height: 100%;
+  object-fit: cover;      /* ✅ mantém padrão quadrado bonito */
+  object-position: center;/* ✅ centraliza */
+  display: block;
+}
 }
 
 /* ============================================================
