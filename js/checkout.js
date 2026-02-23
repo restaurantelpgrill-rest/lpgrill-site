@@ -7,7 +7,7 @@
   const CONFIG = {
     whatsapp: "5531998064556",
 
-    pixKey: "e02484b0-c924-4d38-9af9-79af9ad97c3e",
+    pixKey: "31998064556",
     merchantName: "LP GRILL",
     merchantCity: "BELO HORIZONTE",
     txid: "LPGRILL01",
