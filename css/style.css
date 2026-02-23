@@ -425,7 +425,9 @@ p{ margin:6px 0 0; }
 }
 
 /* ============================================================
-   PRODUCTS (cards) — FOTO GRANDE À DIREITA (fora dos botões)
+   PRODUCTS (cards) — PADRÃO MARMITAS (FIX)
+   ✅ foto pequena quadrada no canto (fora dos botões)
+   ✅ stepper +/− bonito e igual
 ============================================================ */
 .product-grid{
   display:grid;
@@ -438,58 +440,53 @@ p{ margin:6px 0 0; }
 }
 
 .product{
+  position:relative;                 /* ✅ permite fixar a foto no canto */
   background: rgba(255,255,255,.94);
   border:1px solid rgba(17,24,39,.10);
   border-radius: var(--radius2);
   box-shadow: var(--shadow1);
   overflow:hidden;
-  display:flex;
-  gap:12px;
+
   padding:12px;
-  align-items:flex-start;
+  padding-bottom:14px;
+  padding-right: 98px;              /* ✅ reserva espaço pra foto no canto */
 }
 
-.pbody{ flex:1; min-width:0; }
+.pbody{ min-width:0; }
 
-.ptitle{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:10px;
-}
+.ptitle{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
 .ptitle strong{ font-size:14px; font-weight:950; }
-
 .price{ font-weight:950; color: var(--wine); }
 .pdesc{ margin-top:6px; font-size:12px; color:var(--muted); line-height:1.35; }
 
-/* FOTO DO PRODUTO (sempre à direita, maior e aparente) */
+/* ✅ FOTO: pequena, quadrada, no canto inferior direito */
 .pimg{
-  width:110px;
-  height:110px;
-  flex:0 0 110px;
-  margin-left: 12px;
-  align-self:center;
+  position:absolute;
+  right:12px;
+  bottom:12px;
 
-  border-radius:18px;
+  width:74px;
+  height:74px;
+  border-radius:16px;
+  object-fit:cover;
+
   border:1px solid rgba(17,24,39,.12);
   background:#fff;
-  object-fit:cover;
-  box-shadow: 0 14px 28px rgba(17,24,39,.14);
+  box-shadow: 0 12px 22px rgba(17,24,39,.14);
 }
 
+/* Mobile: ajusta levemente */
 @media (max-width:520px){
+  .product{ padding-right: 90px; }
   .pimg{
-    width:96px;
-    height:96px;
-    flex:0 0 96px;
-    margin-left:10px;
-    border-radius:16px;
+    width:68px;
+    height:68px;
+    border-radius:14px;
   }
 }
 
 /* ============================================================
-   ✅ MENU STEPPER (−  Adicionar X  +) — PADRÃO MARMITAS
-   Funciona com .qty dentro do .product
+   ✅ MENU STEPPER (−  Adicionar X  +) — IGUAL MARMITAS
 ============================================================ */
 .product .qty{
   display:inline-flex;
@@ -519,17 +516,19 @@ p{ margin:6px 0 0; }
 }
 .product .qty button:active{ transform: scale(.99); }
 
+/* - e + quadrados */
 .product .qty button:first-child,
 .product .qty button:last-child{
   width:38px;
+  padding:0;
   font-size:18px;
   display:grid;
   place-items:center;
   line-height:1;
 }
 
+/* Botão do meio */
 .product .qty button:nth-child(2){
-  width:auto;
   min-width:120px;
   padding:0 12px;
   font-size:13px;
@@ -538,7 +537,7 @@ p{ margin:6px 0 0; }
   border-color: rgba(127,29,29,.18);
 }
 
-/* Compatibilidade: se alguma página usa data-action inc/dec/add */
+/* Compatibilidade se alguma página usar data-action */
 .product .qty button[data-action="inc"],
 .product .qty button[data-action="dec"]{
   width:38px;
@@ -549,7 +548,6 @@ p{ margin:6px 0 0; }
   min-width:120px;
   padding:0 12px;
 }
-
 /* ============================================================
    WHATS FLOAT
 ============================================================ */
