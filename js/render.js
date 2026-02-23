@@ -70,43 +70,43 @@
     return `<div class="lp-price"><span class="lp-now">${money(finalPrice)}</span></div>`;
   }
 
-  // ✅ Stepper “app”: − [Adicionar QTD + FOTO] +
-  function controlsHtml(p){
-    const q = qtyInCart(p.id);
-    const disabled = !!p.soldOut;
+ // ✅ Stepper “app”: − [Adicionar QTD] [FOTO] +
+function controlsHtml(p){
+  const q = qtyInCart(p.id);
+  const disabled = !!p.soldOut;
 
-    if(disabled){
-      return `<button class="lp-btn disabled" type="button" disabled>Indisponível</button>`;
-    }
-
-    const canDec = q > 0;
-    const img = getImg(p);
-    const title = p.title || p.name || "";
-
-    return `
-      <div class="lp-step" role="group" aria-label="Quantidade">
-        <button type="button"
-          class="lp-step-btn ${canDec ? "" : "disabled"}"
-          ${canDec ? "" : "disabled"}
-          data-dec="${esc(p.id)}">−</button>
-
-        <button type="button" class="lp-step-mid" data-add="${esc(p.id)}" aria-label="Adicionar">
-          <span class="lp-step-text">Adicionar</span>
-          <span class="lp-step-qty">${q}</span>
-
-          <!-- ✅ Foto ao lado do "Adicionar" (maior e mais visível) -->
-          <img class="lp-step-thumb"
-            src="${esc(img)}"
-            alt="${esc(title)}"
-            loading="lazy"
-            onerror="this.onerror=null; this.src='img/mockup.png';">
-        </button>
-
-        <button type="button" class="lp-step-btn" data-add="${esc(p.id)}">+</button>
-      </div>
-    `;
+  if(disabled){
+    return `<button class="lp-btn disabled" type="button" disabled>Indisponível</button>`;
   }
 
+  const canDec = q > 0;
+  const img = getImg(p);
+  const title = p.title || p.name || "";
+
+  return `
+    <div class="lp-step lp-step--thumb" role="group" aria-label="Quantidade">
+      <button type="button"
+        class="lp-step-btn ${canDec ? "" : "disabled"}"
+        ${canDec ? "" : "disabled"}
+        data-dec="${esc(p.id)}">−</button>
+
+      <button type="button" class="lp-step-mid" data-add="${esc(p.id)}" aria-label="Adicionar">
+        <span class="lp-step-text">Adicionar</span>
+        <span class="lp-step-qty">${q}</span>
+      </button>
+
+      <!-- ✅ thumb fixa ao lado do Adicionar (não quebra layout) -->
+      <button type="button" class="lp-step-photo" data-add="${esc(p.id)}" aria-label="Adicionar">
+        <img class="lp-step-thumb" src="${esc(img)}" alt="${esc(title)}"
+          loading="lazy"
+          onerror="this.onerror=null; this.src='img/mockup.png';">
+      </button>
+
+      <button type="button" class="lp-step-btn" data-add="${esc(p.id)}">+</button>
+    </div>
+  `;
+}
+  
   // ✅ Card com FOTO real (img) + Stepper com foto do lado do Adicionar
   function cardHtml(p){
     const img = getImg(p);
