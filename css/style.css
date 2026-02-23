@@ -486,10 +486,10 @@ p{ margin:6px 0 0; }
 /* botão da foto vira “badge” no canto do card */
 .product .lp-step-photo{
   position: absolute;
-  right: 12px;
-  top: 50%;
+  right: 20px;
+  top: 35%;   /* 👈 sobe a foto */
   transform: translateY(-50%);
-
+}
   width: 64px;
   height: 64px;
   border-radius: 16px;
