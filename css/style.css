@@ -1231,3 +1231,47 @@ button,
   gap:12px;
   padding-right:6px;
 }
+/* ===== Foto ao lado do "Adicionar" — versão premium (sem cortar) ===== */
+
+/* garante que o stepper tenha altura certa */
+.lp-step{
+  align-items:center;
+  gap:10px;
+}
+
+/* botão do meio vira uma “pílula” que comporta a foto */
+.lp-step-mid{
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:12px;
+  min-height:56px;     /* altura suficiente */
+  padding:8px 10px;    /* espaço interno */
+  overflow:hidden;     /* não deixa a imagem escapar */
+}
+
+/* deixa texto e quantidade sempre visíveis */
+.lp-step-text,
+.lp-step-qty{
+  display:inline-flex;
+  align-items:center;
+  line-height:1;
+}
+
+/* FOTO: grande mas controlada */
+.lp-step-thumb{
+  width:52px;          /* tamanho ideal */
+  height:52px;
+  border-radius:14px;
+  object-fit:cover;
+  flex:0 0 auto;
+
+  border:1px solid rgba(0,0,0,.12);
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+}
+
+/* opcional: em telas muito pequenas, reduz um pouco */
+@media (max-width: 420px){
+  .lp-step-mid{ min-height:52px; padding:7px 9px; }
+  .lp-step-thumb{ width:48px; height:48px; border-radius:13px; }
+}
