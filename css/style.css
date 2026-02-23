@@ -1196,3 +1196,20 @@ button,
 }
 /* opcional: esconder a foto antiga do card se ela estiver duplicada */
 .prod-img{ display:none; }
+/* ✅ Thumb ao lado do "Adicionar" (mais visível) */
+.lp-step-mid{
+  display:flex;
+  align-items:center;
+  gap:10px;
+}
+
+/* a thumb fica no fim, sem empurrar texto */
+.lp-step-thumb{
+  width:52px;          /* MAIS VISÍVEL */
+  height:52px;
+  border-radius:14px;
+  object-fit:cover;
+  flex:0 0 auto;
+  border:1px solid rgba(0,0,0,.12);
+  box-shadow: 0 8px 18px rgba(0,0,0,.12);
+}
