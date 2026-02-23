@@ -1187,15 +1187,12 @@ button,
 /* garante que o texto não “empurre” a foto pra baixo */
 #listMarmitas > * > :first-child{ flex:1; min-width:0; }
 
-/* 2) FOTO: fica à direita fora dos botões, tamanho fixo e alinhada */
-#listMarmitas img{
+/* aplica somente para imagens grandes do card (se existirem) */
+#listMarmitas img:not(.lp-step-thumb){
   width:92px;
   height:92px;
   object-fit:cover;
   border-radius:16px;
-  flex: 0 0 92px;
-  align-self:center;
-  margin:0 !important;
 }
 
 /* 3) Área dos botões (qualquer bloco de ação/quantidade dentro do card) */
