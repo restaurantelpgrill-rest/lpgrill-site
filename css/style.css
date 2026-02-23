@@ -1313,3 +1313,98 @@ button,
 
 /* remove a foto antiga do card (se ainda não fez) */
 .lp-media{ display:none; }
+/* ==========================================================
+   FIX GLOBAL — FOTO MAIOR À DIREITA + STEPPER IGUAL MARMITAS
+   (coloque no FINAL do style.css)
+   ========================================================== */
+
+/* 1) Cards de produto: mantém texto/ações à esquerda e FOTO à direita (fora dos botões) */
+.product{
+  align-items: flex-start;            /* garante topo alinhado */
+}
+
+/* Garante que o conteúdo (texto + botões) ocupe a esquerda */
+.product .pbody{
+  flex: 1;
+  min-width: 0;
+}
+
+/* 2) FOTO DO PRODUTO: maior, bem aparente, sempre à direita */
+.product .pimg{
+  width: 110px !important;
+  height: 110px !important;
+  flex: 0 0 110px !important;
+  margin-left: 12px !important;       /* distancia dos botões/texto */
+  align-self: center !important;      /* centraliza verticalmente no card */
+  object-fit: cover !important;
+  border-radius: 18px !important;
+
+  border: 1px solid rgba(17,24,39,.12) !important;
+  box-shadow: 0 14px 28px rgba(17,24,39,.14) !important;
+  background: #fff !important;
+}
+
+/* Mobile: foto ainda grande, mas não estoura layout */
+@media (max-width: 520px){
+  .product .pimg{
+    width: 96px !important;
+    height: 96px !important;
+    flex: 0 0 96px !important;
+    margin-left: 10px !important;
+    border-radius: 16px !important;
+  }
+}
+
+/* 3) Área do stepper (−  Adicionar X  +) fica sempre organizada e NÃO encosta na foto */
+.product .qty{
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+  margin-top: 10px;
+  max-width: 100%;
+}
+
+/* 4) STEPPER: mantém exatamente o estilo que você já tem (Marmitas)
+      só garantimos tamanhos consistentes e sem conflito com outras regras */
+.product .qty button{
+  height: 38px !important;
+  border-radius: 12px !important;
+  border: 1px solid rgba(17,24,39,.14) !important;
+  background: #fff !important;
+  cursor: pointer;
+  font-weight: 1000;
+}
+
+/* - e + quadradinhos */
+.product .qty button:first-child,
+.product .qty button:last-child{
+  width: 38px !important;
+  padding: 0 !important;
+  font-size: 18px !important;
+  display: grid;
+  place-items: center;
+  line-height: 1;
+}
+
+/* Botão do meio (Adicionar X) */
+.product .qty button:nth-child(2){
+  min-width: 120px !important;
+  padding: 0 12px !important;
+  font-size: 13px !important;
+  font-weight: 1000 !important;
+  background: linear-gradient(180deg, rgba(211,47,47,.10), rgba(127,29,29,.06)) !important;
+  border-color: rgba(127,29,29,.18) !important;
+}
+
+/* 5) IMPORTANTE: desliga os “hacks” que estavam puxando a foto pra dentro dos botões
+      sem apagar nada, só anulando no fim */
+.lp-step-mid,
+.lp-step-thumb,
+.lp-step-photo{
+  all: unset;
+}
+
+/* Evita que regras genéricas do #listMarmitas img mexam em outras imagens */
+#listMarmitas img{
+  margin: initial !important;
+}
