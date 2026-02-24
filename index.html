@@ -296,100 +296,61 @@
       </section>
 
       <!-- STEP: PIX -->
-      <section class="ck-step" data-step="pix" hidden>
-        <div class="ck-card">
-          <div class="ck-summary" style="display:grid; gap:6px; margin-bottom:10px;">
-            <div class="row"><span>Subtotal</span> <strong id="ckTotalPix">R$ 0,00</strong></div>
-            <div class="row"><span>Taxa</span> <strong id="ckFeePix">R$ 0,00</strong></div>
-            <div class="row total"><span>Total</span> <strong id="ckPixTotal">R$ 0,00</strong></div>
-          </div>
-
-          <div class="ck-qrwrap">
-        <div id="ckQr" class="ck-qr"></div>
-           </div>
-
-          <label class="ck-field">
-            <span>Código PIX (copia e cola)</span>
-            <textarea id="ckPixCode" rows="4" readonly></textarea>
-          </label>
-
-          <button id="ckCopyPix" class="ck-btn full" type="button">Copiar código PIX</button>
-
-          <div class="ck-note muted" style="margin-top:10px; font-size:12px;">
-            Depois de pagar, toque em “Já paguei” e envie o comprovante no WhatsApp.
-          </div>
-
-          <button id="ckPaidPix" class="ck-btn full ghost" type="button">Já paguei (enviar comprovante)</button>
-        </div>
-
-        <div class="ck-actions">
-          <button id="ckBackFromPix" class="ck-btn ghost" type="button" style="width:100%;">Voltar</button>
-        </div>
-      </section>
+<section class="ck-step" data-step="pix" hidden>
+  <div class="ck-card">
+    <div class="ck-summary" style="display:grid; gap:6px; margin-bottom:10px;">
+      <div class="row"><span>Subtotal</span> <strong id="ckTotalPix">R$ 0,00</strong></div>
+      <div class="row"><span>Taxa</span> <strong id="ckFeePix">R$ 0,00</strong></div>
+      <div class="row total"><span>Total</span> <strong id="ckPixTotal">R$ 0,00</strong></div>
     </div>
+
+    <div class="ck-qrwrap">
+      <div id="ckQr" class="ck-qr"></div>
+    </div>
+
+    <label class="ck-field">
+      <span>Código PIX (copia e cola)</span>
+      <textarea id="ckPixCode" rows="4" readonly></textarea>
+    </label>
+
+    <button id="ckCopyPix" class="ck-btn full" type="button">Copiar código PIX</button>
+
+    <div class="ck-note muted" style="margin-top:10px; font-size:12px;">
+      Depois de pagar, toque em “Já paguei” e envie o comprovante no WhatsApp.
+    </div>
+
+    <button id="ckPaidPix" class="ck-btn full ghost" type="button">Já paguei (enviar comprovante)</button>
   </div>
 
-  <!-- Admin gear -->
-  <script>
-    (() => {
-      const gear = document.getElementById("adminGear");
-      if(!gear) return;
+  <div class="ck-actions">
+    <button id="ckBackFromPix" class="ck-btn ghost" type="button" style="width:100%;">Voltar</button>
+  </div>
+</section>
+</div>
+</div>
 
-      gear.addEventListener("click", (e) => {
-        e.preventDefault();
-        const ok = localStorage.getItem("LPGRILL_ADMIN_SECRET_OK_V1") === "1";
-        if(ok){ window.location.href = "admin.html"; return; }
-        window.location.href = "admin.html?k=22550126";
-      });
-    })();
+<!-- Admin gear (1x só, sem duplicar) -->
+<script>
+(() => {
+  const gear = document.getElementById("adminGear");
+  if (!gear) return;
+
+  gear.addEventListener("click", (e) => {
+    e.preventDefault();
+    const ok = localStorage.getItem("LPGRILL_ADMIN_SECRET_OK_V1") === "1";
+    window.location.href = ok ? "admin.html" : "admin.html?k=22550126";
+  });
+})();
+</script>
+
 <!-- Scripts (ORDEM CERTA) -->
 <script src="js/data.js"></script>
 <script src="js/render.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/app.js"></script>
 
-<!-- Badge (compatível: #cartBadge e #cartCount) -->
-<script>
-(() => {
-  function getCartCount(){
-    try{
-      const cart = window.Cart;
-      if(!cart) return 0;
-
-      if(typeof cart.count === "function") return Number(cart.count() || 0);
-
-      const items =
-        (typeof cart.items === "function" ? cart.items() : cart.items) ||
-        cart.state?.items ||
-        [];
-
-      return Array.isArray(items) ? items.length : 0;
-    }catch{
-      return 0;
-    }
-  }
-
-  function syncBadges(){
-    const c = getCartCount();
-
-    const b1 = document.getElementById("cartBadge");
-    const b2 = document.getElementById("cartCount");
-
-    [b1, b2].forEach(b => {
-      if(!b) return;
-      b.hidden = c <= 0;
-      b.textContent = String(c);
-    });
-  }
-
-  document.addEventListener("lp:cart-change", syncBadges);
-
-  // sincroniza quando a página abre
-  syncBadges();
-  // e de novo depois que os scripts terminaram de carregar
-  setTimeout(syncBadges, 0);
-})();
-</script>
-
 <!-- Checkout (overlay) -->
 <script src="js/checkout.js"></script>
+
+</body>
+</html>
