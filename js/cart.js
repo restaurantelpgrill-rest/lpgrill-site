@@ -223,4 +223,42 @@
     getMode, setMode,
     renderAll
   };
+  // ===== Badge (compat: cartBadge e cartCount) =====
+function lpUpdateBadges(count){
+  const n = Number(count || 0);
+
+  // pega qualquer badge existente (novo e antigo)
+  const b1 = document.getElementById("cartBadge");
+  const b2 = document.getElementById("cartCount");
+
+  [b1, b2].forEach(b=>{
+    if(!b) return;
+    b.hidden = n <= 0;
+    b.textContent = String(n);
+  });
+}
+
+// chama sempre que o carrinho mudar
+function lpEmitCartChange(){
+  document.dispatchEvent(new CustomEvent("lp:cart-change"));
+}
+
+// quando qualquer página abrir, tenta sincronizar
+document.addEventListener("lp:cart-change", () => {
+  try{
+    const c = window.Cart;
+    if(!c) return;
+
+    // tenta pegar contagem por métodos diferentes
+    let n = 0;
+    if (typeof c.count === "function") n = c.count() || 0;
+    else if (typeof c.items === "function") n = (c.items() || []).length;
+    else if (c.state && Array.isArray(c.state.items)) n = c.state.items.length;
+
+    lpUpdateBadges(n);
+  }catch(e){}
+});
+
+// dispara uma vez ao carregar
+setTimeout(() => lpEmitCartChange(), 0);
 })();
