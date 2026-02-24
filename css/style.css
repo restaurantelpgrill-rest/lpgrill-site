@@ -1566,3 +1566,18 @@ button,
   color:#555;
   margin-top:8px;
 }
+.ck-qr{
+  width:240px;
+  height:240px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
+
+.ck-qr img,
+.ck-qr canvas{
+  width:100%;
+  height:100%;
+  object-fit:contain;
+  display:block;
+}
