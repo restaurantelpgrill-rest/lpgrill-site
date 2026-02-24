@@ -379,14 +379,6 @@
         inPhone.value = d.slice(0, 11);
       });
     }
-
-    const pixBox = document.getElementById("pixbox");
-
-document.querySelectorAll('input[name="pagamento"]').forEach(opt => {
-  opt.addEventListener("change", () => {
-    pixBox.hidden = opt.value !== "pix";
-  });
-});
     
     // ===== Escolha pagamento: agora fica bonito + toggle =====
     payButtons.forEach(btn => {
