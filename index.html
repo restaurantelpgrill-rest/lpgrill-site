@@ -342,49 +342,54 @@
         window.location.href = "admin.html?k=22550126";
       });
     })();
-  </script>
-
-  <!-- Scripts (ORDEM CERTA) -->
-  <script src="js/data.js"></script>
-  <script src="js/render.js"></script>
-  <script src="js/cart.js"></script>
-  <script src="js/app.js"></script>
-
-  <!-- QRCode + checkout.js -->
-  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-  <script src="js/checkout.js"></script>
-
-  <!-- Badge -->
-  <script>
-    (() => {
-      const badge = document.getElementById("cartBadge");
-
-      function syncBadge(){
-        try{
-          const cart = window.Cart;
-          if(!cart) return;
-          let c = 0;
-          if(typeof cart.count === "function") c = cart.count() || 0;
-          else{
-            const items = (typeof cart.items === "function" ? cart.items() : cart.items) || cart.state?.items;
-            if(Array.isArray(items)) c = items.length;
-          }
-          if(badge){
-            badge.hidden = c <= 0;
-            badge.textContent = String(c);
-          }
-        }catch{}
-      }
-
-      document.addEventListener("lp:cart-change", syncBadge);
-      syncBadge();
-    })();
+<!-- Scripts (ORDEM CERTA) -->
 <script src="js/data.js"></script>
 <script src="js/render.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/app.js"></script>
 
+<!-- Badge (compatível: #cartBadge e #cartCount) -->
+<script>
+(() => {
+  function getCartCount(){
+    try{
+      const cart = window.Cart;
+      if(!cart) return 0;
+
+      if(typeof cart.count === "function") return Number(cart.count() || 0);
+
+      const items =
+        (typeof cart.items === "function" ? cart.items() : cart.items) ||
+        cart.state?.items ||
+        [];
+
+      return Array.isArray(items) ? items.length : 0;
+    }catch{
+      return 0;
+    }
+  }
+
+  function syncBadges(){
+    const c = getCartCount();
+
+    const b1 = document.getElementById("cartBadge");
+    const b2 = document.getElementById("cartCount");
+
+    [b1, b2].forEach(b => {
+      if(!b) return;
+      b.hidden = c <= 0;
+      b.textContent = String(c);
+    });
+  }
+
+  document.addEventListener("lp:cart-change", syncBadges);
+
+  // sincroniza quando a página abre
+  syncBadges();
+  // e de novo depois que os scripts terminaram de carregar
+  setTimeout(syncBadges, 0);
+})();
+</script>
+
 <!-- Checkout (overlay) -->
 <script src="js/checkout.js"></script>
-</body>
-</html>
