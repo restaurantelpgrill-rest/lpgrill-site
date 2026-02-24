@@ -565,49 +565,58 @@ btnGps?.addEventListener("click", async () => {
     });
 
     // Copiar PIX
-    btnCopyPix?.addEventListener("click", async () => {
-      const val = (elPixCode?.value || "").trim();
-      if (!val) return;
+btnCopyPix?.addEventListener("click", async () => {
+  const val = (elPixCode?.value || "").trim();
+  if (!val) return;
 
-      setBusy(btnCopyPix, true, "Copiando...");
-      try {
-        await navigator.clipboard.writeText(val);
-        btnCopyPix.textContent = "Copiado ✅";
-        setTimeout(() => {
-          btnCopyPix.textContent = btnCopyPix.dataset._label || "Copiar código PIX";
-          btnCopyPix.disabled = false;
-        }, 1200);
-      } catch {
-        try {
-          elPixCode?.focus?.();
-          elPixCode?.select?.();
-          document.execCommand("copy");
-          btnCopyPix.textContent = "Copiado ✅";
-          setTimeout(() => {
-            btnCopyPix.textContent = btnCopyPix.dataset._label || "Copiar código PIX";
-            btnCopyPix.disabled = false;
-          }, 1200);
-        } catch {
-          alert("Não consegui copiar automaticamente. Selecione o código e copie manualmente.");
-          btnCopyPix.disabled = false;
-          btnCopyPix.textContent = btnCopyPix.dataset._label || "Copiar código PIX";
-        }
-      }
-    });
-
-    // Já paguei -> WhatsApp comprovante
-    $("#ckPaidPix", overlay)?.addEventListener("click", () => {
-      const name = (inName?.value || "").trim();
-      const phone = onlyDigits(inPhone?.value || "");
-
-      const msg =
-        `✅ *PIX PAGO* — vou enviar o comprovante agora.\n` +
-        `Por favor, libere meu pedido assim que confirmar.\n\n` +
-        `Nome: ${name}\nTelefone: ${phone}`;
-
-      openWhatsApp(msg);
-    });
+  setBusy(btnCopyPix, true, "Copiando...");
+  try {
+    await navigator.clipboard.writeText(val);
+    btnCopyPix.textContent = "Copiado ✅";
+    setTimeout(() => {
+      btnCopyPix.textContent = btnCopyPix.dataset._label || "Copiar código PIX";
+      btnCopyPix.disabled = false;
+    }, 1200);
+  } catch {
+    try {
+      elPixCode?.focus?.();
+      elPixCode?.select?.();
+      document.execCommand("copy");
+      btnCopyPix.textContent = "Copiado ✅";
+      setTimeout(() => {
+        btnCopyPix.textContent = btnCopyPix.dataset._label || "Copiar código PIX";
+        btnCopyPix.disabled = false;
+      }, 1200);
+    } catch {
+      alert("Não consegui copiar automaticamente. Selecione o código e copie manualmente.");
+      btnCopyPix.disabled = false;
+      btnCopyPix.textContent = btnCopyPix.dataset._label || "Copiar código PIX";
+    }
   }
+});
+// Já paguei -> WhatsApp comprovante
+$("#ckPaidPix", overlay)?.addEventListener("click", () => {
+  const name = (inName?.value || "").trim();
+  const phone = onlyDigits(inPhone?.value || "");
 
-  document.addEventListener("DOMContentLoaded", init);
+  const msg =
+    `✅ *PIX PAGO* — vou enviar o comprovante agora.\n` +
+    `Por favor, libere meu pedido assim que confirmar.\n\n` +
+    `Nome: ${name}\nTelefone: ${phone}`;
+
+  openWhatsApp(msg);
+});
+
+} // <-- fecha init()
+
+// boot robusto (funciona mesmo se o script carregar depois do DOM)
+function boot(){
+  try { init(); } catch(e){ console.error("checkout init error:", e); }
+}
+
+if (document.readyState === "loading") {
+  document.addEventListener("DOMContentLoaded", boot);
+} else {
+  boot();
+}
 })();
