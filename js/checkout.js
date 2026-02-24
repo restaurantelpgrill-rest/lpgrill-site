@@ -514,21 +514,36 @@ btnGps?.addEventListener("click", async () => {
 
         if (elPixCode) elPixCode.value = code;
 
-        if (elQr) {
-          elQr.innerHTML = "";
-          if (typeof QRCode === "undefined") {
-            elQr.textContent = "QR Code não carregou.";
-          } else {
-            const canvas = document.createElement("canvas");
-            canvas.width = 220; canvas.height = 220;
-            elQr.appendChild(canvas);
-            QRCode.toCanvas(canvas, code, { margin: 1, scale: 6 }, (err) => {
-              if (err) elQr.textContent = "Erro ao gerar QR.";
-            });
-          }
-        }
+      if (elQr) {
+  elQr.innerHTML = "";
+
+  if (typeof QRCode === "undefined") {
+    elQr.textContent = "QR Code não carregou.";
+  } else {
+    QRCode.toDataURL(code, {
+      width: 240,
+      margin: 1,
+      color: {
+        dark: "#000000",
+        light: "#ffffff"
+      }
+    }, function (err, url) {
+      if (err) {
+        elQr.textContent = "Erro ao gerar QR.";
         return;
       }
+
+      const img = document.createElement("img");
+      img.src = url;
+      img.alt = "QR Code PIX";
+      img.style.width = "100%";
+      img.style.height = "100%";
+      img.style.display = "block";
+
+      elQr.appendChild(img);
+    });
+  }
+}
 
       // Crédito / Débito -> WhatsApp
       const label = (payMethod === "credit") ? "Crédito" : "Débito";
