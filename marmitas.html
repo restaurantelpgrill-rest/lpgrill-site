@@ -214,50 +214,22 @@
       </section>
     </div>
   </div>
-
-  !-- ✅ Scripts (ORDEM CERTA do seu projeto) -->
+<!-- Scripts (ORDEM CERTA) -->
 <script src="js/data.js"></script>
 <script src="js/render.js"></script>
 <script src="js/cart.js"></script>
 <script src="js/app.js"></script>
 
-<!-- QRCode + checkout.js -->
+<!-- QRCode (só precisa se checkout gera QR) -->
 <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<script src="js/checkout.js"></script>
-
-<script>
-  window.renderCategory("marmitas","listMarmitas");
-</script>
-
-  <!-- ✅ Badge padrão -->
-  <script>
-    (() => {
-      const badge = document.getElementById("cartBadge");
-      function syncBadge(){
-        try{
-          const cart = window.Cart;
-          if(!cart) return;
-          let c = 0;
-          if(typeof cart.count === "function") c = cart.count() || 0;
-          else{
-            const items = (typeof cart.items === "function" ? cart.items() : cart.items) || cart.state?.items;
-            if(Array.isArray(items)) c = items.length;
-          }
-          if(badge){
-            badge.hidden = c <= 0;
-            badge.textContent = String(c);
-          }
-        }catch{}
-      }
-      document.addEventListener("lp:cart-change", syncBadge);
-      syncBadge();
-    })();
-<script src="js/data.js"></script>
-<script src="js/render.js"></script>
-<script src="js/cart.js"></script>
-<script src="js/app.js"></script>
 
 <!-- Checkout (overlay) -->
 <script src="js/checkout.js"></script>
+
+<!-- Render da categoria (depois que render.js carregou) -->
+<script>
+  window.renderCategory("marmitas", "listMarmitas");
+</script>
+
 </body>
 </html>
