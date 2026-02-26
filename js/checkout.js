@@ -605,3 +605,62 @@ if (document.readyState === "loading") {
   boot();
 }
 })();
+// ===============================
+// QR PIX (qrcodejs - js/qrcode.min.js)
+// ===============================
+function lpGetPixCode(){
+  // 1) tenta pegar do textarea/input do PIX (ajuste o id se for outro)
+  const el = document.getElementById("pixCode") || document.getElementById("pixCopiaCola") || document.getElementById("pix");
+  const v1 = el?.value?.trim();
+  if (v1) return v1;
+
+  // 2) tenta do localStorage (ajuste a key se você usa outra)
+  const v2 = (localStorage.getItem("LPGRILL_PIX_CODE_V1") || "").trim();
+  if (v2) return v2;
+
+  return "";
+}
+
+function lpRenderQrPix(code){
+  const elQr =
+    document.querySelector(".ck-qrbox") ||
+    document.getElementById("ckQrBox") ||
+    document.getElementById("pixQrBox");
+
+  if(!elQr){
+    console.warn("[QR] Não achei container do QR (.ck-qrbox/#ckQrBox).");
+    return;
+  }
+
+  const pix = String(code || "").trim();
+  elQr.innerHTML = "";
+
+  if(!pix){
+    elQr.textContent = "Código PIX vazio.";
+    return;
+  }
+
+  if(!window.QRCode){
+    elQr.textContent = "Biblioteca de QR não carregou.";
+    return;
+  }
+
+  // qrcodejs: gera dentro do container
+  new QRCode(elQr, {
+    text: pix,
+    width: 240,
+    height: 240,
+    correctLevel: QRCode.CorrectLevel.M
+  });
+}
+
+// Quando clicar no botão Finalizar (ctaCheckout), gere o QR
+document.addEventListener("click", (e)=>{
+  const btn = e.target.closest("#ctaCheckout,[data-open-checkout]");
+  if(!btn) return;
+
+  // dá um pequeno delay pra garantir que o overlay já abriu e o container existe
+  setTimeout(() => {
+    lpRenderQrPix(lpGetPixCode());
+  }, 50);
+});
