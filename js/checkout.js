@@ -1,5 +1,7 @@
-/* js/checkout.js — LP GRILL Checkout Overlay (sem mexer no render/produtos) */
+/* js/checkout.js — LP GRILL Checkout Overlay (FIXED / PIX + WhatsApp + GPS) */
 (() => {
+  "use strict";
+
   // evita inicializar duas vezes
   if (window.__LPGRILL_CHECKOUT_INIT__) return;
   window.__LPGRILL_CHECKOUT_INIT__ = true;
@@ -7,23 +9,27 @@
   const CONFIG = {
     whatsapp: "5531998064556",
 
+    // PIX (chave aleatória)
     pixKey: "e02484b0-c924-4d38-9af9-79af9ad97c3e",
     merchantName: "LP GRILL",
     merchantCity: "BELO HORIZONTE",
     txid: "LPGRILL01",
 
+    // entrega
     baseLat: -19.8850878,
     baseLon: -43.9877612,
     feeUpTo5km: 5,
     fee5to10km: 8,
     maxKm: 10,
 
-    storageKey: "lpgrill.checkout.v1"
+    // persistência
+    storageKey: "lpgrill.checkout.v1",
+    feeKey: "LPGRILL_FEE_V1"
   };
 
   const $ = (s, r = document) => r.querySelector(s);
-  const $$ = (s, r = document) => Array.from(r.querySelectorAll(s));
-  const money = (v) => Number(v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
+  const money = (v) =>
+    Number(v || 0).toLocaleString("pt-BR", { style: "currency", currency: "BRL" });
   const onlyDigits = (s) => String(s || "").replace(/\D+/g, "");
   const clamp = (n, a, b) => Math.max(a, Math.min(b, n));
 
@@ -80,7 +86,7 @@
     });
   }
 
-  // CRC16 / EMV
+  // ===== CRC16 / EMV (PIX copia e cola) =====
   function crc16(payload) {
     let crc = 0xFFFF;
     for (let i = 0; i < payload.length; i++) {
@@ -104,7 +110,7 @@
       emv("26", mai) +
       emv("52", "0000") +
       emv("53", "986") +
-      emv("54", amount.toFixed(2)) +
+      emv("54", Number(amount || 0).toFixed(2)) +
       emv("58", "BR") +
       emv("59", String(name || "").slice(0, 25)) +
       emv("60", String(city || "").slice(0, 15)) +
@@ -118,37 +124,81 @@
     window.open(`https://wa.me/${CONFIG.whatsapp}?text=${encodeURIComponent(msg)}`, "_blank");
   }
 
-  // tenta pegar linhas de itens do carrinho SEM depender do formato
+  function cartIsEmpty(cart) {
+    try {
+      if (typeof cart.count === "function") return cart.count() <= 0;
+      if (typeof cart.totalItems === "function") return cart.totalItems() <= 0;
+      const items =
+        (typeof cart.items === "function" && cart.items()) ||
+        cart.items || cart.state?.items || cart.data?.items || cart.cart?.items || [];
+      return !Array.isArray(items) || items.length === 0;
+    } catch {
+      return false;
+    }
+  }
+
+  // subtotal: tenta usar o que existir, senão soma itens
+  function subtotal(cart) {
+    try {
+      if (typeof cart.subtotal === "function") return Number(cart.subtotal() || 0);
+      if (typeof cart.total === "function") return Number(cart.total() || 0); // alguns carts chamam de total sem taxa
+      if (typeof cart.getSubtotal === "function") return Number(cart.getSubtotal() || 0);
+
+      const items =
+        (typeof cart.items === "function" && cart.items()) ||
+        cart.items || cart.state?.items || cart.data?.items || cart.cart?.items || [];
+      if (!Array.isArray(items)) return 0;
+
+      return items.reduce((acc, it) => {
+        const qty = Number(it.qty ?? it.qtd ?? it.quantity ?? 1) || 1;
+        const price = Number(it.price ?? it.valor ?? it.unitPrice ?? 0) || 0;
+        const lineTotal = Number(it.total ?? it.lineTotal ?? 0) || (qty * price);
+        return acc + (Number(lineTotal) || 0);
+      }, 0);
+    } catch {
+      return 0;
+    }
+  }
+
+  // linhas itens
   function getCartLines(cart) {
     try {
       if (typeof cart.toWhatsApp === "function") {
         const s = cart.toWhatsApp();
         if (s && typeof s === "string") return s.trim();
       }
+
       const items =
         (typeof cart.items === "function" && cart.items()) ||
-        cart.items ||
-        cart.state?.items ||
-        cart.data?.items ||
-        cart.cart?.items ||
-        null;
+        cart.items || cart.state?.items || cart.data?.items || cart.cart?.items || null;
 
       if (Array.isArray(items) && items.length) {
-        const lines = items.map((it) => {
+        return items.map((it) => {
           const qty = Number(it.qty ?? it.qtd ?? it.quantity ?? 1) || 1;
           const name = String(it.name ?? it.title ?? it.produto ?? "Item").trim();
           const price = Number(it.price ?? it.valor ?? it.unitPrice ?? 0) || 0;
-          const lineTotal = (Number(it.total ?? it.lineTotal ?? 0) || 0) || (qty * price);
-          return `• ${qty}x ${name}${lineTotal ? ` — ${money(lineTotal)}` : ""}`;
-        });
-        return lines.join("\n");
+          const lineTotal = Number(it.total ?? it.lineTotal ?? 0) || (qty * price);
+          return `• ${qty}x ${name}${lineTotal ? ` — ${money(lineTotal)}` : (price ? ` — ${money(qty * price)}` : "")}`;
+        }).join("\n");
       }
     } catch { /* ignore */ }
     return "";
   }
 
-  function  {
-    const overlay = $("#checkoutOverlay"); // deve ser o backdrop (.ck-overlay)
+  function setBusy(btn, on, label = "Aguarde...") {
+    if (!btn) return;
+    if (on) {
+      btn.dataset._label = btn.textContent;
+      btn.textContent = label;
+      btn.disabled = true;
+    } else {
+      btn.textContent = btn.dataset._label || btn.textContent;
+      btn.disabled = false;
+    }
+  }
+
+  function init() {
+    const overlay = $("#checkoutOverlay");
     if (!overlay) return;
 
     const cart = getCart();
@@ -157,9 +207,11 @@
       return;
     }
 
-    // ====== trava/destrava scroll do fundo (FIX corte/bug de toque) ======
+    // ===== scroll lock =====
     let prevOverflowHtml = "";
     let prevOverflowBody = "";
+    let lastFocusEl = null;
+
     function lockScroll() {
       prevOverflowHtml = document.documentElement.style.overflow || "";
       prevOverflowBody = document.body.style.overflow || "";
@@ -171,6 +223,7 @@
       document.body.style.overflow = prevOverflowBody;
     }
 
+    // steps
     const steps = {
       pay: overlay.querySelector('[data-step="pay"]'),
       addr: overlay.querySelector('[data-step="addr"]'),
@@ -182,7 +235,11 @@
     const elFeePix   = $("#ckFeePix", overlay);
     const elPixTotal = $("#ckPixTotal", overlay);
     const elPixCode  = $("#ckPixCode", overlay);
-    const elQr       = $("#ckQr", overlay);
+
+    const elQrBox =
+      $("#ckQrBox", overlay) ||
+      overlay.querySelector(".ck-qrbox") ||
+      $("#ckQr", overlay); // fallback
 
     // taxa UI
     const elKmHint   = $("#ckKmHint", overlay);
@@ -200,39 +257,142 @@
     const inBairro = $("#ckBairro", overlay);
 
     // botões
-    const btnGps = $("#ckGetLocation", overlay);
+    const btnGps     = $("#ckGetLocation", overlay);
     const btnConfirm = $("#ckConfirmOrder", overlay);
     const btnCopyPix = $("#ckCopyPix", overlay);
+    const btnPaidPix = $("#ckPaidPix", overlay);
 
-  // ===== PIX: pegar código e renderizar QR (qrcodejs) =====
+    // pagamentos
+    const payButtons = Array.from(overlay.querySelectorAll("[data-pay]"));
 
-function renderPixQr(code){
-  const elQr = document.getElementById("ckQrBox") || overlay.querySelector("#ckQrBox") || overlay.querySelector(".ck-qrbox");
-  if (!elQr) { console.warn("[QR] Não achei #ckQrBox/.ck-qrbox"); return; }
+    let payMethod = ""; // "pix" | "credit" | "debit"
+    let lastKm = null;
+    let lastFee = 0;
 
-  elQr.innerHTML = "";
-  const pix = String(code || "").trim();
+    function normPay(p) {
+      p = String(p || "").toLowerCase().trim();
+      if (p === "pix") return "pix";
+      if (p === "credit" || p === "credito" || p === "crédito") return "credit";
+      if (p === "debit" || p === "debito" || p === "débito") return "debit";
+      return "";
+    }
 
-  if (!pix){
-    elQr.textContent = "Código PIX vazio.";
-    return;
-  }
+    function isEntregaMode() {
+      // se você tiver algum toggle no seu HTML, implemente aqui.
+      // fallback: assume entrega (pode ajustar depois).
+      const el = $("#ckModeEntrega", overlay);
+      if (el && (el.type === "checkbox")) return !!el.checked;
+      const sel = $("#ckMode", overlay);
+      if (sel && sel.value) return String(sel.value).toLowerCase().includes("entrega");
+      return true;
+    }
 
-  if (!window.QRCode){
-    elQr.textContent = "Biblioteca de QR não carregou.";
-    return;
-  }
+    function persistInputs() {
+      saveSaved({
+        name: (inName?.value || "").trim(),
+        phone: (inPhone?.value || "").trim(),
+        bairro: (inBairro?.value || "").trim(),
+        address: (inAddr?.value || "").trim(),
+        compl: (inCompl?.value || "").trim(),
+        obs: (inObs?.value || "").trim()
+      });
+    }
 
-  new QRCode(elQr, {
-    text: pix,
-    width: 240,
-    height: 240,
-    correctLevel: QRCode.CorrectLevel.M
-  });
-}
+    function hydrateFromStorage() {
+      const s = loadSaved();
+      if (inName && s.name) inName.value = s.name;
+      if (inPhone && s.phone) inPhone.value = onlyDigits(s.phone).slice(0, 11);
+      if (inBairro && s.bairro) inBairro.value = s.bairro;
+      if (inAddr && s.address) inAddr.value = s.address;
+      if (inCompl && s.compl) inCompl.value = s.compl;
+      if (inObs && s.obs) inObs.value = s.obs;
+    }
+
+    function goStep(step) {
+      Object.keys(steps).forEach((k) => {
+        if (!steps[k]) return;
+        steps[k].hidden = (k !== step);
+      });
+    }
+
+    function clearPayActive() {
+      payMethod = "";
+      payButtons.forEach((b) => b.classList.remove("is-active"));
+    }
+    function setPayActive(method) {
+      payMethod = method;
+      payButtons.forEach((b) => {
+        const m = normPay(b.getAttribute("data-pay"));
+        if (m === method) b.classList.add("is-active");
+        else b.classList.remove("is-active");
+      });
+    }
+
+    function renderQr(code) {
+      if (!elQrBox) return;
+
+      const pix = String(code || "").trim();
+      elQrBox.innerHTML = "";
+
+      if (!pix) {
+        elQrBox.textContent = "Código PIX vazio.";
+        return;
+      }
+
+      if (!window.QRCode) {
+        // sem lib, só mostra aviso (copia e cola continua ok)
+        elQrBox.textContent = "QR indisponível (biblioteca não carregou).";
+        return;
+      }
+
+      // qrcodejs
+      try {
+        // eslint-disable-next-line no-new
+        new QRCode(elQrBox, {
+          text: pix,
+          width: 240,
+          height: 240,
+          correctLevel: QRCode.CorrectLevel.M
+        });
+      } catch (e) {
+        console.warn("Falha ao gerar QR:", e);
+        elQrBox.textContent = "Não consegui gerar o QR.";
+      }
+    }
+
+    async function copyPix() {
+      if (!elPixCode) return;
+      const val = String(elPixCode.value || elPixCode.textContent || "").trim();
+      if (!val) return;
+
+      setBusy(btnCopyPix, true, "Copiando...");
+      try {
+        await navigator.clipboard.writeText(val);
+        btnCopyPix.textContent = "Copiado ✅";
+        setTimeout(() => {
+          btnCopyPix.textContent = btnCopyPix.dataset._label || "Copiar código PIX";
+          btnCopyPix.disabled = false;
+        }, 1200);
+      } catch {
+        try {
+          // fallback antigo
+          if (elPixCode.select) elPixCode.select();
+          document.execCommand("copy");
+          btnCopyPix.textContent = "Copiado ✅";
+          setTimeout(() => {
+            btnCopyPix.textContent = btnCopyPix.dataset._label || "Copiar código PIX";
+            btnCopyPix.disabled = false;
+          }, 1200);
+        } catch {
+          alert("Não consegui copiar automaticamente. Selecione o código e copie manualmente.");
+          btnCopyPix.disabled = false;
+          btnCopyPix.textContent = btnCopyPix.dataset._label || "Copiar código PIX";
+        }
+      }
+    }
 
     function openOverlay() {
-      if (cartIsEmpty()) {
+      if (cartIsEmpty(cart)) {
         alert("Seu carrinho está vazio. Adicione um item antes de finalizar.");
         return;
       }
@@ -243,7 +403,7 @@ function renderPixQr(code){
       overlay.setAttribute("aria-hidden", "false");
       overlay.setAttribute("role", "dialog");
 
-      lockScroll(); // ✅ FIX
+      lockScroll();
 
       clearPayActive();
       lastKm = null;
@@ -251,9 +411,11 @@ function renderPixQr(code){
 
       if (elFeeLine) elFeeLine.hidden = true;
       if (elBlocked) elBlocked.hidden = true;
-      if (elKmHint) elKmHint.textContent = isEntregaMode()
-        ? "Toque em “Usar minha localização (GPS)” para calcular a taxa de entrega."
-        : "Modo Retirar: sem taxa de entrega.";
+      if (elKmHint) {
+        elKmHint.textContent = isEntregaMode()
+          ? "Toque em “Usar minha localização (GPS)” para calcular a taxa de entrega."
+          : "Modo Retirar: sem taxa de entrega.";
+      }
 
       hydrateFromStorage();
       goStep("pay");
@@ -262,18 +424,14 @@ function renderPixQr(code){
     function closeOverlay() {
       overlay.classList.remove("is-open");
       overlay.setAttribute("aria-hidden", "true");
-
-      unlockScroll(); // ✅ FIX
-
-      // devolve foco
+      unlockScroll();
       setTimeout(() => lastFocusEl?.focus?.(), 10);
     }
 
-    // ===== fechar: botões + clique fora + ESC =====
+    // ===== fechar =====
     $("#ckClose", overlay)?.addEventListener("click", closeOverlay);
     $("#ckCancel", overlay)?.addEventListener("click", closeOverlay);
 
-    // clique fora fecha (importante: só fecha se clicou no backdrop)
     overlay.addEventListener("click", (e) => {
       if (e.target === overlay) closeOverlay();
     });
@@ -282,151 +440,132 @@ function renderPixQr(code){
       if (e.key === "Escape" && overlay.classList.contains("is-open")) closeOverlay();
     });
 
-    // ===== ABRIR CHECKOUT: mais robusto (link OU botão) =====
-    const openSelectors = [
-      // seus links antigos
-      'a.tile.highlight[href="checkout.html"]',
-      '.drawer-actions a.btn.primary[href="checkout.html"]',
-      '.sticky-cta a.cta.primary[href="checkout.html"]',
-      // variações comuns
-      'a[href$="checkout.html"]',
-      'a[href*="checkout.html"]',
-      // caso seja botão/div no layout
-      '.lp-finalize',
-      '.cta.primary',
-      '#btnFinalizar',
-      '#finalizar',
-      '[data-open-checkout]'
-    ];
+    // ===== ABRIR CHECKOUT: delegação (pega páginas novas sem registrar tudo) =====
+    document.addEventListener("click", (e) => {
+      const t = e.target;
+      if (!(t instanceof Element)) return;
 
-    document.querySelectorAll(openSelectors.join(",")).forEach(el => {
-      el.addEventListener("click", (e) => { e.preventDefault(); openOverlay(); });
+      const a = t.closest('a[href$="checkout.html"],a[href*="checkout.html"]');
+      const btn = t.closest("#ctaCheckout,[data-open-checkout],.lp-finalize,#btnFinalizar,#finalizar,.cta.primary");
+      if (!a && !btn) return;
+
+      e.preventDefault();
+      openOverlay();
     });
 
     // ===== salva enquanto digita =====
     [inName, inPhone, inBairro, inAddr, inCompl, inObs].forEach((el) => {
       if (!el) return;
-      el.addEventListener("input", () => persistInputs());
-      el.addEventListener("blur", () => persistInputs());
+      el.addEventListener("input", persistInputs);
+      el.addEventListener("blur", persistInputs);
     });
 
-    // telefone: só números (DDD+9)
+    // telefone: só números
     if (inPhone) {
       inPhone.addEventListener("input", () => {
-        const d = onlyDigits(inPhone.value);
-        inPhone.value = d.slice(0, 11);
+        inPhone.value = onlyDigits(inPhone.value).slice(0, 11);
       });
     }
-    
-    // ===== Escolha pagamento: bonito + toggle =====
-payButtons.forEach(btn => {
-  btn.addEventListener("click", () => {
-    const clicked = normPay(btn.getAttribute("data-pay"));
 
-    // ✅ toggle: clicou no mesmo -> desmarca e volta pro pay
-    if (payMethod === clicked) {
-      clearPayActive();
-      goStep("pay");
-      return;
-    }
+    // ===== escolher pagamento =====
+    payButtons.forEach((btn) => {
+      btn.addEventListener("click", () => {
+        const clicked = normPay(btn.getAttribute("data-pay"));
+        if (!clicked) return;
 
-    setPayActive(clicked);
+        // toggle: clicou no mesmo -> desmarca
+        if (payMethod === clicked) {
+          clearPayActive();
+          goStep("pay");
+          return;
+        }
 
-// ✅ PIX -> abre step pix e gera o QR
-if (clicked === "pix") {
-  goStep("pix");
-  setTimeout(() => renderPixQr(getPixCode()), 50);
-  return; // não cai no fluxo de cartão
-}
+        setPayActive(clicked);
 
-    // crédito/débito -> vai pro endereço
-    goStep("addr");
+        if (clicked === "pix") {
+          // vai pro endereço primeiro, igual cartão (pra preencher nome/telefone/endereço)
+          goStep("addr");
+          if (elKmHint) {
+            elKmHint.textContent = isEntregaMode()
+              ? "Para entrega: calcule a taxa pelo GPS."
+              : "Modo Retirar: você pode confirmar o pedido.";
+          }
+          return;
+        }
 
-    if (isEntregaMode()) {
-      if (elKmHint) elKmHint.textContent = "Para entrega: calcule a taxa pelo GPS.";
-    } else {
-      if (elKmHint) elKmHint.textContent = "Modo Retirar: você pode confirmar o pedido.";
-    }
-  });
-});
+        // cartão -> endereço
+        goStep("addr");
+        if (elKmHint) {
+          elKmHint.textContent = isEntregaMode()
+            ? "Para entrega: calcule a taxa pelo GPS."
+            : "Modo Retirar: você pode confirmar o pedido.";
+        }
+      });
+    });
 
     $("#ckBackFromAddr", overlay)?.addEventListener("click", () => goStep("pay"));
     $("#ckBackFromPix", overlay)?.addEventListener("click", () => goStep("addr"));
 
-    
-    
-  // ===== GPS =====
-btnGps?.addEventListener("click", async () => {
+    // ===== GPS =====
+    btnGps?.addEventListener("click", async () => {
+      // modo retirar: zera
+      if (!isEntregaMode()) {
+        lastKm = 0;
+        lastFee = 0;
+        localStorage.setItem(CONFIG.feeKey, "0");
+        document.dispatchEvent(new CustomEvent("lp:cart-change"));
+        if (elKmHint) elKmHint.textContent = "Modo Retirar: sem taxa de entrega.";
+        if (elFeeLine) elFeeLine.hidden = true;
+        if (elBlocked) elBlocked.hidden = true;
+        return;
+      }
 
-  // ✅ MODO RETIRAR: não usa GPS e zera taxa
-  if (!isEntregaMode()) {
-    lastKm = 0;
-    lastFee = 0;
+      if (elKmHint) elKmHint.textContent = "Calculando distância pelo GPS...";
+      if (elFeeLine) elFeeLine.hidden = true;
+      if (elBlocked) elBlocked.hidden = true;
 
-    // salva taxa 0 pro carrinho
-    localStorage.setItem("LPGRILL_FEE_V1", "0");
-    document.dispatchEvent(new CustomEvent("lp:cart-change"));
+      setBusy(btnGps, true, "Calculando...");
+      try {
+        const res = await calcFeeWithGPS();
 
-    if (elKmHint) elKmHint.textContent = "Modo Retirar: sem taxa de entrega.";
-    if (elFeeLine) elFeeLine.hidden = true;
-    if (elBlocked) elBlocked.hidden = true;
-    return;
-  }
+        lastKm = res.km;
+        lastFee = res.fee;
 
-  // ✅ MODO ENTREGA: calcula pelo GPS
-  if (elKmHint) elKmHint.textContent = "Calculando distância pelo GPS...";
-  if (elFeeLine) elFeeLine.hidden = true;
-  if (elBlocked) elBlocked.hidden = true;
-  
-btnGps.addEventListener("click", async () => {
-  if (!isEntregaMode()) {
-    lastKm = 0;
-    lastFee = 0;
+        localStorage.setItem(CONFIG.feeKey, String(lastFee));
+        document.dispatchEvent(new CustomEvent("lp:cart-change"));
 
-    localStorage.setItem("LPGRILL_FEE_V1", "0");
-    document.dispatchEvent(new CustomEvent("lp:cart-change"));
+        if (elKm) elKm.textContent = `${clamp(res.km, 0, 999).toFixed(1)} km`;
+        if (elFee) elFee.textContent = money(res.fee);
+        if (elFeeLine) elFeeLine.hidden = false;
 
-    if (elKmHint) elKmHint.textContent = "Modo Retirar: sem taxa de entrega.";
-    if (elFeeLine) elFeeLine.hidden = true;
-    if (elBlocked) elBlocked.hidden = true;
-    return;
-  }
+        if (elBlocked) elBlocked.hidden = !res.blocked;
+        if (elKmHint) elKmHint.textContent = res.blocked
+          ? "Fora da área de entrega. Escolha Retirar."
+          : "Taxa calculada. Pode confirmar o pedido.";
+      } catch (e) {
+        console.error(e);
+        alert("Não consegui calcular a distância pelo GPS.");
+        if (elKmHint) elKmHint.textContent = "Não consegui calcular. Tente novamente ou use Retirar.";
+      } finally {
+        setBusy(btnGps, false);
+      }
+    });
 
-  if (elKmHint) elKmHint.textContent = "Calculando distância pelo GPS...";
-  if (elFeeLine) elFeeLine.hidden = true;
-  if (elBlocked) elBlocked.hidden = true;
+    // ===== Copiar PIX =====
+    btnCopyPix?.addEventListener("click", copyPix);
 
-  setBusy(btnGps, true, "Calculando...");
-  try {
-    const res = await calcFeeWithGPS();
+    // ===== Já paguei (WhatsApp) =====
+    btnPaidPix?.addEventListener("click", () => {
+      const name = (inName?.value || "").trim();
+      const phone = onlyDigits(inPhone?.value || "");
+      const msg =
+        `✅ *PIX PAGO* — vou enviar o comprovante agora.\n` +
+        `Por favor, libere meu pedido assim que confirmar.\n\n` +
+        `Nome: ${name}\nTelefone: ${phone}`;
+      openWhatsApp(msg);
+    });
 
-    lastKm = res.km;
-    lastFee = res.fee;
-
-    // ✅ salva taxa e força carrinho recalcular
-    localStorage.setItem("LPGRILL_FEE_V1", String(lastFee));
-    document.dispatchEvent(new CustomEvent("lp:cart-change"));
-
-    // ✅ atualiza UI
-    if (elKm) elKm.textContent = `${clamp(res.km, 0, 999).toFixed(1)} km`;
-    if (elFee) elFee.textContent = money(res.fee);
-    if (elFeeLine) elFeeLine.hidden = false;
-
-    if (elBlocked) elBlocked.hidden = !res.blocked;
-    if (elKmHint) elKmHint.textContent = res.blocked
-      ? "Fora da área de entrega. Escolha Retirar."
-      : "Taxa calculada. Pode confirmar o pedido.";
-
-  } catch (e) {
-    console.error(e);
-    alert("Não consegui calcular a distância pelo GPS.");
-    if (elKmHint) elKmHint.textContent = "Não consegui calcular. Tente novamente ou use Retirar.";
-  } finally {
-    setBusy(btnGps, false);
-  }
-});
-   
-    // ===== Confirmar endereço / finalizar =====
+    // ===== Confirmar / Finalizar =====
     btnConfirm?.addEventListener("click", () => {
       if (!payMethod) {
         alert("Escolha uma forma de pagamento (PIX, Crédito ou Débito).");
@@ -459,68 +598,43 @@ btnGps.addEventListener("click", async () => {
         if (lastKm == null) { alert("Toque em “Usar minha localização (GPS)” para calcular a taxa."); return; }
         if (lastKm > CONFIG.maxKm) { alert(`Fora do raio de ${CONFIG.maxKm} km. Entrega indisponível.`); return; }
       } else {
-        lastKm = 0; lastFee = 0;
+        lastKm = 0;
+        lastFee = 0;
+        localStorage.setItem(CONFIG.feeKey, "0");
       }
 
-      const sub = subtotal();
+      const sub = subtotal(cart);
       const total = sub + Number(lastFee || 0);
 
-// PIX -> gera e mostra
-if (payMethod === "pix") {
-  goStep("pix");
+      // ===== PIX =====
+      if (payMethod === "pix") {
+        goStep("pix");
 
-  if (elPixSub) elPixSub.textContent = money(sub);
-  if (elFeePix) elFeePix.textContent = money(lastFee);
-  if (elPixTotal) elPixTotal.textContent = money(total);
+        if (elPixSub) elPixSub.textContent = money(sub);
+        if (elFeePix) elFeePix.textContent = money(lastFee);
+        if (elPixTotal) elPixTotal.textContent = money(total);
 
-  const code = buildPixPayload({
-    key: CONFIG.pixKey,
-    name: CONFIG.merchantName,
-    city: CONFIG.merchantCity,
-    amount: total,
-    txid: CONFIG.txid
-  });
+        const code = buildPixPayload({
+          key: CONFIG.pixKey,
+          name: CONFIG.merchantName,
+          city: CONFIG.merchantCity,
+          amount: total,
+          txid: CONFIG.txid
+        });
 
-  if (elQr) {
-  elQr.innerHTML = "";
+        // coloca código no textarea/input (se for input)
+        if (elPixCode) {
+          if ("value" in elPixCode) elPixCode.value = code;
+          else elPixCode.textContent = code;
+        }
 
+        // gera QR (se lib existir)
+        renderQr(code);
 
-  const elQr = document.getElementById("ckQrBox") || document.querySelector(".ck-qrbox");
-  if (!elQr) return;
+        return; // não cai no fluxo do cartão
+      }
 
-  elQr.innerHTML = "";
-  const pix = String(code || "").trim();
-
-  if (!pix){
-    elQr.textContent = "Código PIX vazio.";
-    return;
-  }
-
-  if (!window.QRCode){
-    elQr.textContent = "Biblioteca de QR não carregou.";
-    return;
-  }
-
-  new QRCode(elQr, {
-    text: pix,
-    width: 240,
-    height: 240,
-    correctLevel: QRCode.CorrectLevel.M
-  });
-}
-  
-function getPixCode(){
-  return (
-    (document.getElementById("pixCode")?.value || "").trim() ||
-    (window.PIX_CODE || "").trim() ||
-    (localStorage.getItem("LPGRILL_PIX_CODE_V1") || "").trim()
-  );
-}
-     
-  return; // ✅ NÃO deixa cair no fluxo Crédito/Débito
-}
-
-      // Crédito / Débito -> WhatsApp
+      // ===== Cartão -> WhatsApp =====
       const label = (payMethod === "credit") ? "Crédito" : "Débito";
       const itemsLines = getCartLines(cart);
 
@@ -538,115 +652,17 @@ function getPixCode(){
 
       openWhatsApp(msg);
     });
-
-  setBusy(btnCopyPix, true, "Copiando...");
-  try {
-    await navigator.clipboard.writeText(val);
-    btnCopyPix.textContent = "Copiado ✅";
-    setTimeout(() => {
-      btnCopyPix.textContent = btnCopyPix.dataset._label || "Copiar código PIX";
-      btnCopyPix.disabled = false;
-    }, 1200);
-  } catch {
-    try {
-      elPixCode?.focus?.();
-      elPixCode?.select?.();
-      document.execCommand("copy");
-      btnCopyPix.textContent = "Copiado ✅";
-      setTimeout(() => {
-        btnCopyPix.textContent = btnCopyPix.dataset._label || "Copiar código PIX";
-        btnCopyPix.disabled = false;
-      }, 1200);
-    } catch {
-      alert("Não consegui copiar automaticamente. Selecione o código e copie manualmente.");
-      btnCopyPix.disabled = false;
-      btnCopyPix.textContent = btnCopyPix.dataset._label || "Copiar código PIX";
-    }
-  }
-});
-// Já paguei -> WhatsApp comprovante
-$("#ckPaidPix", overlay)?.addEventListener("click", () => {
-  const name = (inName?.value || "").trim();
-  const phone = onlyDigits(inPhone?.value || "");
-
-  const msg =
-    `✅ *PIX PAGO* — vou enviar o comprovante agora.\n` +
-    `Por favor, libere meu pedido assim que confirmar.\n\n` +
-    `Nome: ${name}\nTelefone: ${phone}`;
-
-  openWhatsApp(msg);
-});
-
-    } // <-- fecha init()
-
-    // boot robusto (funciona mesmo se o script carregar depois do DOM)
-    function boot(){
-      try { init(); }
-      catch(e){ console.error("checkout init error:", e); }
-    }
-
-    if (document.readyState === "loading") {
-      document.addEventListener("DOMContentLoaded", boot);
-    } else {
-      boot();
-    }
-  })();
-// ===============================
-// QR PIX (qrcodejs - js/qrcode.min.js)
-// ===============================
-function lpGetPixCode(){
-  // 1) tenta pegar do textarea/input do PIX (ajuste o id se for outro)
-  const el = document.getElementById("pixCode") || document.getElementById("pixCopiaCola") || document.getElementById("pix");
-  const v1 = el?.value?.trim();
-  if (v1) return v1;
-
-  // 2) tenta do localStorage (ajuste a key se você usa outra)
-  const v2 = (localStorage.getItem("LPGRILL_PIX_CODE_V1") || "").trim();
-  if (v2) return v2;
-
-  return "";
-}
-
-function lpRenderQrPix(code){
-  const elQr =
-    document.querySelector(".ck-qrbox") ||
-    document.getElementById("ckQrBox") ||
-    document.getElementById("pixQrBox");
-
-  if(!elQr){
-    console.warn("[QR] Não achei container do QR (.ck-qrbox/#ckQrBox).");
-    return;
   }
 
-  const pix = String(code || "").trim();
-  elQr.innerHTML = "";
-
-  if(!pix){
-    elQr.textContent = "Código PIX vazio.";
-    return;
+  // boot robusto
+  function boot() {
+    try { init(); }
+    catch (e) { console.error("checkout init error:", e); }
   }
 
-  if(!window.QRCode){
-    elQr.textContent = "Biblioteca de QR não carregou.";
-    return;
+  if (document.readyState === "loading") {
+    document.addEventListener("DOMContentLoaded", boot);
+  } else {
+    boot();
   }
-
-  // qrcodejs: gera dentro do container
-  new QRCode(elQr, {
-    text: pix,
-    width: 240,
-    height: 240,
-    correctLevel: QRCode.CorrectLevel.M
-  });
-}
-
-// Quando clicar no botão Finalizar (ctaCheckout), gere o QR
-document.addEventListener("click", (e)=>{
-  const btn = e.target.closest("#ctaCheckout,[data-open-checkout]");
-  if(!btn) return;
-
-  // dá um pequeno delay pra garantir que o overlay já abriu e o container existe
-  setTimeout(() => {
-    lpRenderQrPix(lpGetPixCode());
-  }, 50);
-});
+})();
