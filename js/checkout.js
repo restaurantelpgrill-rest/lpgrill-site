@@ -496,53 +496,46 @@ btnGps?.addEventListener("click", async () => {
       const sub = subtotal();
       const total = sub + Number(lastFee || 0);
 
-      // PIX -> gera e mostra
-      if (payMethod === "pix") {
-        goStep("pix");
+// PIX -> gera e mostra
+if (payMethod === "pix") {
+  goStep("pix");
 
-        if (elPixSub) elPixSub.textContent = money(sub);
-        if (elFeePix) elFeePix.textContent = money(lastFee);
-        if (elPixTotal) elPixTotal.textContent = money(total);
+  if (elPixSub) elPixSub.textContent = money(sub);
+  if (elFeePix) elFeePix.textContent = money(lastFee);
+  if (elPixTotal) elPixTotal.textContent = money(total);
 
-        const code = buildPixPayload({
-          key: CONFIG.pixKey,
-          name: CONFIG.merchantName,
-          city: CONFIG.merchantCity,
-          amount: total,
-          txid: CONFIG.txid
-        });
+  const code = buildPixPayload({
+    key: CONFIG.pixKey,
+    name: CONFIG.merchantName,
+    city: CONFIG.merchantCity,
+    amount: total,
+    txid: CONFIG.txid
+  });
 
-        if (elPixCode) elPixCode.value = code;
+  if (elPixCode) elPixCode.value = code;
 
-      if (elQr) {
-  elQr.innerHTML = "";
+  // ✅ QR dinâmico usando a lib "qrcode"
+  if (elQr) {
+    elQr.innerHTML = "";
 
-  if (typeof QRCode === "undefined") {
-    elQr.textContent = "QR Code não carregou.";
-  } else {
-    QRCode.toDataURL(code, {
-      width: 240,
-      margin: 1,
-      color: {
-        dark: "#000000",
-        light: "#ffffff"
-      }
-    }, function (err, url) {
-      if (err) {
-        elQr.textContent = "Erro ao gerar QR.";
-        return;
-      }
-
-      const img = document.createElement("img");
-      img.src = url;
-      img.alt = "QR Code PIX";
-      img.style.width = "100%";
-      img.style.height = "100%";
-      img.style.display = "block";
-
-      elQr.appendChild(img);
-    });
+    const QR = window.QRCode; // 👈 importante
+    if (!QR || typeof QR.toDataURL !== "function") {
+      elQr.textContent = "QR Code não carregou (ordem dos scripts).";
+    } else {
+      QR.toDataURL(code, { width: 240, margin: 1 }, (err, url) => {
+        if (err) { elQr.textContent = "Erro ao gerar QR."; return; }
+        const img = document.createElement("img");
+        img.src = url;
+        img.alt = "QR Code PIX";
+        img.style.width = "100%";
+        img.style.height = "100%";
+        img.style.display = "block";
+        elQr.appendChild(img);
+      });
+    }
   }
+
+  return; // ✅ NÃO deixa cair no fluxo Crédito/Débito
 }
 
       // Crédito / Débito -> WhatsApp
