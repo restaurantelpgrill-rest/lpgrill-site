@@ -147,7 +147,7 @@
     return "";
   }
 
-  function init() {
+  function  {
     const overlay = $("#checkoutOverlay"); // deve ser o backdrop (.ck-overlay)
     if (!overlay) return;
 
@@ -577,19 +577,20 @@ $("#ckPaidPix", overlay)?.addEventListener("click", () => {
   openWhatsApp(msg);
 });
 
-} // <-- fecha init()
+    } // <-- fecha init()
 
-// boot robusto (funciona mesmo se o script carregar depois do DOM)
-function boot(){
-  try { init(); } catch(e){ console.error("checkout init error:", e); }
-}
+    // boot robusto (funciona mesmo se o script carregar depois do DOM)
+    function boot(){
+      try { init(); }
+      catch(e){ console.error("checkout init error:", e); }
+    }
 
-if (document.readyState === "loading") {
-  document.addEventListener("DOMContentLoaded", boot);
-} else {
-  boot();
-}
-})();
+    if (document.readyState === "loading") {
+      document.addEventListener("DOMContentLoaded", boot);
+    } else {
+      boot();
+    }
+  })();
 // ===============================
 // QR PIX (qrcodejs - js/qrcode.min.js)
 // ===============================
