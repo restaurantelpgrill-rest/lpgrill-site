@@ -512,28 +512,20 @@ if (payMethod === "pix") {
     txid: CONFIG.txid
   });
 
-  if (elPixCode) elPixCode.value = code;
-
-  // ✅ QR dinâmico usando a lib "qrcode"
   if (elQr) {
-    elQr.innerHTML = "";
+  elQr.innerHTML = "";
 
-    const QR = window.QRCode; // 👈 importante
-    if (!QR || typeof QR.toDataURL !== "function") {
-      elQr.textContent = "QR Code não carregou (ordem dos scripts).";
-    } else {
-      QR.toDataURL(code, { width: 240, margin: 1 }, (err, url) => {
-        if (err) { elQr.textContent = "Erro ao gerar QR."; return; }
-        const img = document.createElement("img");
-        img.src = url;
-        img.alt = "QR Code PIX";
-        img.style.width = "100%";
-        img.style.height = "100%";
-        img.style.display = "block";
-        elQr.appendChild(img);
-      });
-    }
+  if (!window.QRCode) {
+    elQr.textContent = "QR Code não carregou.";
+  } else {
+    new QRCode(elQr, {
+      text: code,
+      width: 240,
+      height: 240,
+      correctLevel: QRCode.CorrectLevel.M
+    });
   }
+}
 
   return; // ✅ NÃO deixa cair no fluxo Crédito/Débito
 }
