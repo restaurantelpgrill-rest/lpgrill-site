@@ -204,94 +204,39 @@
     const btnConfirm = $("#ckConfirmOrder", overlay);
     const btnCopyPix = $("#ckCopyPix", overlay);
 
-    // botões de pagamento (os seus têm data-pay="pix|credit|debit")
-    const payButtons = $$("[data-pay]", overlay);
+  // ===== PIX: pegar código e renderizar QR (qrcodejs) =====
+function getPixCode(){
+  return (
+    (elPixCode?.value || "").trim() ||
+    (window.PIX_CODE || "").trim() ||
+    (localStorage.getItem("LPGRILL_PIX_CODE_V1") || "").trim()
+  );
+}
 
-    let payMethod = null;
-    let lastKm = null;
-    let lastFee = 0;
-    let lastFocusEl = null;
+function renderPixQr(code){
+  const elQr = document.getElementById("ckQrBox") || overlay.querySelector("#ckQrBox") || overlay.querySelector(".ck-qrbox");
+  if (!elQr) { console.warn("[QR] Não achei #ckQrBox/.ck-qrbox"); return; }
 
-    function normPay(v){
-      const x = String(v||"").toLowerCase().trim();
-      if (x === "pix") return "pix";
-      if (x === "credit" || x === "credito") return "credit";
-      if (x === "debit" || x === "debito") return "debit";
-      return x;
-    }
+  elQr.innerHTML = "";
+  const pix = String(code || "").trim();
 
-    function setPayActive(method){
-      payMethod = normPay(method);
-      // CSS: .ck-pay.is-active / .ck-paybtn.is-active
-      payButtons.forEach(b => b.classList.toggle("is-active", normPay(b.getAttribute("data-pay")) === payMethod));
-    }
+  if (!pix){
+    elQr.textContent = "Código PIX vazio.";
+    return;
+  }
 
-    function clearPayActive(){
-      payMethod = null;
-      payButtons.forEach(b => b.classList.remove("is-active"));
-    }
+  if (!window.QRCode){
+    elQr.textContent = "Biblioteca de QR não carregou.";
+    return;
+  }
 
-    function getMode() {
-      const mode = (cart.getMode && cart.getMode()) || cart.mode || "entrega";
-      return String(mode || "entrega").toLowerCase();
-    }
-    function isEntregaMode() {
-      const mode = getMode();
-      return !(mode === "retirar" || mode === "retirada");
-    }
-    function subtotal() {
-      const s = (typeof cart.subtotal === "function") ? cart.subtotal() : (cart.subtotal ?? 0);
-      return Number(s || 0) || 0;
-    }
-    function cartIsEmpty() {
-      try {
-        if (typeof cart.count === "function") return (cart.count() || 0) <= 0;
-        const items = (typeof cart.items === "function" ? cart.items() : cart.items) || cart.state?.items;
-        if (Array.isArray(items)) return items.length === 0;
-      } catch { /* ignore */ }
-      return subtotal() <= 0;
-    }
-
-    function setBusy(btn, busy, labelBusy = "Aguarde...") {
-      if (!btn) return;
-      btn.disabled = !!busy;
-      btn.dataset._label = btn.dataset._label || btn.textContent;
-      btn.textContent = busy ? labelBusy : btn.dataset._label;
-    }
-
-    function goStep(name) {
-      Object.values(steps).forEach(s => { if (s) s.hidden = true; });
-      if (steps[name]) steps[name].hidden = false;
-
-      const focusTarget =
-        (name === "pay" && overlay.querySelector("[data-pay]")) ||
-        (name === "addr" && inName) ||
-        (name === "pix" && btnCopyPix) ||
-        null;
-
-      setTimeout(() => focusTarget?.focus?.(), 30);
-    }
-
-    function hydrateFromStorage() {
-      const saved = loadSaved();
-      if (inName && !inName.value) inName.value = saved.name || "";
-      if (inPhone && !inPhone.value) inPhone.value = saved.phone || "";
-      if (inBairro && !inBairro.value) inBairro.value = saved.bairro || "";
-      if (inAddr && !inAddr.value) inAddr.value = saved.address || "";
-      if (inCompl && !inCompl.value) inCompl.value = saved.compl || "";
-      if (inObs && !inObs.value) inObs.value = saved.obs || "";
-    }
-
-    function persistInputs() {
-      saveSaved({
-        name: (inName?.value || "").trim(),
-        phone: (inPhone?.value || "").trim(),
-        bairro: (inBairro?.value || "").trim(),
-        address: (inAddr?.value || "").trim(),
-        compl: (inCompl?.value || "").trim(),
-        obs: (inObs?.value || "").trim()
-      });
-    }
+  new QRCode(elQr, {
+    text: pix,
+    width: 240,
+    height: 240,
+    correctLevel: QRCode.CorrectLevel.M
+  });
+}
 
     function openOverlay() {
       if (cartIsEmpty()) {
@@ -387,15 +332,12 @@
 
        setPayActive(clicked);
 
-// ✅ se for pix, vai pro step pix e gera o QR
+/// ✅ se for pix, vai pro step pix e gera o QR
 if (clicked === "pix") {
   goStep("pix");
-  // aqui você chama a função que monta o código PIX (code)
-  // e então renderiza o QR
-  setTimeout(() => renderPixQr(code), 50); // vou te dar a função abaixo
-  return;
+  setTimeout(() => renderPixQr(getPixCode()), 50);
+  return; // não cai no fluxo de cartão
 }
-
 goStep("addr");
 
         if (isEntregaMode()) {
@@ -552,15 +494,7 @@ function getPixCode(){
     (localStorage.getItem("LPGRILL_PIX_CODE_V1") || "").trim()
   );
 }
-
-  function getPixCode(){
-  return (
-    (document.getElementById("pixCode")?.value || "").trim() ||
-    (window.PIX_CODE || "").trim() ||
-    (localStorage.getItem("LPGRILL_PIX_CODE_V1") || "").trim()
-  );
-}
-  
+     
   return; // ✅ NÃO deixa cair no fluxo Crédito/Débito
 }
 
