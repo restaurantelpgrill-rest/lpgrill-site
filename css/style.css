@@ -1624,3 +1624,11 @@ button,
   content:none !important;
   display:none !important;
 }
+.ck-qrbox{
+  width:240px;
+  height:240px;
+  margin:16px auto;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+}
