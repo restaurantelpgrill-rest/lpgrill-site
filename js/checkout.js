@@ -385,15 +385,18 @@
       btn.addEventListener("click", () => {
         const clicked = normPay(btn.getAttribute("data-pay"));
 
-        // toggle: se clicar no mesmo, desmarca e fica no step pay
-        if (payMethod === clicked) {
-          clearPayActive();
-          goStep("pay");
-          return;
-        }
+       setPayActive(clicked);
 
-        setPayActive(clicked);
-        goStep("addr");
+// ✅ se for pix, vai pro step pix e gera o QR
+if (clicked === "pix") {
+  goStep("pix");
+  // aqui você chama a função que monta o código PIX (code)
+  // e então renderiza o QR
+  setTimeout(() => renderPixQr(code), 50); // vou te dar a função abaixo
+  return;
+}
+
+goStep("addr");
 
         if (isEntregaMode()) {
           if (elKmHint) elKmHint.textContent = "Para entrega: calcule a taxa pelo GPS.";
@@ -406,6 +409,8 @@
     $("#ckBackFromAddr", overlay)?.addEventListener("click", () => goStep("pay"));
     $("#ckBackFromPix", overlay)?.addEventListener("click", () => goStep("addr"));
 
+    
+    
   // ===== GPS =====
 btnGps?.addEventListener("click", async () => {
 
@@ -515,18 +520,40 @@ if (payMethod === "pix") {
   if (elQr) {
   elQr.innerHTML = "";
 
-  if (!window.QRCode) {
-    elQr.textContent = "QR Code não carregou.";
-  } else {
-    new QRCode(elQr, {
-      text: code,
-      width: 240,
-      height: 240,
-      correctLevel: QRCode.CorrectLevel.M
-    });
+ function renderPixQr(code){
+  const elQr = document.getElementById("ckQrBox") || document.querySelector(".ck-qrbox");
+  if (!elQr) return;
+
+  elQr.innerHTML = "";
+  const pix = String(code || "").trim();
+
+  if (!pix){
+    elQr.textContent = "Código PIX vazio.";
+    return;
   }
+
+ if (!window.QRCode){
+  elQr.textContent = "Biblioteca de QR não carregou.";
+  return;
+}
+  }
+
+  new QRCode(elQr, {
+    text: pix,
+    width: 240,
+    height: 240,
+    correctLevel: QRCode.CorrectLevel.M
+  });
 }
 
+  function getPixCode(){
+  return (
+    (document.getElementById("pixCode")?.value || "").trim() ||
+    (window.PIX_CODE || "").trim() ||
+    (localStorage.getItem("LPGRILL_PIX_CODE_V1") || "").trim()
+  );
+}
+  
   return; // ✅ NÃO deixa cair no fluxo Crédito/Débito
 }
 
