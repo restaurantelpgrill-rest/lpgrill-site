@@ -520,7 +520,7 @@ if (payMethod === "pix") {
   if (elQr) {
   elQr.innerHTML = "";
 
- function renderPixQr(code){
+function renderPixQr(code){
   const elQr = document.getElementById("ckQrBox") || document.querySelector(".ck-qrbox");
   if (!elQr) return;
 
@@ -532,10 +532,9 @@ if (payMethod === "pix") {
     return;
   }
 
- if (!window.QRCode){
-  elQr.textContent = "Biblioteca de QR não carregou.";
-  return;
-}
+  if (!window.QRCode){
+    elQr.textContent = "Biblioteca de QR não carregou.";
+    return;
   }
 
   new QRCode(elQr, {
@@ -544,6 +543,14 @@ if (payMethod === "pix") {
     height: 240,
     correctLevel: QRCode.CorrectLevel.M
   });
+}
+
+function getPixCode(){
+  return (
+    (document.getElementById("pixCode")?.value || "").trim() ||
+    (window.PIX_CODE || "").trim() ||
+    (localStorage.getItem("LPGRILL_PIX_CODE_V1") || "").trim()
+  );
 }
 
   function getPixCode(){
