@@ -205,13 +205,6 @@
     const btnCopyPix = $("#ckCopyPix", overlay);
 
   // ===== PIX: pegar código e renderizar QR (qrcodejs) =====
-function getPixCode(){
-  return (
-    (elPixCode?.value || "").trim() ||
-    (window.PIX_CODE || "").trim() ||
-    (localStorage.getItem("LPGRILL_PIX_CODE_V1") || "").trim()
-  );
-}
 
 function renderPixQr(code){
   const elQr = document.getElementById("ckQrBox") || overlay.querySelector("#ckQrBox") || overlay.querySelector(".ck-qrbox");
@@ -325,28 +318,37 @@ function renderPixQr(code){
       });
     }
     
-    // ===== Escolha pagamento: agora fica bonito + toggle =====
-    payButtons.forEach(btn => {
-      btn.addEventListener("click", () => {
-        const clicked = normPay(btn.getAttribute("data-pay"));
+    // ===== Escolha pagamento: bonito + toggle =====
+payButtons.forEach(btn => {
+  btn.addEventListener("click", () => {
+    const clicked = normPay(btn.getAttribute("data-pay"));
 
-       setPayActive(clicked);
+    // ✅ toggle: clicou no mesmo -> desmarca e volta pro pay
+    if (payMethod === clicked) {
+      clearPayActive();
+      goStep("pay");
+      return;
+    }
 
-/// ✅ se for pix, vai pro step pix e gera o QR
+    setPayActive(clicked);
+
+// ✅ PIX -> abre step pix e gera o QR
 if (clicked === "pix") {
   goStep("pix");
   setTimeout(() => renderPixQr(getPixCode()), 50);
   return; // não cai no fluxo de cartão
 }
-goStep("addr");
 
-        if (isEntregaMode()) {
-          if (elKmHint) elKmHint.textContent = "Para entrega: calcule a taxa pelo GPS.";
-        } else {
-          if (elKmHint) elKmHint.textContent = "Modo Retirar: você pode confirmar o pedido.";
-        }
-      });
-    });
+    // crédito/débito -> vai pro endereço
+    goStep("addr");
+
+    if (isEntregaMode()) {
+      if (elKmHint) elKmHint.textContent = "Para entrega: calcule a taxa pelo GPS.";
+    } else {
+      if (elKmHint) elKmHint.textContent = "Modo Retirar: você pode confirmar o pedido.";
+    }
+  });
+});
 
     $("#ckBackFromAddr", overlay)?.addEventListener("click", () => goStep("pay"));
     $("#ckBackFromPix", overlay)?.addEventListener("click", () => goStep("addr"));
@@ -462,7 +464,7 @@ if (payMethod === "pix") {
   if (elQr) {
   elQr.innerHTML = "";
 
-function renderPixQr(code){
+
   const elQr = document.getElementById("ckQrBox") || document.querySelector(".ck-qrbox");
   if (!elQr) return;
 
@@ -486,7 +488,7 @@ function renderPixQr(code){
     correctLevel: QRCode.CorrectLevel.M
   });
 }
-
+  
 function getPixCode(){
   return (
     (document.getElementById("pixCode")?.value || "").trim() ||
@@ -516,11 +518,6 @@ function getPixCode(){
 
       openWhatsApp(msg);
     });
-
-    // Copiar PIX
-btnCopyPix?.addEventListener("click", async () => {
-  const val = (elPixCode?.value || "").trim();
-  if (!val) return;
 
   setBusy(btnCopyPix, true, "Copiando...");
   try {
