@@ -377,35 +377,55 @@ btnGps?.addEventListener("click", async () => {
   if (elKmHint) elKmHint.textContent = "Calculando distância pelo GPS...";
   if (elFeeLine) elFeeLine.hidden = true;
   if (elBlocked) elBlocked.hidden = true;
+  
+btnGps.addEventListener("click", async () => {
+  if (!isEntregaMode()) {
+    lastKm = 0;
+    lastFee = 0;
+
+    localStorage.setItem("LPGRILL_FEE_V1", "0");
+    document.dispatchEvent(new CustomEvent("lp:cart-change"));
+
+    if (elKmHint) elKmHint.textContent = "Modo Retirar: sem taxa de entrega.";
+    if (elFeeLine) elFeeLine.hidden = true;
+    if (elBlocked) elBlocked.hidden = true;
+    return;
+  }
+
+  if (elKmHint) elKmHint.textContent = "Calculando distância pelo GPS...";
+  if (elFeeLine) elFeeLine.hidden = true;
+  if (elBlocked) elBlocked.hidden = true;
 
   setBusy(btnGps, true, "Calculando...");
   try {
     const res = await calcFeeWithGPS();
+
     lastKm = res.km;
     lastFee = res.fee;
 
-    // ✅ salva taxa correta pro carrinho + atualiza UI
+    // ✅ salva taxa e força carrinho recalcular
     localStorage.setItem("LPGRILL_FEE_V1", String(lastFee));
     document.dispatchEvent(new CustomEvent("lp:cart-change"));
 
+    // ✅ atualiza UI
     if (elKm) elKm.textContent = `${clamp(res.km, 0, 999).toFixed(1)} km`;
     if (elFee) elFee.textContent = money(res.fee);
     if (elFeeLine) elFeeLine.hidden = false;
-    if (elBlocked) elBlocked.hidden = !res.blocked;
 
-    if (elKmHint) {
-      elKmHint.textContent = res.blocked
-        ? `Fora do raio de ${CONFIG.maxKm} km. Entrega indisponível.`
-        : "Taxa calculada com base na sua localização.";
-    }
-  } catch {
-    if (elKmHint) elKmHint.textContent =
-      "Não consegui acessar o GPS. Autorize a localização e tente novamente.";
+    if (elBlocked) elBlocked.hidden = !res.blocked;
+    if (elKmHint) elKmHint.textContent = res.blocked
+      ? "Fora da área de entrega. Escolha Retirar."
+      : "Taxa calculada. Pode confirmar o pedido.";
+
+  } catch (e) {
+    console.error(e);
+    alert("Não consegui calcular a distância pelo GPS.");
+    if (elKmHint) elKmHint.textContent = "Não consegui calcular. Tente novamente ou use Retirar.";
   } finally {
     setBusy(btnGps, false);
   }
 });
-
+   
     // ===== Confirmar endereço / finalizar =====
     btnConfirm?.addEventListener("click", () => {
       if (!payMethod) {
