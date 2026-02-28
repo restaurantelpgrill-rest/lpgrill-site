@@ -172,29 +172,29 @@ function controlsHtml(p){
     if(!card) return;
 
     const p = allProducts().find(x => x.id === id);
-    if(!p) return;
-
-    const tmp = document.createElement("div");
-    tmp.innerHTML = cardHtml(p).trim();
-    const next = tmp.firstElementChild;
-    if(next) card.replaceWith(next);
-  }
+   function allProducts(){
+  const d = normalizeData();
+  const addons = Array.isArray(d.addons) ? d.addons : [];
+  return [...d.marmitas, ...d.porcoes, ...d.bebidas, ...d.sobremesas, ...addons];
+}
 
   function bindCardActions(container){
     if(!container) return;
 
-    container.addEventListener("click", (e)=>{
-      const addBtn = e.target.closest("[data-add]");
-      const decBtn = e.target.closest("[data-dec]");
+   if(addBtn){
+  const id = addBtn.getAttribute("data-add");
+  if(!id) return;
 
-      if(addBtn){
-        const id = addBtn.getAttribute("data-add");
-        if(!id) return;
-        window.Cart?.add?.(id);
-        refreshCard(container, id);
-        window.Cart?.renderAll?.();
-        return;
-      }
+  const p = allProducts().find(x => x.id === id);
+  if(p && !lpIsAvailable(p) && qtyInCart(id) === 0){
+    return; // bloqueia adicionar fora do dia
+  }
+
+  window.Cart?.add?.(id);
+  refreshCard(container, id);
+  window.Cart?.renderAll?.();
+  return;
+}
 
       if(decBtn){
         const id = decBtn.getAttribute("data-dec");
@@ -231,7 +231,7 @@ function controlsHtml(p){
       return;
     }
 
-    el.innerHTML = items.map(cardHtml).join("");
+   el.innerHTML = items.map(cardHtml).join("") + addonsBlockHtml(categoryKey);
     bindCardActions(el);
     window.Cart?.renderAll?.();
   };
