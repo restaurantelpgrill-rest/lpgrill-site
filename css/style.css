@@ -1647,3 +1647,13 @@ button,
   font-weight:800;
   opacity:.85;
 }
+.lp-step.is-locked{ opacity:.55; filter:grayscale(.15); }
+.lp-daynote{ margin-top:8px; font-size:12px; font-weight:800; opacity:.85; }
+
+.lp-addons-box{
+  margin-top:16px; padding:12px; background:#fff;
+  border:1px solid rgba(17,24,39,.10);
+  border-radius:16px; box-shadow: var(--shadow);
+}
+.lp-addons-title{ margin:0 0 10px; font-size:14px; font-weight:900; }
+.lp-addons-grid{ display:grid; gap:12px; }
