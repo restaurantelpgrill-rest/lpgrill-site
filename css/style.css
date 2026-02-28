@@ -1657,3 +1657,54 @@ button,
 }
 .lp-addons-title{ margin:0 0 10px; font-size:14px; font-weight:900; }
 .lp-addons-grid{ display:grid; gap:12px; }
+/* ===== Adicionais compactos (bem menores) ===== */
+.lp-addons-box{ margin-top:14px; padding:10px; }
+.lp-addons-title{ font-size:13px; }
+
+.lp-addon-card{
+  display:flex;
+  align-items:center;
+  justify-content:space-between;
+  gap:10px;
+
+  padding:8px 10px;
+  border:1px solid rgba(17,24,39,.10);
+  border-radius:12px;
+  background:#fff;
+}
+
+.lp-addon-left{ min-width:0; }
+.lp-addon-name{ font-weight:900; font-size:12.5px; line-height:1.1; }
+.lp-addon-price{ font-weight:800; font-size:12px; opacity:.85; margin-top:2px; }
+
+.lp-addon-step{
+  display:flex;
+  align-items:center;
+  gap:8px;
+}
+
+.lp-addon-btn{
+  width:30px;
+  height:30px;
+  border-radius:10px;
+  border:1px solid rgba(17,24,39,.12);
+  background:#f8fafc;
+  font-weight:900;
+  line-height:1;
+}
+
+.lp-addon-mid{
+  min-width:88px;
+  height:30px;
+  border-radius:10px;
+  border:1px solid rgba(17,24,39,.12);
+  background:#fff;
+  font-weight:900;
+  font-size:12px;
+  display:flex;
+  align-items:center;
+  justify-content:center;
+  gap:6px;
+}
+
+.lp-addon-mid span{ font-weight:900; }
