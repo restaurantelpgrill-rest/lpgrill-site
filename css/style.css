@@ -1632,3 +1632,18 @@ button,
   align-items:center;
   justify-content:center;
 }
+.lp-step.is-locked{
+  opacity:.55;
+  filter:grayscale(.15);
+}
+.lp-step.is-locked .lp-step-mid,
+.lp-step.is-locked .lp-step-photo,
+.lp-step.is-locked .lp-step-btn[disabled]{
+  cursor:not-allowed;
+}
+.lp-daynote{
+  margin-top:8px;
+  font-size:12px;
+  font-weight:800;
+  opacity:.85;
+}
