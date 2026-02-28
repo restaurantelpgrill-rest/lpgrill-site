@@ -6,25 +6,20 @@
 
   // ========== Fallback (site funciona mesmo sem admin) ==========
   const fallback = {
-     marmitas: [
-  // ===== PRATOS DO DIA (aparecem só no dia) =====
-  { id:"mseg", title:"🔥 Frango Mineiro com Quiabo & Angu Cremoso", desc:"Frango caipira cozido lentamente com quiabo fresco, temperado no estilo mineiro. Acompanha arroz branco soltinho, feijão caseiro, couve refogada e angu cremoso.", tag:"Segunda", price:0, img:"img/mockup.png", days:[1] },
+    marmitas: [
+      // ===== PRATOS DO DIA (aparecem só no dia) =====
+      { id:"mseg", title:"🔥 Frango Mineiro com Quiabo & Angu Cremoso", desc:"Frango caipira cozido lentamente com quiabo fresco, temperado no estilo mineiro. Acompanha arroz branco soltinho, feijão caseiro, couve refogada e angu cremoso.", tag:"Segunda", price:0, img:"img/mockup.png", days:[1] },
+      { id:"mter", title:"🥘 Carne de Panela com Mandioca da Roça", desc:"Carne macia cozida lentamente com mandioca, bem temperada e suculenta. Acompanha arroz, feijão, farofa artesanal, couve refogada e beterraba fresca.", tag:"Terça", price:0, img:"img/mockup.png", days:[2] },
+      { id:"mqua", title:"🍖 Costelinha ao Molho da Casa com Batata Rústica", desc:"Costelinha suína macia envolvida em molho especial da casa. Servida com arroz, feijão, batata rústica dourada, farofa rica e salada fresca de alface e tomate.", tag:"Quarta", price:0, img:"img/mockup.png", days:[3] },
+      { id:"mqui", title:"🌽 Tropeiro Raiz Completo", desc:"Feijão tropeiro bem temperado com linguiça, ovo e farofa crocante. Acompanha arroz branco e couve refogada no alho.", tag:"Quinta", price:0, img:"img/mockup.png", days:[4] },
+      { id:"msex", title:"🍲 Feijoada da Casa Completa", desc:"Feijoada tradicional preparada com carnes selecionadas e tempero especial. Servida com arroz, couve refogada, farofa crocante e laranja.", tag:"Sexta", price:0, img:"img/mockup.png", days:[5] },
 
-  { id:"mter", title:"🥘 Carne de Panela com Mandioca da Roça", desc:"Carne macia cozida lentamente com mandioca, bem temperada e suculenta. Acompanha arroz, feijão, farofa artesanal, couve refogada e beterraba fresca.", tag:"Terça", price:0, img:"img/mockup.png", days:[2] },
+      // ===== FIXOS (segunda a sábado) =====
+      { id:"mfixexecboi", title:"🍛 Prato Executivo da Casa (Bife de boi)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] },
+      { id:"mfixexecfrango", title:"🍛 Prato Executivo da Casa (Bife de frango)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] },
+      { id:"mfixexecporco", title:"🍛 Prato Executivo da Casa (Bife de porco)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] }
+    ],
 
-  { id:"mqua", title:"🍖 Costelinha ao Molho da Casa com Batata Rústica", desc:"Costelinha suína macia envolvida em molho especial da casa. Servida com arroz, feijão, batata rústica dourada, farofa rica e salada fresca de alface e tomate.", tag:"Quarta", price:0, img:"img/mockup.png", days:[3] },
-
-  { id:"mqui", title:"🌽 Tropeiro Raiz Completo", desc:"Feijão tropeiro bem temperado com linguiça, ovo e farofa crocante. Acompanha arroz branco e couve refogada no alho.", tag:"Quinta", price:0, img:"img/mockup.png", days:[4] },
-
-  { id:"msex", title:"🍲 Feijoada da Casa Completa", desc:"Feijoada tradicional preparada com carnes selecionadas e tempero especial. Servida com arroz, couve refogada, farofa crocante e laranja.", tag:"Sexta", price:0, img:"img/mockup.png", days:[5] },
-
-  // ===== FIXOS (segunda a sábado) =====
-  { id:"mfixexecboi", title:"🍛 Prato Executivo da Casa (Bife de boi)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] },
-
-  { id:"mfixexecfrango", title:"🍛 Prato Executivo da Casa (Bife de frango)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] },
-
-  { id:"mfixexecporco", title:"🍛 Prato Executivo da Casa (Bife de porco)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] }
-],
     porcoes: [
       { id:"p1", title:"Porção de Batata Frita (P)", desc:"Crocante • perfeita pra compartilhar.", tag:"Clássica", price:17.90, img:"img/mockup.png" },
       { id:"p2", title:"Batata Frita (G)", desc:"Grande • serve bem 2–3 pessoas.", tag:"Compartilhar", price:27.90, img:"img/mockup.png" },
@@ -50,13 +45,11 @@
       { id:"b10", title:"H2O", desc:"500ml gelada.", tag:"500ml", price:7.50, img:"img/mockup.png" }
     ],
 
+    // 🔁 aqui é "sobremesas" por compatibilidade, mas você vai renomear no HTML para "Massas Caseiras"
     sobremesas: [
-  { id:"ms1", title:"🧀 Macarrão à Bolonhesa com Queijo & Bacon", desc:"Macarrão envolvido em molho bolonhesa caseiro, finalizado com queijo e bacon crocante.", tag:"Fixo", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] },
-
-  { id:"ms2", title:"🔥 Lasanha Artesanal Assada na Hora (Bolonhesa)", desc:"Lasanha artesanal com molho caseiro, assada na hora em vasilha de alumínio. Acompanha arroz e salada (alface e tomate).", tag:"Premium", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] },
-
-  { id:"ms3", title:"🔥 Lasanha Artesanal Assada na Hora (Frango c/ Catupiry)", desc:"Lasanha artesanal com molho caseiro, assada na hora em vasilha de alumínio. Acompanha arroz e salada (alface e tomate).", tag:"Premium", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] }
-],
+      { id:"ms1", title:"🧀 Macarrão à Bolonhesa com Queijo & Bacon", desc:"Macarrão envolvido em molho bolonhesa caseiro, finalizado com queijo e bacon crocante.", tag:"Fixo", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] },
+      { id:"ms2", title:"🔥 Lasanha Artesanal Assada na Hora (Bolonhesa)", desc:"Lasanha artesanal com molho caseiro, assada na hora em vasilha de alumínio. Acompanha arroz e salada (alface e tomate).", tag:"Premium", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] },
+      { id:"ms3", title:"🔥 Lasanha Artesanal Assada na Hora (Frango c/ Catupiry)", desc:"Lasanha artesanal com molho caseiro, assada na hora em vasilha de alumínio. Acompanha arroz e salada (alface e tomate).", tag:"Premium", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] }
     ],
 
     // ✅ COMBO (dados)
@@ -64,13 +57,15 @@
       { id:"c1", title:"Combo Econômico", desc:"Marmita Tradicional + Coca Lata", tag:"Economize", price:22.90, img:"img/cat-finalizar.jpg" },
       { id:"c2", title:"Combo Executivo", desc:"Marmita Carne + Guaraná", tag:"Mais pedido", price:27.90, img:"img/cat-finalizar.jpg" },
       { id:"c3", title:"Combo Família", desc:"2 Marmitas + Refrigerante 2L", tag:"Vale a pena", price:49.90, img:"img/cat-finalizar.jpg" }
+    ],
+
+    // ✅ ADICIONAIS (somente marmitas e sobremesas/massas)
+    addons: [
+      { id:"a1", title:"🍟 Batata frita", desc:"Adicional", tag:"+", price:4.00, img:"img/mockup.png", applies:["marmitas","sobremesas"] },
+      { id:"a2", title:"🥩 Carne bovina", desc:"Adicional", tag:"+", price:5.00, img:"img/mockup.png", applies:["marmitas","sobremesas"] },
+      { id:"a3", title:"🐷 Carne suína", desc:"Adicional", tag:"+", price:4.00, img:"img/mockup.png", applies:["marmitas","sobremesas"] },
+      { id:"a4", title:"🍅 Molho à bolonhesa", desc:"Adicional", tag:"+", price:3.00, img:"img/mockup.png", applies:["marmitas","sobremesas"] }
     ]
-      
-    fallback.addons = [
-  { id:"a1", title:"🍟 Batata frita", price:4.00, applies:["marmitas","sobremesas"], img:"img/mockup.png" },
-  { id:"a2", title:"🥩 Carne bovina", price:5.00, applies:["marmitas","sobremesas"], img:"img/mockup.png" },
-  { id:"a3", title:"🐷 Carne suína", price:4.00, applies:["marmitas","sobremesas"], img:"img/mockup.png" },
-  { id:"a4", title:"🍅 Molho à bolonhesa", price:3.00, applies:["marmitas","sobremesas"], img:"img/mockup.png" }
   };
 
   // ========== Helpers ==========
@@ -90,37 +85,20 @@
     const tag   = String(o.tag   || "").trim();
     const image = String(o.img || "img/mockup.png").trim();
 
-    return { id, title, desc, tag, price: num(o.price), img: image };
+    // ✅ preserva campos extras (days/applies/promo etc) sem quebrar
+    const extra = {};
+    if (Array.isArray(o.days)) extra.days = o.days;
+    if (Array.isArray(o.applies)) extra.applies = o.applies;
+    if (o.promo != null) extra.promo = o.promo;
+    if (o.promoPrice != null) extra.promoPrice = o.promoPrice;
+    if (o.soldOut != null) extra.soldOut = o.soldOut;
+
+    return { id, title, desc, tag, price: num(o.price), img: image, ...extra };
   }
-function addonsBlockHtml(categoryKey){
-  // só marmitas e sobremesas (massas)
-  if(categoryKey !== "marmitas" && categoryKey !== "sobremesas") return "";
 
-  const d = normalizeData();
-  const addons = Array.isArray(d.addons) ? d.addons : [];
-  if(!addons.length) return "";
-
-  // filtra por applies (se você estiver usando)
-  const list = addons.filter(a=>{
-    const applies = Array.isArray(a.applies) ? a.applies : null;
-    if(!applies) return true; // se não existir, mostra mesmo assim
-    return applies.includes(categoryKey);
-  });
-
-  if(!list.length) return "";
-
-  return `
-    <section class="lp-addons-box">
-      <h3 class="lp-addons-title">➕ Adicionais</h3>
-      <div class="lp-addons-grid">
-        ${list.map(cardHtml).join("")}
-      </div>
-    </section>
-  `;
-}
   function normalizeData(d){
-    // ✅ inclui combo e também combos (compat)
-    const out = { marmitas: [], porcoes: [], bebidas: [], sobremesas: [], combo: [], combos: [] };
+    // ✅ inclui combo e também combos (compat) + addons
+    const out = { marmitas: [], porcoes: [], bebidas: [], sobremesas: [], combo: [], combos: [], addons: [] };
     const src = isObj(d) ? d : {};
 
     out.marmitas    = (Array.isArray(src.marmitas) ? src.marmitas : []).map((it,i)=> normalizeItem(it,i,"m"));
@@ -132,6 +110,9 @@ function addonsBlockHtml(categoryKey){
     const comboSrc = Array.isArray(src.combo) ? src.combo : (Array.isArray(src.combos) ? src.combos : []);
     out.combo      = comboSrc.map((it,i)=> normalizeItem(it,i,"c"));
     out.combos     = out.combo; // alias
+
+    // ✅ addons
+    out.addons     = (Array.isArray(src.addons) ? src.addons : []).map((it,i)=> normalizeItem(it,i,"a"));
 
     return out;
   }
@@ -145,7 +126,8 @@ function addonsBlockHtml(categoryKey){
       porcoes:    A.porcoes.length    ? A.porcoes    : B.porcoes,
       bebidas:    A.bebidas.length    ? A.bebidas    : B.bebidas,
       sobremesas: A.sobremesas.length ? A.sobremesas : B.sobremesas,
-      combo:      A.combo.length      ? A.combo      : B.combo
+      combo:      A.combo.length      ? A.combo      : B.combo,
+      addons:     A.addons.length     ? A.addons     : B.addons
     };
 
     // ✅ alias compat
@@ -173,6 +155,9 @@ function addonsBlockHtml(categoryKey){
     finalData.combo = normalizeData(fallback).combo;
   }
   finalData.combos = finalData.combo; // alias final
+
+  // ✅ GARANTE addons (se admin vier sem)
+  if (!Array.isArray(finalData.addons)) finalData.addons = normalizeData(fallback).addons;
 
   window.DATA = finalData;
 
