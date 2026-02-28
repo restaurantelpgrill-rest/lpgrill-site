@@ -92,7 +92,32 @@
 
     return { id, title, desc, tag, price: num(o.price), img: image };
   }
+function addonsBlockHtml(categoryKey){
+  // só marmitas e sobremesas (massas)
+  if(categoryKey !== "marmitas" && categoryKey !== "sobremesas") return "";
 
+  const d = normalizeData();
+  const addons = Array.isArray(d.addons) ? d.addons : [];
+  if(!addons.length) return "";
+
+  // filtra por applies (se você estiver usando)
+  const list = addons.filter(a=>{
+    const applies = Array.isArray(a.applies) ? a.applies : null;
+    if(!applies) return true; // se não existir, mostra mesmo assim
+    return applies.includes(categoryKey);
+  });
+
+  if(!list.length) return "";
+
+  return `
+    <section class="lp-addons-box">
+      <h3 class="lp-addons-title">➕ Adicionais</h3>
+      <div class="lp-addons-grid">
+        ${list.map(cardHtml).join("")}
+      </div>
+    </section>
+  `;
+}
   function normalizeData(d){
     // ✅ inclui combo e também combos (compat)
     const out = { marmitas: [], porcoes: [], bebidas: [], sobremesas: [], combo: [], combos: [] };
