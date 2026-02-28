@@ -6,15 +6,25 @@
 
   // ========== Fallback (site funciona mesmo sem admin) ==========
   const fallback = {
-    marmitas: [
-      { id:"m1", title:"Marmita Tradicional", desc:"Arroz, feijão, carne e salada.", tag:"Bem servida", price:18.90, img:"img/marmita_tradicional.jpg" },
-      { id:"m2", title:"Marmita Frango Grelhado", desc:"Frango grelhado + acompanhamentos.", tag:"Leve", price:21.90, img:"img/marmita_frango.jpg" },
-      { id:"m3", title:"Marmita Carne", desc:"Carne acebolada + acompanhamentos.", tag:"Top", price:23.90, img:"img/marmita_carne.jpg" },
-      { id:"m4", title:"Marmita do Chef", desc:"Especial do dia • bem montada.", tag:"Especial", price:24.90, img:"img/mockup.png" },
-      { id:"m5", title:"Marmita Feijoada", desc:"Feijoada caprichada + acompanhamentos.", tag:"Sábado", price:26.90, img:"img/mockup.png" },
-      { id:"m6", title:"Marmita Strogonoff", desc:"Strogonoff + arroz + batata palha.", tag:"Queridinha", price:25.90, img:"img/mockup.png" }
-    ],
+     marmitas: [
+  // ===== PRATOS DO DIA (aparecem só no dia) =====
+  { id:"mseg", title:"🔥 Frango Mineiro com Quiabo & Angu Cremoso", desc:"Frango caipira cozido lentamente com quiabo fresco, temperado no estilo mineiro. Acompanha arroz branco soltinho, feijão caseiro, couve refogada e angu cremoso.", tag:"Segunda", price:0, img:"img/mockup.png", days:[1] },
 
+  { id:"mter", title:"🥘 Carne de Panela com Mandioca da Roça", desc:"Carne macia cozida lentamente com mandioca, bem temperada e suculenta. Acompanha arroz, feijão, farofa artesanal, couve refogada e beterraba fresca.", tag:"Terça", price:0, img:"img/mockup.png", days:[2] },
+
+  { id:"mqua", title:"🍖 Costelinha ao Molho da Casa com Batata Rústica", desc:"Costelinha suína macia envolvida em molho especial da casa. Servida com arroz, feijão, batata rústica dourada, farofa rica e salada fresca de alface e tomate.", tag:"Quarta", price:0, img:"img/mockup.png", days:[3] },
+
+  { id:"mqui", title:"🌽 Tropeiro Raiz Completo", desc:"Feijão tropeiro bem temperado com linguiça, ovo e farofa crocante. Acompanha arroz branco e couve refogada no alho.", tag:"Quinta", price:0, img:"img/mockup.png", days:[4] },
+
+  { id:"msex", title:"🍲 Feijoada da Casa Completa", desc:"Feijoada tradicional preparada com carnes selecionadas e tempero especial. Servida com arroz, couve refogada, farofa crocante e laranja.", tag:"Sexta", price:0, img:"img/mockup.png", days:[5] },
+
+  // ===== FIXOS (segunda a sábado) =====
+  { id:"mfixexecboi", title:"🍛 Prato Executivo da Casa (Bife de boi)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] },
+
+  { id:"mfixexecfrango", title:"🍛 Prato Executivo da Casa (Bife de frango)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] },
+
+  { id:"mfixexecporco", title:"🍛 Prato Executivo da Casa (Bife de porco)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] }
+],
     porcoes: [
       { id:"p1", title:"Porção de Batata Frita (P)", desc:"Crocante • perfeita pra compartilhar.", tag:"Clássica", price:17.90, img:"img/mockup.png" },
       { id:"p2", title:"Batata Frita (G)", desc:"Grande • serve bem 2–3 pessoas.", tag:"Compartilhar", price:27.90, img:"img/mockup.png" },
@@ -40,11 +50,13 @@
       { id:"b10", title:"H2O", desc:"500ml gelada.", tag:"500ml", price:7.50, img:"img/mockup.png" }
     ],
 
-    sobremesas: [
-      { id:"s1", title:"Sobremesa da Casa", desc:"Finalize com chave de ouro.", tag:"Doce", price:9.90, img:"img/mockup.png" },
-      { id:"s2", title:"Pudim", desc:"Caseiro • cremoso.", tag:"Clássico", price:10.90, img:"img/mockup.png" },
-      { id:"s3", title:"Mousse de Maracujá", desc:"Geladinho • leve.", tag:"Gelado", price:9.90, img:"img/mockup.png" },
-      { id:"s4", title:"Brigadeiro Gourmet", desc:"Unidade.", tag:"Un", price:4.50, img:"img/mockup.png" }
+     Massas caseira: [
+  { id:"ms1", title:"🧀 Macarrão à Bolonhesa com Queijo & Bacon", desc:"Macarrão envolvido em molho bolonhesa caseiro, finalizado com queijo e bacon crocante.", tag:"Fixo", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] },
+
+  { id:"ms2", title:"🔥 Lasanha Artesanal Assada na Hora (Bolonhesa)", desc:"Lasanha artesanal com molho caseiro, assada na hora em vasilha de alumínio. Acompanha arroz e salada (alface e tomate).", tag:"Premium", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] },
+
+  { id:"ms3", title:"🔥 Lasanha Artesanal Assada na Hora (Frango c/ Catupiry)", desc:"Lasanha artesanal com molho caseiro, assada na hora em vasilha de alumínio. Acompanha arroz e salada (alface e tomate).", tag:"Premium", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] }
+],
     ],
 
     // ✅ COMBO (dados)
@@ -53,6 +65,12 @@
       { id:"c2", title:"Combo Executivo", desc:"Marmita Carne + Guaraná", tag:"Mais pedido", price:27.90, img:"img/cat-finalizar.jpg" },
       { id:"c3", title:"Combo Família", desc:"2 Marmitas + Refrigerante 2L", tag:"Vale a pena", price:49.90, img:"img/cat-finalizar.jpg" }
     ]
+      
+    fallback.addons = [
+  { id:"a1", title:"🍟 Batata frita", price:4.00, applies:["marmitas","sobremesas"], img:"img/mockup.png" },
+  { id:"a2", title:"🥩 Carne bovina", price:5.00, applies:["marmitas","sobremesas"], img:"img/mockup.png" },
+  { id:"a3", title:"🐷 Carne suína", price:4.00, applies:["marmitas","sobremesas"], img:"img/mockup.png" },
+  { id:"a4", title:"🍅 Molho à bolonhesa", price:3.00, applies:["marmitas","sobremesas"], img:"img/mockup.png" }
   };
 
   // ========== Helpers ==========
