@@ -16,6 +16,10 @@
       if (cats && Array.isArray(cats[key])) return cats[key];
       if (Array.isArray(base[key])) return base[key];
       return [];
+      const ok = lpIsAvailable(item);
+const btn = ok
+  ? `<button class="qty-plus" data-add="${id}">+</button>`
+  : `<button class="qty-plus" disabled title="Disponível em outro dia">+</button>`;
     };
 
     return {
