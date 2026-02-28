@@ -6,29 +6,39 @@
   const esc = (s)=> String(s ?? "")
     .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
     .replaceAll('"',"&quot;").replaceAll("'","&#039;");
+  function lpToday(){ return new Date().getDay(); } // 0 dom..6 sáb
+function lpDayLabel(d){ return ["Dom","Seg","Ter","Qua","Qui","Sex","Sáb"][d] || ""; }
+
+function lpIsAvailable(p){
+  if(!p || !Array.isArray(p.days) || p.days.length===0) return true; // fixo
+  return p.days.includes(lpToday());
+}
+
+function lpAvailabilityText(p){
+  if(!p || !Array.isArray(p.days) || p.days.length===0) return "";
+  if(p.days.length === 1) return `Disponível: ${lpDayLabel(p.days[0])}`;
+  return `Disponível: ${p.days.map(lpDayLabel).join(", ")}`;
+}
 
   // ✅ Lê dados tanto de window.DATA (flat) quanto de window.LP_DATA.categories (categorias)
-  function normalizeData(){
-    const base = window.DATA || window.LP_DATA || window.MENU || {};
-    const cats = base.categories || base.categorias || null;
+function normalizeData(){
+  const base = window.DATA || window.LP_DATA || window.MENU || {};
+  const cats = base.categories || base.categorias || null;
 
-    const pick = (key)=>{
-      if (cats && Array.isArray(cats[key])) return cats[key];
-      if (Array.isArray(base[key])) return base[key];
-      return [];
-      const ok = lpIsAvailable(item);
-const btn = ok
-  ? `<button class="qty-plus" data-add="${id}">+</button>`
-  : `<button class="qty-plus" disabled title="Disponível em outro dia">+</button>`;
-    };
+  const pick = (key)=>{
+    if (cats && Array.isArray(cats[key])) return cats[key];
+    if (Array.isArray(base[key])) return base[key];
+    return [];
+  };
 
-    return {
-      marmitas:   pick("marmitas"),
-      porcoes:    pick("porcoes"),
-      bebidas:    pick("bebidas"),
-      sobremesas: pick("sobremesas"),
-    };
-  }
+  return {
+    marmitas:   pick("marmitas"),
+    porcoes:    pick("porcoes"),
+    bebidas:    pick("bebidas"),
+    sobremesas: pick("sobremesas"),
+    addons:     pick("addons"), // ✅ adicionais (se existir no data)
+  };
+}
 
   function getFinalPrice(p){
     const promoOn = p?.promo && p?.promoPrice != null && Number(p.promoPrice) > 0;
@@ -74,39 +84,53 @@ const btn = ok
     return `<div class="lp-price"><span class="lp-now">${money(finalPrice)}</span></div>`;
   }
 
- // ✅ Stepper “app”: − [Adicionar QTD] [FOTO] +
 function controlsHtml(p){
   const q = qtyInCart(p.id);
-  const disabled = !!p.soldOut;
+  const soldOut = !!p.soldOut;
 
-  if(disabled){
+  // disponibilidade por dia
+  const okDay = lpIsAvailable(p);
+
+  if(soldOut){
     return `<button class="lp-btn disabled" type="button" disabled>Indisponível</button>`;
   }
 
+  // pode diminuir se já tem no carrinho (mesmo fora do dia)
   const canDec = q > 0;
+
   const img = getImg(p);
   const title = p.title || p.name || "";
+  const note = (!okDay ? `<div class="lp-daynote">${esc(lpAvailabilityText(p))}</div>` : ``);
 
   return `
-    <div class="lp-step lp-step--thumb" role="group" aria-label="Quantidade">
+    <div class="lp-step lp-step--thumb ${okDay ? "" : "is-locked"}" role="group" aria-label="Quantidade">
       <button type="button"
         class="lp-step-btn ${canDec ? "" : "disabled"}"
         ${canDec ? "" : "disabled"}
         data-dec="${esc(p.id)}">−</button>
 
-      <button type="button" class="lp-step-mid" data-add="${esc(p.id)}" aria-label="Adicionar">
-        <span class="lp-step-text">Adicionar</span>
+      <button type="button"
+        class="lp-step-mid"
+        ${okDay ? `data-add="${esc(p.id)}"` : "disabled"}
+        aria-label="Adicionar">
+        <span class="lp-step-text">${okDay ? "Adicionar" : "Somente no dia"}</span>
         <span class="lp-step-qty">${q}</span>
       </button>
 
-      <!-- ✅ thumb fixa ao lado do Adicionar (não quebra layout) -->
-      <button type="button" class="lp-step-photo" data-add="${esc(p.id)}" aria-label="Adicionar">
+      <button type="button"
+        class="lp-step-photo"
+        ${okDay ? `data-add="${esc(p.id)}"` : "disabled"}
+        aria-label="Adicionar">
         <img class="lp-step-thumb" src="${esc(img)}" alt="${esc(title)}"
           loading="lazy"
           onerror="this.onerror=null; this.src='img/mockup.png';">
       </button>
 
-      <button type="button" class="lp-step-btn" data-add="${esc(p.id)}">+</button>
+      <button type="button"
+        class="lp-step-btn"
+        ${okDay ? `data-add="${esc(p.id)}"` : "disabled"}>+</button>
+
+      ${note}
     </div>
   `;
 }
