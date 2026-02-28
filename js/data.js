@@ -50,7 +50,7 @@
       { id:"b10", title:"H2O", desc:"500ml gelada.", tag:"500ml", price:7.50, img:"img/mockup.png" }
     ],
 
-     Massas caseira: [
+    sobremesas: [
   { id:"ms1", title:"🧀 Macarrão à Bolonhesa com Queijo & Bacon", desc:"Macarrão envolvido em molho bolonhesa caseiro, finalizado com queijo e bacon crocante.", tag:"Fixo", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] },
 
   { id:"ms2", title:"🔥 Lasanha Artesanal Assada na Hora (Bolonhesa)", desc:"Lasanha artesanal com molho caseiro, assada na hora em vasilha de alumínio. Acompanha arroz e salada (alface e tomate).", tag:"Premium", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] },
