@@ -38,7 +38,7 @@
       porcoes:    pick("porcoes"),
       bebidas:    pick("bebidas"),
       sobremesas: pick("sobremesas"),
-      addons:     pick("addons"),
+      ons:     pick("addons"),
     };
   }
 
@@ -207,41 +207,55 @@
     });
   }
 
-  function addonsBlockHtml(categoryKey){
-    if(categoryKey !== "marmitas" && categoryKey !== "sobremesas") return "";
+function addonsBlockHtml(categoryKey){
+  if(categoryKey !== "marmitas" && categoryKey !== "sobremesas") return "";
 
-    const d = normalizeData();
-    const addons = Array.isArray(d.addons) ? d.addons : [];
-    if(!addons.length) return "";
+  const d = normalizeData();
+  const addons = Array.isArray(d.addons) ? d.addons : [];
+  if(!addons.length) return "";
 
-    const list = addons.filter(a=>{
-      const applies = Array.isArray(a.applies) ? a.applies : null;
-      if(!applies) return true;
-      return applies.includes(categoryKey);
-    });
+  const list = addons.filter(a=>{
+    const applies = Array.isArray(a.applies) ? a.applies : null;
+    if(!applies) return true;
+    return applies.includes(categoryKey);
+  });
 
-    if(!list.length) return "";
+  if(!list.length) return "";
+
+  const addonRow = (a)=>{
+    const q = qtyInCart(a.id);
+    const canDec = q > 0;
 
     return `
-      <section class="lp-addons-box">
-        <h3 class="lp-addons-title">➕ Adicionais</h3>
-        <div class="lp-addons-grid">
-          ${list.map(cardHtml).join("")}
+      <div class="lp-addon-card" data-id="${esc(a.id)}">
+        <div class="lp-addon-left">
+          <div class="lp-addon-name">${esc(a.title || a.name || "Adicional")}</div>
+          <div class="lp-addon-price">${money(a.price)}</div>
         </div>
-      </section>
-    `;
-  }
 
-  window.renderCardsQty = function(){
-    document.querySelectorAll(".product-grid").forEach((grid)=>{
-      grid.querySelectorAll(".lp-card[data-id]").forEach((card)=>{
-        const id = card.getAttribute("data-id");
-        if(!id) return;
-        refreshCard(grid, id);
-      });
-    });
+        <div class="lp-addon-step">
+          <button type="button" class="lp-addon-btn" ${canDec ? `data-dec="${esc(a.id)}"` : "disabled"}>−</button>
+
+          <button type="button" class="lp-addon-mid" data-add="${esc(a.id)}">
+            <span>Adicionar</span>
+            <span>${q}</span>
+          </button>
+
+          <button type="button" class="lp-addon-btn" data-add="${esc(a.id)}">+</button>
+        </div>
+      </div>
+    `;
   };
 
+  return `
+    <section class="lp-addons-box">
+      <h3 class="lp-addons-title">➕ Adicionais</h3>
+      <div class="lp-addons-grid">
+        ${list.map(addonRow).join("")}
+      </div>
+    </section>
+  `;
+}
   window.renderCategory = function(categoryKey, containerId){
     const el = document.getElementById(containerId);
     if(!el) return;
