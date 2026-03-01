@@ -1,11 +1,11 @@
-// js/app.js — LP Grill (Checkout Premium v2.2) — FIX DUPLICAÇÃO
+// js/app.js — LP Grill (Checkout Premium v2.2) — FIX DUPLICAÇÃO + BAIRROS
 // ✅ Endereço obrigatório (entrega) + valida raio 12 km + taxa R$1/km (mín. R$5)
 // ✅ Taxa entra no carrinho (localStorage LPGRILL_FEE_V1) e soma no total automaticamente
 // ✅ PIX (QR + copia/cola) com TXID
 // ✅ WhatsApp com pedido completo
-// ✅ NOVO DESIGNER (CSS premium injetado pelo JS)
-// ✅ SEM DUPLICAR MODAIS: remove payOverlay antigo e recria overlay se quebrado
-// ✅ FIX: 1 ÚNICO "openCheckout" + 1 ÚNICO listener global (data-open-checkout)
+// ✅ Designer (CSS premium injetado pelo JS)
+// ✅ SEM DUPLICAR MODAIS / LISTENERS
+// ✅ Bairro: sugestão ao digitar (prefixo/contém) + clique para preencher
 
 (() => {
   "use strict";
@@ -79,14 +79,35 @@
   };
 
   // =========================
-  // ✅ Products resolver (compat com render/cart)
+  // ✅ Products resolver (compat)
   // =========================
   function allProducts(){
-    const d = window.DATA || {};
-    const cats = ["marmitas","porcoes","bebidas","massas"];
-    const out = [];
-    cats.forEach(k => (Array.isArray(d[k]) ? d[k] : []).forEach(p => out.push(p)));
-    return out;
+    const base = window.DATA || window.LP_DATA || window.MENU || {};
+    const cats = base.categories || base.categorias || null;
+
+    const pick = (k)=>{
+      if(cats && Array.isArray(cats[k])) return cats[k];
+      if(Array.isArray(base[k])) return base[k];
+      return [];
+    };
+
+    const comboSrc  = pick("combo");
+    const combosSrc = pick("combos");
+    const ComboSrc  = pick("Combo");
+    const CombosSrc = pick("Combos");
+    const finalCombos = (comboSrc.length ? comboSrc
+                      : combosSrc.length ? combosSrc
+                      : ComboSrc.length ? ComboSrc
+                      : CombosSrc);
+
+    return [
+      ...pick("marmitas"),
+      ...pick("porcoes"),
+      ...pick("bebidas"),
+      ...pick("massas"),
+      ...(Array.isArray(finalCombos) ? finalCombos : []),
+      ...pick("addons")
+    ];
   }
 
   window.findProduct = function(id){
@@ -99,7 +120,13 @@
   }
 
   function getMode(){
-    return localStorage.getItem(LS.MODE) || "entrega";
+    // se não existir, assume entrega
+    return (localStorage.getItem(LS.MODE) || "entrega").toLowerCase();
+  }
+
+  function linePrice(p){
+    const promoOn = p?.promo && p?.promoPrice != null && Number(p.promoPrice) > 0;
+    return promoOn ? Number(p.promoPrice) : Number(p?.price || 0);
   }
 
   function subtotal(){
@@ -107,7 +134,7 @@
     let sum = 0;
     for(const [id,q] of Object.entries(c)){
       const p = window.findProduct(id);
-      if(p) sum += Number(p.price||0) * Number(q||0);
+      if(p) sum += linePrice(p) * Number(q||0);
     }
     return sum;
   }
@@ -205,7 +232,7 @@
   function pad2(n){ return String(n).padStart(2,"0"); }
   function field(id, value){
     const v = String(value ?? "");
-    return ${id}${pad2(v.length)}${v};
+    return `${id}${pad2(v.length)}${v}`;
   }
 
   function buildPixPayload({chave, recebedor, cidade, valor, txid}){
@@ -216,11 +243,11 @@
     const p26 = field("26", gui);
     const p52 = field("52", "0000");
     const p53 = field("53", "986");
-    const p54 = valor > 0 ? field("54", valor.toFixed(2)) : "";
+    const p54 = (valor > 0) ? field("54", Number(valor).toFixed(2)) : "";
     const p58 = field("58", "BR");
-    const p59 = field("59", recebedor.toUpperCase().slice(0,25));
-    const p60 = field("60", cidade.toUpperCase().slice(0,15));
-    const p62 = field("62", field("05", String(txid).slice(0,25)));
+    const p59 = field("59", String(recebedor || "").toUpperCase().slice(0,25));
+    const p60 = field("60", String(cidade || "").toUpperCase().slice(0,15));
+    const p62 = field("62", field("05", String(txid || "PEDIDO").slice(0,25)));
 
     const partial = p00 + p01 + p26 + p52 + p53 + p54 + p58 + p59 + p60 + p62;
     const withCrcId = partial + "6304";
@@ -228,9 +255,10 @@
     return withCrcId + crc;
   }
 
+  // (mantém o seu jeito antigo: QR via imagem do Google Charts)
   function qrUrlFromPayload(payload){
     const chl = encodeURIComponent(payload);
-    return https://chart.googleapis.com/chart?cht=qr&chs=240x240&chld=M|1&chl=${chl};
+    return `https://chart.googleapis.com/chart?cht=qr&chs=240x240&chld=M|1&chl=${chl}`;
   }
 
   // =========================
@@ -242,8 +270,9 @@
       .map(([id,q])=>{
         const p = window.findProduct(id);
         if(!p) return null;
-        const line = Number(p.price||0) * Number(q||0);
-        return • ${q}x ${p.title} — ${money(line)};
+        const line = linePrice(p) * Number(q||0);
+        const title = p.title || p.name || "Item";
+        return `• ${q}x ${title} — ${money(line)}`;
       })
       .filter(Boolean);
 
@@ -253,35 +282,35 @@
     const tot = total();
 
     const addrLines = addr ? [
-      Nome: ${addr.nome},
-      WhatsApp: ${addr.whats},
-      Rua: ${addr.rua}, Nº ${addr.numero},
-      Bairro: ${addr.bairro},
-      addr.complemento ? Compl.: ${addr.complemento} : null,
-      addr.referencia ? Ref.: ${addr.referencia} : null,
+      `Nome: ${addr.nome}`,
+      `WhatsApp: ${addr.whats}`,
+      `Rua: ${addr.rua}, Nº ${addr.numero}`,
+      `Bairro: ${addr.bairro}`,
+      addr.complemento ? `Compl.: ${addr.complemento}` : null,
+      addr.referencia ? `Ref.: ${addr.referencia}` : null,
     ].filter(Boolean) : [];
 
     const payLines = [];
     if(payMethod === "pix"){
       payLines.push("Pagamento: PIX");
-      if(pixInfo?.txid) payLines.push(TXID: ${pixInfo.txid});
+      if(pixInfo?.txid) payLines.push(`TXID: ${pixInfo.txid}`);
     }
     if(payMethod === "credit") payLines.push("Pagamento: Cartão de Crédito");
     if(payMethod === "debit")  payLines.push("Pagamento: Cartão de Débito");
 
-    const head = *Pedido — ${CONFIG.lojaNome}*\n;
-    const modeTxt = mode === "entrega" ? "🚚 Entrega" : "🏬 Retirar";
+    const head = `*Pedido — ${CONFIG.lojaNome}*\n`;
+    const modeTxt = (mode === "entrega") ? "🚚 Entrega" : "🏬 Retirar";
 
     const parts = [
       head,
-      *Modo:* ${modeTxt},
+      `*Modo:* ${modeTxt}`,
       "",
       "*Itens:*",
       ...items,
       "",
-      Subtotal: ${money(sub)},
-      Taxa: ${money(mode==="entrega" ? feeV : 0)},
-      *Total:* ${money(tot)},
+      `Subtotal: ${money(sub)}`,
+      `Taxa: ${money(mode==="entrega" ? feeV : 0)}`,
+      `*Total:* ${money(tot)}`,
       "",
       "*Endereço:*",
       ...addrLines,
@@ -294,7 +323,7 @@
 
   function waLink(text){
     const msg = encodeURIComponent(text);
-    return https://wa.me/${CONFIG.whatsappDDI55}?text=${msg};
+    return `https://wa.me/${CONFIG.whatsappDDI55}?text=${msg}`;
   }
 
   // =========================
@@ -305,7 +334,7 @@
 
     const st = document.createElement("style");
     st.id = "lpCheckoutStyles";
-    st.textContent = 
+    st.textContent = `
 :root{
   --ck-bg: rgba(10,12,16,.58);
   --ck-card: rgba(255,255,255,.94);
@@ -477,7 +506,7 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
   cursor:pointer;
 }
 #bairroSug .ck-sugbtn:hover{ background: rgba(15,23,42,.05); }
-    ;
+`;
     document.head.appendChild(st);
   }
 
@@ -490,7 +519,7 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
 
     let overlay = $("#checkoutOverlay");
     if(overlay){
-      // se existir, garante que estrutura está OK
+      // valida estrutura mínima
       if($("#ckTotalPay", overlay) && $("#addrBairro", overlay) && $("#ckPixPayload", overlay)){
         return overlay;
       }
@@ -502,7 +531,7 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
     overlay.className = "ck-overlay";
     overlay.setAttribute("aria-hidden","true");
 
-    overlay.innerHTML = 
+    overlay.innerHTML = `
       <div class="ck-sheet" role="dialog" aria-modal="true" aria-label="Checkout">
         <div class="ck-head">
           <div>
@@ -599,7 +628,7 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
           <div class="ck-box">
             <div class="ck-k">Total</div>
             <div class="ck-v" id="ckTotalPix">R$ 0,00</div>
-            <div class="ck-feeline" id="ckFeeLine"></div>
+            <div class="ck-hint" id="ckFeeLine"></div>
           </div>
 
           <div class="ck-qrwrap">
@@ -615,7 +644,7 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
                 <button class="ck-btn ghost" id="ckBackFromPix" type="button">Voltar</button>
               </div>
 
-              <div class="ck-warn" style="margin-top:10px;">
+              <div class="ck-hint" style="margin-top:10px;">
                 Após efetuar o pagamento, envie o comprovante no WhatsApp para confirmação.
                 Sem comprovante o pedido não será entregue. Clique em <strong>Pagamento concluído</strong>.
               </div>
@@ -627,7 +656,7 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
           </div>
         </section>
       </div>
-    ;
+    `;
 
     document.body.appendChild(overlay);
     return overlay;
@@ -661,7 +690,7 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
 
     if(window.Cart?.closeDrawer) window.Cart.closeDrawer();
 
-    const totalPay = $("#ckTotalPay");
+    const totalPay = $("#ckTotalPay", overlay);
     if(totalPay) totalPay.textContent = money(total());
 
     showStep(overlay, "pay");
@@ -726,7 +755,7 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
 
       const km = haversineKm(CONFIG.entrega.base, {lat:b.lat, lng:b.lng});
       if(km > CONFIG.entrega.maxKm){
-        showAddrBlock(Fora do raio de entrega (${CONFIG.entrega.maxKm} km). Selecione Retirar ou escolha outro bairro.);
+        showAddrBlock(`Fora do raio de entrega (${CONFIG.entrega.maxKm} km). Selecione Retirar ou escolha outro bairro.`);
         localStorage.setItem(LS.FEE, "0");
         window.Cart?.renderAll?.();
         return { ok:false, addr:null };
@@ -734,11 +763,11 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
 
       const feeV = calcDeliveryFeeFromKm(km);
       localStorage.setItem(LS.FEE, String(feeV));
-      setFeePreviewText(Taxa estimada: <strong>${money(feeV)}</strong> • Distância: <strong>${Math.ceil(km)} km</strong>);
+      setFeePreviewText(`Taxa estimada: <strong>${money(feeV)}</strong> • Distância: <strong>${Math.ceil(km)} km</strong>`);
       window.Cart?.renderAll?.();
     } else {
       localStorage.setItem(LS.FEE, "0");
-      setFeePreviewText(Taxa: <strong>${money(0)}</strong> (retirada));
+      setFeePreviewText(`Taxa: <strong>${money(0)}</strong> (retirada)`);
       window.Cart?.renderAll?.();
     }
 
@@ -753,7 +782,7 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
   function updateFeePreviewByBairroName(name){
     if(getMode() !== "entrega"){
       localStorage.setItem(LS.FEE, "0");
-      setFeePreviewText(Taxa: <strong>${money(0)}</strong> (retirada));
+      setFeePreviewText(`Taxa: <strong>${money(0)}</strong> (retirada)`);
       window.Cart?.renderAll?.();
       return;
     }
@@ -768,14 +797,16 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
       return;
     }
     if(!r.ok && r.reason === "raio"){
-      setFeePreviewText(Fora do raio (<strong>${CONFIG.entrega.maxKm} km</strong>). Selecione Retirar.);
+      setFeePreviewText(`Fora do raio (<strong>${CONFIG.entrega.maxKm} km</strong>). Selecione Retirar.`);
       return;
     }
-    setFeePreviewText(Taxa estimada: <strong>${money(r.fee)}</strong> • Distância: <strong>${Math.ceil(r.km)} km</strong>);
+    setFeePreviewText(`Taxa estimada: <strong>${money(r.fee)}</strong> • Distância: <strong>${Math.ceil(r.km)} km</strong>`);
   }
 
   function bindBairroAutocomplete(){
+    const overlay = $("#checkoutOverlay");
     const inp =
+      $("#addrBairro", overlay) ||
       $("#addrBairro") ||
       $("#bairro") ||
       $('input[name="bairro"]') ||
@@ -784,7 +815,7 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
 
     if(!inp) return;
 
-    let box = $("#bairroSug");
+    let box = $("#bairroSug", overlay) || $("#bairroSug");
     if(!box){
       box = document.createElement("div");
       box.id = "bairroSug";
@@ -804,15 +835,15 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
       }
 
       box.style.display = "block";
-      box.innerHTML = 
+      box.innerHTML = `
         <div class="ck-sugwrap">
-          ${list.map(b => 
+          ${list.map(b => `
             <button type="button" class="ck-sugbtn" data-bairro="${esc(b.name)}">
               ${esc(b.name)}
             </button>
-          ).join("")}
+          `).join("")}
         </div>
-      ;
+      `;
     }
 
     const onInput = () => {
@@ -845,13 +876,13 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
     const overlay = $("#checkoutOverlay");
     if(!overlay) return;
 
-    const totalPix = $("#ckTotalPix");
+    const totalPix = $("#ckTotalPix", overlay);
     if(totalPix) totalPix.textContent = money(total());
 
-    const feeLine = $("#ckFeeLine");
-    if(feeLine) feeLine.textContent = Taxa: ${money(fee())};
+    const feeLine = $("#ckFeeLine", overlay);
+    if(feeLine) feeLine.textContent = `Taxa: ${money(fee())}`;
 
-    const txid = LP${Date.now().toString().slice(-8)};
+    const txid = `LP${Date.now().toString().slice(-8)}`;
     const payload = buildPixPayload({
       chave: CONFIG.pix.chave,
       recebedor: CONFIG.pix.recebedor || CONFIG.lojaNome,
@@ -860,10 +891,10 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
       txid
     });
 
-    const ta = $("#ckPixPayload");
+    const ta = $("#ckPixPayload", overlay);
     if(ta) ta.value = payload;
 
-    const qr = $("#ckQrImg");
+    const qr = $("#ckQrImg", overlay);
     if(qr) qr.src = qrUrlFromPayload(payload);
 
     localStorage.setItem(LS.PIX_TXID, txid);
@@ -893,17 +924,17 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
 
     const a = readAddr();
     if(a){
-      $("#addrNome") && ($("#addrNome").value = a.nome || "");
-      $("#addrWhats") && ($("#addrWhats").value = a.whats || "");
-      $("#addrRua") && ($("#addrRua").value = a.rua || "");
-      $("#addrNumero") && ($("#addrNumero").value = a.numero || "");
-      $("#addrBairro") && ($("#addrBairro").value = a.bairro || "");
-      $("#addrComp") && ($("#addrComp").value = a.complemento || "");
-      $("#addrRef") && ($("#addrRef").value = a.referencia || "");
+      $("#addrNome", overlay) && ($("#addrNome", overlay).value = a.nome || "");
+      $("#addrWhats", overlay) && ($("#addrWhats", overlay).value = a.whats || "");
+      $("#addrRua", overlay) && ($("#addrRua", overlay).value = a.rua || "");
+      $("#addrNumero", overlay) && ($("#addrNumero", overlay).value = a.numero || "");
+      $("#addrBairro", overlay) && ($("#addrBairro", overlay).value = a.bairro || "");
+      $("#addrComp", overlay) && ($("#addrComp", overlay).value = a.complemento || "");
+      $("#addrRef", overlay) && ($("#addrRef", overlay).value = a.referencia || "");
     }
 
     showAddrBlock("");
-    updateFeePreviewByBairroName($("#addrBairro")?.value || "");
+    updateFeePreviewByBairroName($("#addrBairro", overlay)?.value || "");
     showStep(overlay, "addr");
 
     setTimeout(bindBairroAutocomplete, 0);
@@ -974,36 +1005,17 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
   // =========================
   function bindGlobalOpeners(){
     // Único intercept para qualquer botão/link com data-open-checkout
+    if(document.documentElement.dataset.lpCheckoutOpeners === "1") return;
+    document.documentElement.dataset.lpCheckoutOpeners = "1";
+
     document.addEventListener("click", (e) => {
-      const el = e.target?.closest?.("[data-open-checkout]");
+      const el = e.target?.closest?.("[data-open-checkout], #ctaCheckout");
       if(!el) return;
 
-      // se existe overlay, abre SEM navegar
-      if(document.getElementById("checkoutOverlay")){
-        e.preventDefault();
-        e.stopPropagation();
-        openCheckout();
-        return;
-      }
-
-      // fallback: se for button, navega
-      if(el.tagName === "BUTTON"){
-        window.location.href = "checkout.html";
-      }
-      // se for <a>, deixa seguir href normal
-    }, true);
-
-    // COMBO (não interfere no checkout)
-    document.addEventListener("click", (e) => {
-      const el = e.target?.closest?.("[data-open-combo]");
-      if(!el) return;
-      const overlay = document.getElementById("comboOverlay");
-      if(overlay){
-        e.preventDefault();
-        overlay.classList.add("is-open");
-        overlay.setAttribute("aria-hidden", "false");
-      }
-      // sem overlay: segue href
+      // abre SEM navegar
+      e.preventDefault();
+      e.stopPropagation();
+      openCheckout();
     }, true);
   }
 
@@ -1015,7 +1027,7 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
     if(!wa) return;
     wa.addEventListener("click", (e)=>{
       e.preventDefault();
-      const text = Olá! Quero fazer um pedido no *${CONFIG.lojaNome}* 😊;
+      const text = `Olá! Quero fazer um pedido no *${CONFIG.lojaNome}* 😊`;
       window.location.href = waLink(text);
     });
   }
@@ -1036,5 +1048,10 @@ html.modal-open, body.modal-open{ overflow:hidden !important; }
     window.openPaymentSheet = function(){ openCheckout(); };
   }
 
-  window.addEventListener("DOMContentLoaded", init);
+  // boot
+  if(document.readyState === "loading"){
+    window.addEventListener("DOMContentLoaded", init);
+  } else {
+    init();
+  }
 })();
