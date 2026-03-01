@@ -17,7 +17,7 @@
       // ===== FIXOS (segunda a sábado) =====
       { id:"mfixexecboi", title:"🍛 Prato Executivo da Casa (Bife de boi)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:20.90, img:"img/mockup.png", days:[1,2,3,4,5,6] },
       { id:"mfixexecfrango", title:"🍛 Prato Executivo da Casa (Bife de frango)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:20.90, img:"img/mockup.png", days:[1,2,3,4,5,6] },
-      { id:"mfixexecporco", title:"🍛 Prato Executivo da Casa (Bife de porco)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:20.90,, img:"img/mockup.png", days:[1,2,3,4,5,6] }
+      { id:"mfixexecporco", title:"🍛 Prato Executivo da Casa (Bife de porco)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:20.90, img:"img/mockup.png", days:[1,2,3,4,5,6] }
     ],
 
     porcoes: [
