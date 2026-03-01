@@ -229,6 +229,45 @@
 <!-- Render da categoria (depois que render.js carregou) -->
 <script>
   window.renderCategory("marmitas", "listMarmitas");
+  <!-- ===============================
+     MODAL ADICIONAIS (Bottom Sheet)
+     =============================== -->
+<div class="lp-modal" id="addonsModal" aria-hidden="true">
+  <div class="lp-modal__backdrop" data-close-addons></div>
+
+  <section class="lp-modal__sheet" role="dialog" aria-modal="true" aria-label="Adicionais">
+    <header class="lp-modal__head">
+      <div>
+        <strong class="lp-modal__title">Adicionais</strong>
+        <div class="lp-modal__sub" id="addonsSubtitle">Selecione e adicione ao carrinho</div>
+      </div>
+
+      <button class="lp-modal__close" type="button" data-close-addons aria-label="Fechar">✕</button>
+    </header>
+
+    <div class="lp-modal__body" id="addonsList">
+      <!-- preenchido via JS -->
+    </div>
+
+    <footer class="lp-modal__foot">
+      <div class="lp-modal__sum">
+        <span>Selecionados:</span>
+        <strong id="addonsCount">0</strong>
+        <span>• Total:</span>
+        <strong id="addonsTotal">R$ 0,00</strong>
+      </div>
+
+      <button class="lp-modal__btn" id="addonsAddBtn" type="button">
+        Adicionar ao carrinho
+      </button>
+    </footer>
+  </section>
+</div>
+
+<!-- Botão (pode ficar no header) -->
+<button class="addons-fab" id="openAddons" type="button" aria-label="Abrir Adicionais">
+  + Adicionais
+</button>
 </script>
 
 </body>
