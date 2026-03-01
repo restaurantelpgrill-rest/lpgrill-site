@@ -2,6 +2,7 @@
 // ✅ garante img, price numérico e categorias sempre presentes
 // ✅ compat: Combo aparece mesmo se o render usar "combo" ou "combos"
 // ✅ compat: Massas funciona e "sobremesas" vira alias (pra não quebrar páginas antigas)
+// ✅ addons sempre em window.DATA.addons
 (() => {
   const STORE_KEY = "LPGRILL_DATA_ADMIN_V1";
 
@@ -44,7 +45,7 @@
       { id:"b10", title:"H2O", desc:"500ml gelada.", tag:"500ml", price:7.50, img:"img/mockup.png" }
     ],
 
-    // ✅ MASSAS (categoria nova)
+    // ✅ MASSAS
     massas: [
       { id:"ms1", title:"Macarrão à Bolonhesa", desc:"Molho caseiro • queijo • bacon", price:25.90, img:"img/massas-1.jpg" },
       { id:"ms2", title:"Lasanha da Casa", desc:"Bem cremosa • porção generosa", price:29.90, img:"img/massas-2.jpg" }
@@ -65,20 +66,26 @@
   };
 
   // ==============================
-  // ✅ Compat: render antigo pode pedir "combo"/"combos" e "sobremesas"
+  // ✅ ALIASES LEGADO (sem quebrar páginas antigas)
   // ==============================
-  fallback.combo = fallback.combo || fallback.combos || [];
-  fallback.combos = fallback.combos || fallback.combo || [];
+  // combos
+  fallback.combo  = Array.isArray(fallback.combo)  ? fallback.combo  : [];
+  fallback.combos = Array.isArray(fallback.combos) ? fallback.combos : [];
+  if (!fallback.combo.length && fallback.combos.length) fallback.combo = fallback.combos;
+  if (!fallback.combos.length && fallback.combo.length) fallback.combos = fallback.combo;
 
-  fallback.massas = fallback.massas || fallback.sobremesas || [];
-  fallback.sobremesas = fallback.sobremesas || fallback.massas || []; // alias antigo
+  // massas <-> sobremesas
+  fallback.massas = Array.isArray(fallback.massas) ? fallback.massas : [];
+  fallback.sobremesas = Array.isArray(fallback.sobremesas) ? fallback.sobremesas : [];
+  if (!fallback.massas.length && fallback.sobremesas.length) fallback.massas = fallback.sobremesas;
+  if (!fallback.sobremesas.length && fallback.massas.length) fallback.sobremesas = fallback.massas;
 
   // ==============================
-  // ✅ Blindagem: garante price numérico e img string
+  // ✅ Blindagem do fallback
   // ==============================
   for (const k of Object.keys(fallback)) {
     if (!Array.isArray(fallback[k])) continue;
-    fallback[k] = fallback[k].map(it => ({
+    fallback[k] = fallback[k].map((it) => ({
       ...it,
       price: Number(it?.price || 0),
       img: (it?.img && String(it.img).trim()) ? String(it.img).trim() : "img/mockup.png"
@@ -100,9 +107,9 @@
     const title = String(o.title || "Item").trim();
     const desc  = String(o.desc  || "").trim();
     const tag   = String(o.tag   || "").trim();
-    const image = String(o.img || "img/mockup.png").trim();
+    const image = (o.img && String(o.img).trim()) ? String(o.img).trim() : "img/mockup.png";
 
-    // ✅ preserva campos extras (days/applies/promo etc) sem quebrar
+    // preserva extras
     const extra = {};
     if (Array.isArray(o.days)) extra.days = o.days;
     if (Array.isArray(o.applies)) extra.applies = o.applies;
@@ -114,47 +121,32 @@
   }
 
   function normalizeData(d){
-    // ✅ inclui massas + mantém sobremesas como alias
-    // ✅ inclui combo/combos + addons
     const out = {
-      marmitas: [],
-      porcoes: [],
-      bebidas: [],
-      massas: [],
-      sobremesas: [], // alias compat
-      combo: [],
-      combos: [],     // alias compat
+      marmitas: [], porcoes: [], bebidas: [],
+      massas: [], sobremesas: [],
+      combo: [], combos: [],
       addons: []
     };
 
     const src = isObj(d) ? d : {};
+    const pickArr = (key) => Array.isArray(src[key]) ? src[key] : [];
 
-    out.marmitas = (Array.isArray(src.marmitas) ? src.marmitas : [])
-      .map((it,i)=> normalizeItem(it,i,"m"));
+    out.marmitas = pickArr("marmitas").map((it,i)=> normalizeItem(it,i,"m"));
+    out.porcoes  = pickArr("porcoes").map((it,i)=> normalizeItem(it,i,"p"));
+    out.bebidas  = pickArr("bebidas").map((it,i)=> normalizeItem(it,i,"b"));
 
-    out.porcoes = (Array.isArray(src.porcoes) ? src.porcoes : [])
-      .map((it,i)=> normalizeItem(it,i,"p"));
-
-    out.bebidas = (Array.isArray(src.bebidas) ? src.bebidas : [])
-      .map((it,i)=> normalizeItem(it,i,"b"));
-
-    // ✅ MASSAS: aceita src.massas ou (legado) src.sobremesas
-    const massasSrc = Array.isArray(src.massas) ? src.massas
-                     : (Array.isArray(src.sobremesas) ? src.sobremesas : []);
+    // massas: aceita massas ou sobremesas (legado)
+    const massasSrc = pickArr("massas").length ? pickArr("massas") : pickArr("sobremesas");
     out.massas = massasSrc.map((it,i)=> normalizeItem(it,i,"ms"));
+    out.sobremesas = out.massas; // alias
 
-    // ✅ sobremesas vira alias das massas
-    out.sobremesas = out.massas;
-
-    // ✅ aceita tanto src.combo quanto src.combos
-    const comboSrc = Array.isArray(src.combo) ? src.combo
-                   : (Array.isArray(src.combos) ? src.combos : []);
+    // combos: aceita combo ou combos
+    const comboSrc = pickArr("combo").length ? pickArr("combo") : pickArr("combos");
     out.combo  = comboSrc.map((it,i)=> normalizeItem(it,i,"c"));
-    out.combos = out.combo;
+    out.combos = out.combo; // alias
 
-    // ✅ addons
-    out.addons = (Array.isArray(src.addons) ? src.addons : [])
-      .map((it,i)=> normalizeItem(it,i,"a"));
+    // addons
+    out.addons = pickArr("addons").map((it,i)=> normalizeItem(it,i,"a"));
 
     return out;
   }
@@ -172,10 +164,8 @@
       addons:   A.addons.length   ? A.addons   : B.addons
     };
 
-    // ✅ alias compat
-    merged.sobremesas = merged.massas;
-    merged.combos = merged.combo;
-
+    merged.sobremesas = merged.massas; // alias
+    merged.combos = merged.combo;      // alias
     return merged;
   }
 
@@ -192,27 +182,22 @@
 
   // ========== Build final DATA ==========
   const admin = loadAdmin();
-  const finalData = admin ? mergePreferAdmin(admin, fallback) : normalizeData(fallback);
+  let finalData = admin ? mergePreferAdmin(admin, fallback) : normalizeData(fallback);
 
-  // ✅ GARANTE combo mesmo se admin vier quebrado
-  if (!Array.isArray(finalData.combo) || !finalData.combo.length){
-    finalData.combo = normalizeData(fallback).combo;
-  }
-  finalData.combos = finalData.combo; // alias final
+  // ✅ garantias finais (nunca fica vazio/undefined)
+  const fb = normalizeData(fallback);
 
-  // ✅ GARANTE massas e alias sobremesas
-  if (!Array.isArray(finalData.massas) || !finalData.massas.length){
-    finalData.massas = normalizeData(fallback).massas;
-  }
-  finalData.sobremesas = finalData.massas; // alias antigo
+  if (!Array.isArray(finalData.combo) || !finalData.combo.length) finalData.combo = fb.combo;
+  finalData.combos = finalData.combo;
 
-  // ✅ GARANTE addons (se admin vier sem)
-  if (!Array.isArray(finalData.addons)){
-    finalData.addons = normalizeData(fallback).addons;
-  }
+  if (!Array.isArray(finalData.massas) || !finalData.massas.length) finalData.massas = fb.massas;
+  finalData.sobremesas = finalData.massas;
+
+  if (!Array.isArray(finalData.addons)) finalData.addons = fb.addons;
 
   window.DATA = finalData;
 
+  // compat extra (se algum script antigo usa MENU)
   window.MENU = window.MENU || {};
   window.MENU.catalog = window.DATA;
   window.MENU.items = window.DATA;
