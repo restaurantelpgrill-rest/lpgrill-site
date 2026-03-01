@@ -27,7 +27,6 @@
   <div class="container" id="infoBar"></div>
 
   <main class="container">
-    <!-- ✅ grid correto -->
     <section class="product-grid" id="gridMassas"></section>
   </main>
 
@@ -80,7 +79,8 @@
 
         <div class="drawer-actions">
           <button class="btn light" id="clearCart" type="button">Limpar</button>
-          <a class="btn primary" href="checkout.html" data-open-checkout>Finalizar</a>
+          <!-- ✅ NÃO navega, abre overlay -->
+          <button class="btn primary" type="button" data-open-checkout>Finalizar</button>
         </div>
       </div>
     </div>
@@ -218,6 +218,7 @@
 
   <!-- ===============================
        MODAL ADICIONAIS (Bottom Sheet)
+       Só aparece se tiver addons e só abre aqui (massas)
        =============================== -->
   <div class="lp-modal" id="addonsModal" aria-hidden="true">
     <div class="lp-modal__backdrop" data-close-addons></div>
@@ -242,39 +243,42 @@
           <strong id="addonsTotal">R$ 0,00</strong>
         </div>
 
+        <!-- ✅ botão FECHA (modal já adiciona no + / -) -->
         <button class="lp-modal__btn" id="addonsAddBtn" type="button">
-          Adicionar ao carrinho
+          Fechar
         </button>
       </footer>
     </section>
   </div>
 
-  <button class="addons-fab" id="openAddons" type="button" aria-label="Abrir Adicionais">
+  <button class="addons-fab" id="openAddons" type="button" aria-label="Abrir Adicionais" hidden>
     + Adicionais
   </button>
 
   <!-- Scripts (ORDEM CERTA) -->
   <script src="js/data.js"></script>
-  <script src="js/render.js"></script>
-  <script src="js/render-fix.js"></script>
   <script src="js/cart.js"></script>
+  <script src="js/render.js"></script>
   <script src="js/app.js"></script>
-  <script src="js/addons-modal.js"></script>
 
-  <!-- QRCode + checkout -->
+  <!-- QRCode + checkout (lib antes do checkout.js) -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script src="js/checkout.js"></script>
+
+  <!-- Modal Adicionais -->
+  <script src="js/addons-modal.js"></script>
 
   <script>
     // ✅ esta página é MASSAS
     window.PAGE = "massas";
-    // ✅ renderiza massas no grid correto
+
+    // ✅ renderiza massas no grid correto quando tudo carregou
     if (typeof window.renderCategory === "function") {
       window.renderCategory("massas", "gridMassas");
     }
   </script>
 
-  <!-- ✅ Badge padrão (FECHADO CERTINHO) -->
+  <!-- ✅ Badge padrão -->
   <script>
     (() => {
       const badge = document.getElementById("cartBadge");
@@ -296,6 +300,24 @@
       }
       document.addEventListener("lp:cart-change", syncBadge);
       syncBadge();
+    })();
+  </script>
+
+  <!-- ✅ Mostrar botão Adicionais só se existir addon aplicável a "massas" -->
+  <script>
+    (() => {
+      const btn = document.getElementById("openAddons");
+      try{
+        const addons = (window.DATA && Array.isArray(window.DATA.addons)) ? window.DATA.addons : [];
+        const ok = addons.some(a => {
+          const ap = Array.isArray(a.applies) ? a.applies.map(x=>String(x).toLowerCase()) : null;
+          if(!ap) return true; // sem applies = vale pra tudo
+          return ap.includes("massas") || ap.includes("sobremesas");
+        });
+        if(btn) btn.hidden = !ok;
+      }catch{
+        if(btn) btn.hidden = true;
+      }
     })();
   </script>
 
