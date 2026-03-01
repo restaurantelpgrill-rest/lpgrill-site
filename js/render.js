@@ -1,5 +1,5 @@
 // js/render.js — LP Grill (Cards com foto + stepper iFood-like)
-// ✅ Foto primeiro (livre) e depois descrições (organizado, sem sobrepor)
+// ✅ Foto primeiro e depois descrições
 // ✅ Dias (days) travam adicionar fora do dia
 // ✅ Adicionais aparecem só em marmitas e massas
 // ✅ Combo/Combos renderizam (compat total)
@@ -29,9 +29,7 @@
     const cats = base.categories || base.categorias || null;
 
     const pick = (key)=>{
-      // tenta em categories/categorias
       if (cats && Array.isArray(cats[key])) return cats[key];
-      // tenta direto no base
       if (Array.isArray(base[key])) return base[key];
       return [];
     };
@@ -52,10 +50,10 @@
       bebidas:  pick("bebidas"),
       massas:   pick("massas"),
 
-      // ✅ addons CERTOS
+      // ✅ addons
       addons:   pick("addons"),
 
-      // ✅ combos CERTOS (alias total)
+      // ✅ combos (alias total)
       combos:   finalCombos,
       combo:    finalCombos
     };
@@ -139,7 +137,7 @@
     `;
   }
 
-  // ✅ CARD: FOTO PRIMEIRO, TEXTO DEPOIS (igual você pediu)
+  // ✅ CARD
   function cardHtml(p){
     const img = getImg(p);
     const title = p.title || p.name || "";
@@ -227,20 +225,21 @@
     });
   }
 
+  // ✅ Adicionais somente em marmitas e massas
   function addonsBlockHtml(categoryKey){
-    if(categoryKey !== "marmitas" && categoryKey !== "massas") return "";
+    const keyLow = String(categoryKey || "").toLowerCase();
+    if(keyLow !== "marmitas" && keyLow !== "massas") return "";
 
     const d = normalizeData();
     const addons = Array.isArray(d.addons) ? d.addons : [];
     if(!addons.length) return "";
 
-    // ✅ compat: massas também aceita "sobremesas" se algum addon antigo usar isso
-    const accept = (categoryKey === "massas") ? ["massas","sobremesas"] : ["marmitas"];
+    // massas também aceita "sobremesas" por compat antiga (se existia)
+    const accept = (keyLow === "massas") ? ["massas","sobremesas"] : ["marmitas"];
 
     const list = addons.filter(a=>{
       const applies = Array.isArray(a.applies) ? a.applies : null;
-      if(!applies) return true;
-
+      if(!applies) return true; // sem applies = aparece
       const low = applies.map(x => String(x).toLowerCase());
       return accept.some(k => low.includes(k));
     });
@@ -250,7 +249,6 @@
     const addonRow = (a)=>{
       const q = qtyInCart(a.id);
       const canDec = q > 0;
-
       return `
         <div class="lp-addon-card" data-id="${esc(a.id)}">
           <div class="lp-addon-left">
@@ -272,16 +270,23 @@
       `;
     };
 
-     // ✅ render por categoria
+    return `
+      <section class="lp-addons-box">
+        <h3 class="lp-addons-title">+ Adicionais</h3>
+        <div class="lp-addons-grid">
+          ${list.map(addonRow).join("")}
+        </div>
+      </section>
+    `;
+  }
+
+  // ✅ render por categoria
   window.renderCategory = function(categoryKey, containerId){
     const el = document.getElementById(containerId);
     if(!el) return;
 
     const d = normalizeData();
-
-    // ✅ compat: aceitar "combo" e "combos" em qualquer página
     const key = (String(categoryKey).toLowerCase() === "combo") ? "combos" : categoryKey;
-
     const items = Array.isArray(d[key]) ? d[key] : [];
 
     if(!items.length){
@@ -290,7 +295,7 @@
       return;
     }
 
-    el.innerHTML = items.map(cardHtml).join("") + addonsBlockHtml(key);
+  el.innerHTML = items.map(cardHtml).join("");
     bindCardActions(el);
     window.Cart?.renderAll?.();
   };
@@ -302,7 +307,6 @@
 
     const d = normalizeData();
     const key = (String(categoryKey).toLowerCase() === "combo") ? "combos" : categoryKey;
-
     const items = Array.isArray(d[key]) ? d[key] : [];
 
     if(!items.length){
