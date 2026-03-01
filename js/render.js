@@ -1,7 +1,8 @@
 // js/render.js — LP Grill (Cards com foto + stepper iFood-like)
-// ✅ Foto maior e MAIS visível ao lado do "Adicionar" em TODAS as categorias
+// ✅ Foto primeiro (livre) e depois descrições (organizado, sem sobrepor)
 // ✅ Dias (days) travam adicionar fora do dia
-// ✅ Adicionais aparecem só em marmitas e massas (Massas Caseiras)
+// ✅ Adicionais aparecem só em marmitas e massas
+// ✅ Combo/Combos renderizam (compat total)
 // compatível com cart.js V3
 (() => {
   const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
@@ -28,17 +29,30 @@
     const cats = base.categories || base.categorias || null;
 
     const pick = (key)=>{
+      // tenta em categories
       if (cats && Array.isArray(cats[key])) return cats[key];
+      // tenta direto no base
       if (Array.isArray(base[key])) return base[key];
       return [];
     };
 
+    // ✅ compat combos: alguns usam "combo", outros "combos"
+    const comboSrc = pick("combo");
+    const combosSrc = pick("combos");
+    const finalCombos = (comboSrc.length ? comboSrc : combosSrc);
+
     return {
-      marmitas:   pick("marmitas"),
-      porcoes:    pick("porcoes"),
-      bebidas:    pick("bebidas"),
-      massas:     pick("massas"),
-      ons:        pick("addons"),
+      marmitas: pick("marmitas"),
+      porcoes:  pick("porcoes"),
+      bebidas:  pick("bebidas"),
+      massas:   pick("massas"),
+
+      // ✅ addons CERTOS (seu bug era "ons")
+      addons:   pick("addons"),
+
+      // ✅ combos CERTOS
+      combo:    finalCombos,
+      combos:   finalCombos, // alias
     };
   }
 
@@ -94,12 +108,10 @@
     }
 
     const canDec = q > 0;
-    const img = getImg(p);
-    const title = p.title || p.name || "";
     const note = (!okDay ? `<div class="lp-daynote">${esc(lpAvailabilityText(p))}</div>` : ``);
 
     return `
-      <div class="lp-step lp-step--thumb ${okDay ? "" : "is-locked"}" role="group" aria-label="Quantidade">
+      <div class="lp-step ${okDay ? "" : "is-locked"}" role="group" aria-label="Quantidade">
         <button type="button"
           class="lp-step-btn ${canDec ? "" : "disabled"}"
           ${canDec ? "" : "disabled"}
@@ -114,15 +126,6 @@
         </button>
 
         <button type="button"
-          class="lp-step-photo"
-          ${okDay ? `data-add="${esc(p.id)}"` : "disabled"}
-          aria-label="Adicionar">
-          <img class="lp-step-thumb" src="${esc(img)}" alt="${esc(title)}"
-            loading="lazy"
-            onerror="this.onerror=null; this.src='img/mockup.png';">
-        </button>
-
-        <button type="button"
           class="lp-step-btn"
           ${okDay ? `data-add="${esc(p.id)}"` : "disabled"}>+</button>
 
@@ -131,26 +134,28 @@
     `;
   }
 
+  // ✅ CARD: FOTO PRIMEIRO, TEXTO DEPOIS (igual você pediu)
   function cardHtml(p){
     const img = getImg(p);
     const title = p.title || p.name || "";
+
     return `
       <article class="lp-card" data-id="${esc(p.id)}">
         <div class="lp-cardrow">
-          <div class="lp-cardbody">
-            ${badgeHtml(p)}
-            <h3 class="lp-title">${esc(title)}</h3>
-            ${priceHtml(p)}
-            ${p.desc ? `<p class="lp-desc">${esc(p.desc)}</p>` : ``}
-            <div class="lp-actions">${controlsHtml(p)}</div>
-          </div>
-
           <div class="lp-media">
             <img class="lp-img"
               src="${esc(img)}"
               alt="${esc(title)}"
               loading="lazy"
               onerror="this.onerror=null; this.src='img/mockup.png';">
+          </div>
+
+          <div class="lp-cardbody">
+            ${badgeHtml(p)}
+            <h3 class="lp-title">${esc(title)}</h3>
+            ${priceHtml(p)}
+            ${p.desc ? `<p class="lp-desc">${esc(p.desc)}</p>` : ``}
+            <div class="lp-actions">${controlsHtml(p)}</div>
           </div>
         </div>
       </article>
@@ -160,7 +165,15 @@
   function allProducts(){
     const d = normalizeData();
     const addons = Array.isArray(d.addons) ? d.addons : [];
-    return [...d.marmitas, ...d.porcoes, ...d.bebidas, ...d.massas, ...addons];
+    const combos = Array.isArray(d.combos) ? d.combos : [];
+    return [
+      ...d.marmitas,
+      ...d.porcoes,
+      ...d.bebidas,
+      ...d.massas,
+      ...combos,
+      ...addons
+    ];
   }
 
   function refreshCard(container, id){
@@ -199,6 +212,7 @@
       if(decBtn){
         const id = decBtn.getAttribute("data-dec");
         if(!id) return;
+
         window.Cart?.dec?.(id);
         refreshCard(container, id);
         window.Cart?.renderAll?.();
@@ -207,61 +221,71 @@
     });
   }
 
-function addonsBlockHtml(categoryKey){
-  if(categoryKey !== "marmitas" && categoryKey !== "massas") return "";
+  function addonsBlockHtml(categoryKey){
+    if(categoryKey !== "marmitas" && categoryKey !== "massas") return "";
 
-  const d = normalizeData();
-  const addons = Array.isArray(d.addons) ? d.addons : [];
-  if(!addons.length) return "";
+    const d = normalizeData();
+    const addons = Array.isArray(d.addons) ? d.addons : [];
+    if(!addons.length) return "";
 
-  const list = addons.filter(a=>{
-    const applies = Array.isArray(a.applies) ? a.applies : null;
-    if(!applies) return true;
-    return applies.includes(categoryKey);
-  });
+    // ✅ compat: massas também aceita "sobremesas" caso algum addon antigo use isso
+    const accept = (categoryKey === "massas") ? ["massas","sobremesas"] : ["marmitas"];
 
-  if(!list.length) return "";
+    const list = addons.filter(a=>{
+      const applies = Array.isArray(a.applies) ? a.applies : null;
+      if(!applies) return true;
+      const low = applies.map(x => String(x).toLowerCase());
+      return accept.some(k => low.includes(k));
+    });
 
-  const addonRow = (a)=>{
-    const q = qtyInCart(a.id);
-    const canDec = q > 0;
+    if(!list.length) return "";
+
+    const addonRow = (a)=>{
+      const q = qtyInCart(a.id);
+      const canDec = q > 0;
+
+      return `
+        <div class="lp-addon-card" data-id="${esc(a.id)}">
+          <div class="lp-addon-left">
+            <div class="lp-addon-name">${esc(a.title || a.name || "Adicional")}</div>
+            <div class="lp-addon-price">${money(a.price)}</div>
+          </div>
+
+          <div class="lp-addon-step">
+            <button type="button" class="lp-addon-btn" ${canDec ? `data-dec="${esc(a.id)}"` : "disabled"}>−</button>
+
+            <button type="button" class="lp-addon-mid" data-add="${esc(a.id)}">
+              <span>Adicionar</span>
+              <span>${q}</span>
+            </button>
+
+            <button type="button" class="lp-addon-btn" data-add="${esc(a.id)}">+</button>
+          </div>
+        </div>
+      `;
+    };
 
     return `
-      <div class="lp-addon-card" data-id="${esc(a.id)}">
-        <div class="lp-addon-left">
-          <div class="lp-addon-name">${esc(a.title || a.name || "Adicional")}</div>
-          <div class="lp-addon-price">${money(a.price)}</div>
+      <section class="lp-addons-box">
+        <h3 class="lp-addons-title">➕ Adicionais</h3>
+        <div class="lp-addons-grid">
+          ${list.map(addonRow).join("")}
         </div>
-
-        <div class="lp-addon-step">
-          <button type="button" class="lp-addon-btn" ${canDec ? `data-dec="${esc(a.id)}"` : "disabled"}>−</button>
-
-          <button type="button" class="lp-addon-mid" data-add="${esc(a.id)}">
-            <span>Adicionar</span>
-            <span>${q}</span>
-          </button>
-
-          <button type="button" class="lp-addon-btn" data-add="${esc(a.id)}">+</button>
-        </div>
-      </div>
+      </section>
     `;
-  };
+  }
 
-  return `
-    <section class="lp-addons-box">
-      <h3 class="lp-addons-title">➕ Adicionais</h3>
-      <div class="lp-addons-grid">
-        ${list.map(addonRow).join("")}
-      </div>
-    </section>
-  `;
-}
+  // ✅ render por categoria
   window.renderCategory = function(categoryKey, containerId){
     const el = document.getElementById(containerId);
     if(!el) return;
 
     const d = normalizeData();
-    const items = Array.isArray(d[categoryKey]) ? d[categoryKey] : [];
+
+    // ✅ compat: aceitar "combo" e "combos"
+    const key = (categoryKey === "combo") ? "combos" : categoryKey;
+
+    const items = Array.isArray(d[key]) ? d[key] : [];
 
     if(!items.length){
       el.innerHTML = `<div class="lp-empty">Sem itens nesta categoria.</div>`;
@@ -269,17 +293,20 @@ function addonsBlockHtml(categoryKey){
       return;
     }
 
-    el.innerHTML = items.map(cardHtml).join("") + addonsBlockHtml(categoryKey);
+    el.innerHTML = items.map(cardHtml).join("") + addonsBlockHtml(key);
     bindCardActions(el);
     window.Cart?.renderAll?.();
   };
 
+  // ✅ highlights
   window.renderHighlights = function(categoryKey, containerId, limit=4){
     const el = document.getElementById(containerId);
     if(!el) return;
 
     const d = normalizeData();
-    const items = Array.isArray(d[categoryKey]) ? d[categoryKey] : [];
+    const key = (categoryKey === "combo") ? "combos" : categoryKey;
+
+    const items = Array.isArray(d[key]) ? d[key] : [];
 
     if(!items.length){
       el.innerHTML = `<div class="lp-empty">Sem itens.</div>`;
