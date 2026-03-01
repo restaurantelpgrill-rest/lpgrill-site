@@ -192,93 +192,91 @@
     if(next) card.replaceWith(next);
   }
 
-  function bindCardActions(container){
-    if(!container) return;
+function bindCardActions(container){
+  if(!container) return;
 
-    container.addEventListener("click", (e)=>{
-      const addBtn = e.target.closest("[data-add]");
-      const decBtn = e.target.closest("[data-dec]");
+  container.addEventListener("click", (e)=>{
+    const addBtn = e.target.closest("[data-add]");
+    const decBtn = e.target.closest("[data-dec]");
 
-      if(addBtn){
-        const id = addBtn.getAttribute("data-add");
-        if(!id) return;
+    if(addBtn){
+      const id = addBtn.getAttribute("data-add");
+      if(!id) return;
 
-        const p = allProducts().find(x => x.id === id);
-        // ✅ trava fora do dia: só deixa mexer se já tiver >0
-        if(p && !lpIsAvailable(p) && qtyInCart(id) === 0) return;
+      const p = allProducts().find(x => x.id === id);
+      if(p && !lpIsAvailable(p) && qtyInCart(id) === 0) return;
 
-        window.Cart?.add?.(id);
-        refreshCard(container, id);
-        window.Cart?.renderAll?.();
-        return;
-      }
+      window.Cart?.add?.(id);
+      refreshCard(container, id);
+      window.Cart?.renderAll?.();
+      return;
+    }
 
-      if(decBtn){
-        const id = decBtn.getAttribute("data-dec");
-        if(!id) return;
+    if(decBtn){
+      const id = decBtn.getAttribute("data-dec");
+      if(!id) return;
 
-        window.Cart?.dec?.(id);
-        refreshCard(container, id);
-        window.Cart?.renderAll?.();
-        return;
-      }
-    });
-  }
+      window.Cart?.dec?.(id);
+      refreshCard(container, id);
+      window.Cart?.renderAll?.();
+      return;
+    }
+  });
+}
 
-  // ✅ Adicionais somente em marmitas e massas
   function addonsBlockHtml(categoryKey){
-    const keyLow = String(categoryKey || "").toLowerCase();
-    if(keyLow !== "marmitas" && keyLow !== "massas") return "";
+  const keyLow = String(categoryKey || "").toLowerCase();
+  if(keyLow !== "marmitas" && keyLow !== "massas") return "";
 
-    const d = normalizeData();
-    const addons = Array.isArray(d.addons) ? d.addons : [];
-    if(!addons.length) return "";
+  const d = normalizeData();
+  const addons = Array.isArray(d.addons) ? d.addons : [];
+  if(!addons.length) return "";
 
-    // massas também aceita "sobremesas" por compat antiga (se existia)
-    const accept = (keyLow === "massas") ? ["massas","sobremesas"] : ["marmitas"];
+  const accept = (keyLow === "massas") ? ["massas","sobremesas"] : ["marmitas"];
 
-    const list = addons.filter(a=>{
-      const applies = Array.isArray(a.applies) ? a.applies : null;
-      if(!applies) return true; // sem applies = aparece
-      const low = applies.map(x => String(x).toLowerCase());
-      return accept.some(k => low.includes(k));
-    });
+  const list = addons.filter(a=>{
+    const applies = Array.isArray(a.applies) ? a.applies : null;
+    if(!applies) return true;
+    const low = applies.map(x => String(x).toLowerCase());
+    return accept.some(k => low.includes(k));
+  });
 
-    if(!list.length) return "";
+  if(!list.length) return "";
 
-    const addonRow = (a)=>{
-      const q = qtyInCart(a.id);
-      const canDec = q > 0;
-      return `
-        <div class="lp-addon-card" data-id="${esc(a.id)}">
-          <div class="lp-addon-left">
-            <div class="lp-addon-name">${esc(a.title || a.name || "Adicional")}</div>
-            <div class="lp-addon-price">${money(a.price)}</div>
-          </div>
-
-          <div class="lp-addon-step">
-            <button type="button" class="lp-addon-btn" ${canDec ? `data-dec="${esc(a.id)}"` : "disabled"}>−</button>
-
-            <button type="button" class="lp-addon-mid" data-add="${esc(a.id)}">
-              <span>Adicionar</span>
-              <span>${q}</span>
-            </button>
-
-            <button type="button" class="lp-addon-btn" data-add="${esc(a.id)}">+</button>
-          </div>
-        </div>
-      `;
-    };
+  const addonRow = (a)=>{
+    const q = qtyInCart(a.id);
+    const canDec = q > 0;
 
     return `
-      <section class="lp-addons-box">
-        <h3 class="lp-addons-title">+ Adicionais</h3>
-        <div class="lp-addons-grid">
-          ${list.map(addonRow).join("")}
+      <div class="lp-addon-card" data-id="${esc(a.id)}">
+        <div class="lp-addon-left">
+          <div class="lp-addon-name">${esc(a.title || a.name || "Adicional")}</div>
+          <div class="lp-addon-price">${money(a.price)}</div>
         </div>
-      </section>
+
+        <div class="lp-addon-step">
+          <button type="button" class="lp-addon-btn" ${canDec ? `data-dec="${esc(a.id)}"` : "disabled"}>−</button>
+
+          <button type="button" class="lp-addon-mid" data-add="${esc(a.id)}">
+            <span>Adicionar</span>
+            <span>${q}</span>
+          </button>
+
+          <button type="button" class="lp-addon-btn" data-add="${esc(a.id)}">+</button>
+        </div>
+      </div>
     `;
-  }
+  };
+
+  return `
+    <section class="lp-addons-box">
+      <h3 class="lp-addons-title">+ Adicionais</h3>
+      <div class="lp-addons-grid">
+        ${list.map(addonRow).join("")}
+      </div>
+    </section>
+  `;
+}
 
   // ✅ render por categoria
   window.renderCategory = function(categoryKey, containerId){
