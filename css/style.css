@@ -1,13 +1,11 @@
-
 /* ==========================================================
    LP GRILL — PREMIUM LIGHT / iFood-like (MOBILE FIRST)
-   ✔ padroniza todas páginas
-   ✔ reduz cards e tiles para caber no celular
-   ✔ remove fundo rosa / deixa claro premium
-   ✔ suporta imagens nas categorias (foto real)
-   ✔ FIX: barra fixa não tampa conteúdo
-   ✔ FIX: checkout não corta e respeita rolagem
-   ✔ FIX: sem conflitos de drawer/cart/qty
+   ✅ CSS LIMPO / SEM DUPLICAÇÃO
+   ✅ Padrão Massas em todas páginas (cards com foto)
+   ✅ Mobile ajustado: itens encaixam e botões menores
+   ✅ Stepper único (sem conflitos)
+   ✅ Modal Adicionais por cima (igual pagamento)
+   ✅ QR code sempre aparece no checkout
    ========================================================== */
 
 /* =========================
@@ -140,8 +138,7 @@ p{ margin:6px 0 0; }
 }
 
 /* ============================================================
-   TOP BANNER (FOTO NOVA) — FULL BLEED REAL
-   ✅ funciona mesmo com container/padding
+   TOP BANNER (FOTO) — FULL BLEED
 ============================================================ */
 .top-banner{
   position: relative;
@@ -151,15 +148,12 @@ p{ margin:6px 0 0; }
   display: grid;
   place-items: center;
 
-  /* só arredonda embaixo (fica premium) */
   border-bottom-left-radius: 18px;
   border-bottom-right-radius: 18px;
 
   background: #fff;
   box-shadow: 0 10px 28px rgba(0,0,0,.06);
 }
-
-/* garante que o banner “encoste” logo abaixo do header */
 .pagebar + .top-banner{ margin-top: 0; }
 
 .top-banner img{
@@ -170,7 +164,6 @@ p{ margin:6px 0 0; }
   object-position: center;
 }
 
-/* FULL BLEED: ocupa 100vw mesmo fora do container */
 .top-banner.full-bleed{
   width: 100vw;
   margin-left: calc(50% - 50vw);
@@ -359,7 +352,7 @@ p{ margin:6px 0 0; }
 }
 
 .tile,
-.lp-card{
+.lp-homecard{
   position:relative;
   background: rgba(255,255,255,.92);
   border:1px solid rgba(17,24,39,.10);
@@ -374,16 +367,16 @@ p{ margin:6px 0 0; }
   transition: transform .15s ease, box-shadow .15s ease, border-color .15s ease;
 }
 .tile:hover,
-.lp-card:hover{
+.lp-homecard:hover{
   transform: translateY(-1px);
   box-shadow: var(--shadow2);
   border-color: rgba(17,24,39,.14);
 }
 .tile:active,
-.lp-card:active{ transform: scale(.99); }
+.lp-homecard:active{ transform: scale(.99); }
 
 .tile .tile-media,
-.lp-card .lp-media{
+.lp-homecard .lp-media{
   width:54px;
   height:54px;
   border-radius:16px;
@@ -394,204 +387,206 @@ p{ margin:6px 0 0; }
   flex:0 0 auto;
 }
 .tile .tile-media img,
-.lp-card .lp-media img{
+.lp-homecard .lp-media img{
   width:100%;
   height:100%;
   object-fit:cover;
   display:block;
 }
 
-.tile-title,
-.lp-card h3{
-  margin:0;
-  font-size:18px;
-  font-weight:950;
-  letter-spacing:-.02em;
-  line-height:1.05;
-}
-.tile-sub,
-.lp-card p{
-  margin:6px 0 0;
-  color:var(--muted);
-  font-size:12.5px;
-  line-height:1.25;
-}
+.tile-title{ margin:0; font-size:18px; font-weight:950; letter-spacing:-.02em; line-height:1.05; }
+.tile-sub{ margin:6px 0 0; color:var(--muted); font-size:12.5px; line-height:1.25; }
 
-.tile.highlight,
-.lp-card.checkout{
+.tile.highlight{
   border:2px solid rgba(22,163,74,.28);
   box-shadow: 0 18px 46px rgba(22,163,74,.10), var(--shadow1);
 }
-.tile.highlight .tile-title,
-.lp-card.checkout h3{ font-size:19px; }
+.tile.highlight .tile-title{ font-size:19px; }
 
 @media (min-width: 860px){
   .grid, .lp-grid{ grid-template-columns: repeat(3, minmax(0,1fr)); }
-  .tile, .lp-card{ min-height:120px; }
+  .tile, .lp-homecard{ min-height:120px; }
 }
 
 /* ============================================================
-   PRODUCTS (cards)
+   ✅ PRODUTOS (PADRÃO MASSAS EM TODAS PÁGINAS)
+   render.js gera: .lp-card .lp-cardrow .lp-media + .lp-cardbody
 ============================================================ */
-.product-grid{
+
+/* grid de produtos */
+.product-grid,
+#gridMassas,#gridMarmitas,#gridBebidas,#gridPorcoes,#gridCombos{
   display:grid;
   grid-template-columns: repeat(1, minmax(0,1fr));
   gap:12px;
   margin-top:12px;
 }
 @media(min-width:820px){
-  .product-grid{ grid-template-columns: repeat(2, minmax(0,1fr)); }
+  .product-grid,
+  #gridMassas,#gridMarmitas,#gridBebidas,#gridPorcoes,#gridCombos{
+    grid-template-columns: repeat(2, minmax(0,1fr));
+  }
 }
 
-.product{
+/* card do produto */
+.lp-card{
   background: rgba(255,255,255,.94);
   border:1px solid rgba(17,24,39,.10);
   border-radius: var(--radius2);
   box-shadow: var(--shadow1);
   overflow:hidden;
-  display:flex;
-  gap:12px;
   padding:12px;
 }
 
-.pimg{
-  width:78px; height:78px;
+/* linha: FOTO + TEXTO */
+.lp-cardrow{
+  display:flex;
+  gap:12px;
+  align-items:flex-start;
+}
+
+/* FOTO — sempre visível */
+.lp-media{
+  width:92px;
+  height:92px;
   border-radius:16px;
+  overflow:hidden;
   border:1px solid rgba(17,24,39,.10);
-  background: linear-gradient(180deg, rgba(127,29,29,.10), rgba(255,255,255,.85));
-  object-fit:cover;
   box-shadow: 0 10px 18px rgba(17,24,39,.10);
+  flex:0 0 92px;
+  align-self:center;
+  background:#fff;
 }
-.pbody{ flex:1; min-width:0; }
-.ptitle{ display:flex; align-items:flex-start; justify-content:space-between; gap:10px; }
-.ptitle strong{ font-size:14px; font-weight:950; }
-.price{ font-weight:950; color: var(--wine); }
-.pdesc{ margin-top:6px; font-size:12px; color:var(--muted); line-height:1.35; }
-
-/* ============================================================
-   ✅ FOTO NO CANTO DIREITO DO CARD (fora dos botões)
-   mantém stepper igual, só reposiciona a thumb
-============================================================ */
-
-/* garante que o card é referência */
-.product{
-  position: relative;
+.lp-media img{
+  width:100%;
+  height:100%;
+  object-fit:cover;
+  display:block;
 }
 
-/* reserva espaço do lado direito pro canto da foto (não encosta nos botões) */
-.product .lp-step{
-  padding-right: 86px; /* espaço para a foto no canto */
+/* TEXTO */
+.lp-cardbody{
+  flex:1;
+  min-width:0;
 }
 
-/* botão da foto vira “badge” no canto do card */
-.product .lp-step-photo{
-  position: absolute;
-  right: 20px;
-  top: 35%;   /* 👈 sobe a foto */
-  transform: translateY(-50%);
+.lp-title{
+  margin:0;
+  font-size:14.5px;
+  font-weight:950;
+  letter-spacing:-.01em;
 }
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
-  padding: 0;
-  margin: 0;
-
-  border: 1px solid rgba(17,24,39,.12);
-  background: #fff;
-  box-shadow: 0 12px 22px rgba(17,24,39,.14);
-  overflow: hidden;
-
-  display: grid;
-  place-items: center;
-  z-index: 2;
+.lp-desc{
+  margin-top:6px;
+  font-size:12px;
+  color:var(--muted);
+  line-height:1.35;
 }
 
-/* a imagem ocupa o quadrado */
-.product .lp-step-thumb{
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  display: block;
+/* preços (se existir) */
+.lp-price{
+  display:flex;
+  align-items:baseline;
+  gap:10px;
+  margin-top:6px;
+}
+.lp-old{
+  opacity:.55;
+  text-decoration: line-through;
+  font-weight:900;
+  font-size:12.5px;
+}
+.lp-now{
+  font-weight:1000;
+  color: var(--wine);
+  font-size:13px;
 }
 
-/* mobile: só ajusta um pouco */
-@media (max-width: 420px){
-  .product .lp-step{ padding-right: 78px; }
-  .product .lp-step-photo{
-    width: 56px;
-    height: 56px;
-    border-radius: 14px;
-    right: 10px;
-  }
-   /* ===== FOTO PADRÃO NO CANTO (todas as páginas) ===== */
-.lp-step-photo{
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
-  overflow: hidden;
-  background: #fff;
-  display: grid;
-  place-items: center;
-}
-
-.lp-step-thumb{
-  width: 100%;
-  height: 100%;
-  object-fit: cover;      /* ✅ mantém padrão quadrado bonito */
-  object-position: center;/* ✅ centraliza */
-  display: block;
-}
-}
-
-/* ============================================================
-   ✅ MENU STEPPER (−  Adicionar X  +) — SEM CONFLITO COM CARRINHO
-   (funciona se seu HTML usar .qty dentro do card do produto)
-============================================================ */
-.product .qty{
-  display:inline-flex;
-  align-items:center;
-  gap:8px;
-  margin-top:10px;
-  padding:6px;
-  border-radius:14px;
+/* badges */
+.lp-badges{ display:flex; gap:6px; flex-wrap:wrap; margin-bottom:6px; }
+.lp-badge{
+  font-size:11px;
+  font-weight:1000;
+  padding:5px 8px;
+  border-radius:999px;
   border:1px solid rgba(17,24,39,.10);
-  background: rgba(255,255,255,.86);
-  box-shadow: 0 8px 18px rgba(17,24,39,.06);
+  background: rgba(2,6,23,.03);
 }
 
-.product .qty button{
+/* ============================================================
+   ✅ STEPPER ÚNICO (SEM FOTO / SEM DUPLICAÇÃO)
+   - Adicionar X +
+============================================================ */
+.lp-actions{ margin-top:10px; }
+
+.lp-step{
+  display:flex;
+  align-items:center;
+  gap:10px;
+  flex-wrap:nowrap;
+}
+
+/* botões - e + */
+.lp-step-btn{
+  width:38px;
   height:38px;
   border-radius:12px;
   border:1px solid rgba(17,24,39,.14);
   background:#fff;
   cursor:pointer;
   font-weight:1000;
+  font-size:18px;
+  line-height:1;
+  display:grid;
+  place-items:center;
   transition: transform .08s ease, box-shadow .12s ease;
 }
-
-.product .qty button:hover{
+.lp-step-btn:hover{
   transform: translateY(-1px);
   box-shadow: 0 12px 22px rgba(17,24,39,.12);
 }
-.product .qty button:active{ transform: scale(.99); }
+.lp-step-btn:active{ transform: scale(.99); }
+.lp-step-btn.disabled{ opacity:.55; }
 
-.product .qty button:first-child,
-.product .qty button:last-child{
-  width:38px;
-  font-size:18px;
-  display:grid;
-  place-items:center;
-  line-height:1;
-}
-
-.product .qty button:nth-child(2){
-  width:auto;
-  min-width:120px;
-  padding:0 12px;
-  font-size:13px;
-  font-weight:1000;
+/* botão do meio */
+.lp-step-mid{
+  height:38px;
+  border-radius:12px;
+  border:1px solid rgba(127,29,29,.18);
   background: linear-gradient(180deg, rgba(211,47,47,.10), rgba(127,29,29,.06));
-  border-color: rgba(127,29,29,.18);
+  cursor:pointer;
+  font-weight:1000;
+  font-size:13px;
+  padding:0 12px;
+  min-width:120px;
+
+  display:inline-flex;
+  align-items:center;
+  justify-content:center;
+  gap:8px;
+}
+.lp-step-text{ font-weight:1000; }
+.lp-step-qty{ font-weight:1100; }
+
+/* lock do dia */
+.lp-step.is-locked{ opacity:.60; filter: grayscale(.10); }
+.lp-daynote{ margin-top:8px; font-size:12px; font-weight:800; opacity:.85; }
+
+/* ============================================================
+   ✅ MOBILE: encaixar melhor e botões menores
+============================================================ */
+@media (max-width: 520px){
+  .lp-media{
+    width:80px; height:80px; flex:0 0 80px;
+    border-radius:14px;
+  }
+  .lp-card{ padding:11px; }
+  .lp-title{ font-size:14px; }
+  .lp-desc{ font-size:11.5px; }
+
+  .lp-step{ gap:8px; }
+  .lp-step-btn{ width:34px; height:34px; border-radius:11px; font-size:17px; }
+  .lp-step-mid{ height:34px; min-width:104px; border-radius:11px; font-size:12.5px; padding:0 10px; }
 }
 
 /* ============================================================
@@ -792,7 +787,7 @@ p{ margin:6px 0 0; }
 .cname{ font-weight:1000; font-size:15px; letter-spacing:-.01em; }
 .cdesc{ font-size:12.5px; color:var(--muted); margin-top:4px; line-height:1.35; }
 
-/* ✅ QUANTIDADE DO CARRINHO — SÓ NO DRAWER (não quebra menu) */
+/* quantidade no carrinho (drawer) */
 .drawer .qty{
   display:flex;
   align-items:center;
@@ -816,7 +811,6 @@ p{ margin:6px 0 0; }
 }
 .drawer .qbtn:active{ transform: translateY(0px) scale(.99); }
 
-/* ações */
 .drawer-actions{
   display:flex;
   gap:10px;
@@ -957,7 +951,6 @@ p{ margin:6px 0 0; }
   box-shadow: var(--shadow1);
 }
 
-/* botões checkout */
 .ck-actions{ display:flex; gap:10px; margin-top:12px; }
 .ck-btn{
   height:54px;
@@ -1007,581 +1000,8 @@ p{ margin:6px 0 0; }
 }
 
 /* ============================================================
-   EXTRAS: toque premium
+   ✅ QR CODE (checkout) — QUADRADO FIXO
 ============================================================ */
-button,
-.qbtn,
-.ck-pay,
-.ck-paybtn,
-.cta,
-.drawer-actions .btn,
-.icon-btn{
-  -webkit-tap-highlight-color: transparent;
-}
-/* ===== CARRINHO: botão REMOVER bonito e alinhado ===== */
-.cart .remove-item,
-.cart .btn-remove,
-.cart button[data-action="remove"],
-.cart .item-remove {
-  border: 1px solid #dcdcdc;
-  background: #fff;
-  border-radius: 14px;
-  height: 38px;
-  padding: 0 14px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #111;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-  cursor: pointer;
-}
-
-.cart .remove-item:active,
-.cart .btn-remove:active,
-.cart button[data-action="remove"]:active,
-.cart .item-remove:active {
-  transform: translateY(1px);
-}
-/* ===== MENU: controles de adicionar (igual Voltar ao Menu) ===== */
-.menu .qty-btn,
-.menu .add-btn,
-.menu .btn-add,
-.menu button[data-action="dec"],
-.menu button[data-action="inc"],
-.menu button[data-action="add"]{
-  border: 1px solid #dcdcdc;
-  background: #fff;
-  border-radius: 14px;
-  height: 38px;
-  padding: 0 14px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #111;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-
-/* Deixar o “-” e “+” quadradinhos e bonitos */
-.menu button[data-action="dec"],
-.menu button[data-action="inc"],
-.menu .qty-btn{
-  width: 42px;
-  padding: 0;
-}
-/* ===============================
-   MARMITAS / MENU - ARRUMO GERAL
-   Foto ao lado + botões clean
-================================ */
-
-/* Grid de cards */
-.menu-grid{
-  display:grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
-  gap:16px;
-}
-
-@media (max-width: 900px){
-  .menu-grid{ grid-template-columns: 1fr; }
-}
-
-/* Card (tenta pegar qualquer card comum) */
-.menu-grid > *{
-  background:#fff;
-  border:1px solid rgba(0,0,0,.08);
-  border-radius:18px;
-  padding:16px;
-  box-shadow: 0 10px 26px rgba(0,0,0,.06);
-}
-
-/* Dentro do card: vira 2 colunas (texto | foto) */
-.menu-grid > *{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:14px;
-}
-
-/* BLOCO DA FOTO: manda pra direita */
-.menu-grid img{
-  width:92px;
-  height:92px;
-  object-fit:cover;
-  border-radius:16px;
-  flex: 0 0 92px;
-  align-self:center;
-}
-
-/* Textos não “invadem” a foto */
-.menu-grid h3,
-.menu-grid h2,
-.menu-grid .title{
-  margin:0;
-}
-
-/* Área de controles: alinhar botões */
-.menu-grid .controls,
-.menu-grid .qty-control,
-.menu-grid .actions{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  margin-top:10px;
-  flex-wrap:wrap;
-}
-
-/* Botões (igual Voltar ao Menu) */
-.menu-grid button{
-  border: 1px solid #dcdcdc;
-  background: #fff;
-  border-radius: 14px;
-  height: 38px;
-  padding: 0 14px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #111;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-
-.menu-grid button:active{ transform: translateY(1px); }
-
-/* Botões + e - com tamanho fixo */
-.menu-grid button.plus,
-.menu-grid button.minus,
-.menu-grid button[data-action="inc"],
-.menu-grid button[data-action="dec"]{
-  width:42px;
-  padding:0;
-}
-
-/* Número do contador (se tiver span/label no meio) */
-.menu-grid .qty,
-.menu-grid .qty-number,
-.menu-grid .count{
-  min-width: 26px;
-  text-align:center;
-  font-weight:700;
-  color:#111;
-}
-/* ================================
-   MARMITAS: corrigir SOMENTE foto + botões
-   (sem mexer no carrinho/checkout)
-=================================== */
-
-/* 1) Card vira 2 colunas: texto à esquerda / foto à direita */
-#listMarmitas > *{
-  display:flex;
-  align-items:flex-start;
-  justify-content:space-between;
-  gap:14px;
-}
-
-/* garante que o texto não “empurre” a foto pra baixo */
-#listMarmitas > * > :first-child{ flex:1; min-width:0; }
-
-/* aplica somente para imagens grandes do card (se existirem) */
-#listMarmitas img:not(.lp-step-thumb){
-  width:92px;
-  height:92px;
-  object-fit:cover;
-  border-radius:16px;
-}
-
-/* 3) Área dos botões (qualquer bloco de ação/quantidade dentro do card) */
-#listMarmitas .controls,
-#listMarmitas .actions,
-#listMarmitas .qty,
-#listMarmitas .qty-control,
-#listMarmitas [class*="qty"],
-#listMarmitas [class*="control"],
-#listMarmitas [class*="action"]{
-  display:flex;
-  align-items:center;
-  gap:8px;
-  flex-wrap:wrap;
-}
-
-/* 4) BOTÕES do menu: estilo igual “Voltar ao Menu” (clean) */
-#listMarmitas button,
-#listMarmitas .btn{
-  border: 1px solid #dcdcdc;
-  background: #fff;
-  border-radius: 14px;
-  height: 38px;
-  padding: 0 14px;
-  font-size: 14px;
-  font-weight: 600;
-  color: #111;
-  cursor: pointer;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  line-height: 1;
-}
-
-#listMarmitas button:active,
-#listMarmitas .btn:active{
-  transform: translateY(1px);
-}
-
-/* 5) Botões + e - com tamanho fixo (se tiver data-action) */
-#listMarmitas button[data-action="inc"],
-#listMarmitas button[data-action="dec"]{
-  width:42px;
-  padding:0;
-}
-
-/* 6) Se seu “Adicionar” estiver com texto tipo "Adicionar 0", segura tamanho */
-#listMarmitas button[data-action="add"],
-#listMarmitas button.add,
-#listMarmitas .add-btn{
-  min-width:110px;
-}
-/* Foto ao lado do Adicionar (sem mudar o botão) */
-.qty--withthumb{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-.addwrap{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-/* miniatura */
-.add-thumb{
-  width:44px;
-  height:44px;
-  border-radius:12px;
-  object-fit:cover;
-  border:1px solid rgba(0,0,0,.10);
-  box-shadow: 0 4px 12px rgba(0,0,0,.10);
-}
-/* opcional: esconder a foto antiga do card se ela estiver duplicada */
-.prod-img{ display:none; }
-/* ✅ Thumb ao lado direito fora do "Adicionar" (mais visível) */
-.lp-step-mid{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-/* a thumb fica no fim, sem empurrar texto */
-.lp-step-thumb{
-  width:52px;          /* MAIS VISÍVEL */
-  height:52px;
-  border-radius:14px;
-  object-fit:cover;
-  flex:0 0 auto;
-  border:1px solid rgba(0,0,0,.12);
-  box-shadow: 0 8px 18px rgba(0,0,0,.12);
-}
-/* remove a foto pequena antiga */
-.lp-media{
-  display:none;
-}
-.lp-step-thumb{
-  width:58px;
-  height:58px;
-  border-radius:16px;
-  object-fit:cover;
-  border:1px solid rgba(0,0,0,.12);
-  box-shadow: 0 8px 20px rgba(0,0,0,.15);
-}
-.lp-step-mid{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  padding-right:6px;
-}
-/* ===== Foto ao lado direito fora do "Adicionar" — versão premium (sem cortar) ===== */
-
-/* garante que o stepper tenha altura certa */
-.lp-step{
-  align-items:center;
-  gap:10px;
-}
-
-/* botão do meio vira uma “pílula”  */
-{
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:12px;
-  min-height:56px;     /* altura suficiente */
-  padding:8px 10px;    /* espaço interno */
-  overflow:hidden;     /* não deixa a imagem escapar */
-}
-
-/* deixa texto e quantidade sempre visíveis */
-.lp-step-text,
-.lp-step-qty{
-  display:inline-flex;
-  align-items:center;
-  line-height:1;
-}
-
-/* FOTO: grande mas controlada */
-.lp-step-thumb{
-  width:52px;          /* tamanho ideal */
-  height:52px;
-  border-radius:14px;
-  object-fit:cover;
-  flex:0 0 auto;
-
-  border:1px solid rgba(0,0,0,.12);
-  box-shadow: 0 8px 18px rgba(0,0,0,.12);
-}
-
-/* opcional: em telas muito pequenas, reduz um pouco */
-@media (max-width: 420px){
-  .lp-step-mid{ min-height:52px; padding:7px 9px; }
-  .lp-step-thumb{ width:48px; height:48px; border-radius:13px; }
-}
-/* ===== Stepper com foto fixa ao lado (premium / não quebra) ===== */
-.lp-step.lp-step--thumb{
-  display:flex;
-  align-items:center;
-  gap:10px;
-}
-
-/* botão da foto (ao lado dos botoes + e - somente foto ) */
-.lp-step-photo{
-  width:70px;
-  height:70px;
-  border-radius:20px;
-  padding:0;
-  border:1px solid rgba(0,0,0,.10);
-  background: rgba(255,255,255,.95);
-  box-shadow: 0 12px 23px rgba(0,0,0,.12);
-  overflow:hidden;
-  flex:0 0 auto;
-  display:grid;
-  place-items:center;
-  cursor:pointer;
-}
-
-/* imagem dentro do quadrado */
-.lp-step-thumb{
-  width:90%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
-
-/* em celular pequeno, reduz um pouco */
-@media (max-width: 420px){
-  .lp-step-photo{ width:60px; height:60px; border-radius:14px; }
-}
-
-/* remove a foto antiga do card (se ainda não fez) */
-.lp-media{ display:none; }
-/* ============================================================
-   STEPPER LP ( -  Adicionar 0  +  [FOTO] ) — IGUAL EXEMPLO
-============================================================ */
-
-/* wrapper do stepper (no render.js está como .lp-step ...) */
-.lp-step{
-  display:flex;
-  align-items:center;
-  gap:12px;
-  margin-top:10px;
-}
-
-/* botões - e + iguais */
-.lp-step-btn{
-  width:38px;
-  height:38px;
-  border-radius:12px;
-  border:1px solid rgba(17,24,39,.14);
-  background:#fff;
-  cursor:pointer;
-  font-weight:1000;
-  font-size:18px;
-  line-height:1;
-  display:grid;
-  place-items:center;
-  transition: transform .08s ease, box-shadow .12s ease;
-}
-.lp-step-btn:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 12px 22px rgba(17,24,39,.12);
-}
-.lp-step-btn:active{ transform: scale(.99); }
-
-/* botão do meio “Adicionar 0” */
-.lp-step-mid{
-  height:38px;
-  border-radius:12px;
-  border:1px solid rgba(127,29,29,.18);
-  background: linear-gradient(180deg, rgba(211,47,47,.10), rgba(127,29,29,.06));
-  cursor:pointer;
-  font-weight:1000;
-  font-size:13px;
-
-  padding:0 12px;
-  min-width:120px;
-
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:10px;
-}
-
-/* texto e número do meio */
-.lp-step-text{ font-weight:1000; }
-.lp-step-qty{ font-weight:1100; }
-
-/* FOTO AO LADO (quadrada) */
-.lp-step-photo{
-  width:84px;
-  height:84px;
-  border-radius:16px;
-  padding:0;
-  border:1px solid rgba(17,24,39,.12);
-  background:#fff;
-  overflow:hidden;
-  box-shadow: 0 12px 22px rgba(17,24,39,.14);
-  flex:0 0 auto;
-  display:grid;
-  place-items:center;
-}
-
-/* img dentro da foto */
-.lp-step-thumb{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
-
-/* mobile: só reduz um pouco */
-@media (max-width:420px){
-  .lp-step-photo{ width:56px; height:56px; border-radius:14px; }
-}
-/* ===== FOTO NO CANTO DIREITO DO CARD ===== */
-
-/* o card vira referência */
-.lp-cardbody{
-  position: relative;
-}
-
-/* cria espaço para a foto */
-.lp-step{
-  padding-right: 80px;
-}
-
-/* move a foto para fora do stepper */
-.lp-step-photo{
-  position: absolute;
-  right: 14px;
-  top: 17%;
-  transform: translateY(-50%);
-
-  width: 64px;
-  height: 64px;
-  border-radius: 16px;
-  overflow: hidden;
-
-  box-shadow: 0 10px 20px rgba(0,0,0,.15);
-  background: #fff;
-  z-index: 2;
-}
-
-@media (max-width: 600px){
-  .lp-step-photo{
-    top: 22%;
-  }
-}
-/* imagem dentro da foto */
-.lp-step-thumb{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-}
-/* ============================
-   FIX — SOMENTE MARMITAS
-   Fotos distorcidas/pequenas
-   ============================ */
-
-.page-marmitas .product-card img,
-.page-marmitas .product-card .pimg,
-.page-marmitas .product-card .thumb img,
-.page-marmitas .product-card .photo img{
-  width: 88px !important;
-  height: 88px !important;
-  object-fit: cover !important;
-  border-radius: 14px !important;
-  display: block !important;
-}
-
-/* se tiver algum container de foto “redondo”, neutraliza */
-.page-marmitas .product-card .thumb,
-.page-marmitas .product-card .photo{
-  width: 88px !important;
-  height: 88px !important;
-  border-radius: 14px !important;
-  overflow: hidden !important;
-  flex: 0 0 88px !important;
-}
-/* PIX BOX */
-
-.pix-box{
-  margin-top:16px;
-  padding:16px;
-  border-radius:16px;
-  background:#fff;
-  border:1px solid rgba(0,0,0,.08);
-  text-align:center;
-}
-
-.pix-img{
-  width:180px;
-  margin:10px auto;
-  display:block;
-}
-
-.pix-copy{
-  margin-top:10px;
-  background:#16a34a;
-  color:#fff;
-  border:none;
-  padding:10px 16px;
-  border-radius:10px;
-  font-weight:600;
-}
-
-.pix-info{
-  font-size:13px;
-  color:#555;
-  margin-top:8px;
-}
-.ck-qr{
-  width:240px;
-  height:240px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-
-.ck-qr img,
-.ck-qr canvas{
-  width:100%;
-  height:100%;
-  object-fit:contain;
-  display:block;
-}
-/* ===== FIX QR CODE (checkout) ===== */
 .ck-qrwrap{
   display:flex;
   justify-content:center;
@@ -1592,7 +1012,7 @@ button,
 .ck-qr{
   width:240px;
   height:240px;
-  background:#fff !important;   /* tira fundo/padrão */
+  background:#fff !important;
   border-radius:16px;
   display:flex;
   align-items:center;
@@ -1600,437 +1020,33 @@ button,
   overflow:hidden;
   box-shadow: 0 8px 24px rgba(0,0,0,.12);
 }
-
-/* se o QR for gerado como IMG */
-.ck-qr img{
-  width:100% !important;
-  height:100% !important;
-  object-fit:contain;
-  display:block;
-  background:#fff !important;
-}
-
-/* se o QR for gerado como CANVAS */
+.ck-qr img,
 .ck-qr canvas{
   width:100% !important;
   height:100% !important;
   display:block;
+  object-fit:contain;
   background:#fff !important;
 }
-
-/* remove QUALQUER overlay/padrão que alguém tenha colocado */
 .ck-qr::before,
 .ck-qr::after{
   content:none !important;
   display:none !important;
 }
-.ck-qrbox{
-  width:240px;
-  height:240px;
-  margin:16px auto;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-}
-.lp-step.is-locked{
-  opacity:.55;
-  filter:grayscale(.15);
-}
-.lp-step.is-locked .lp-step-mid,
-.lp-step.is-locked .lp-step-photo,
-.lp-step.is-locked .lp-step-btn[disabled]{
-  cursor:not-allowed;
-}
-.lp-daynote{
-  margin-top:8px;
-  font-size:12px;
-  font-weight:800;
-  opacity:.85;
-}
-.lp-step.is-locked{ opacity:.55; filter:grayscale(.15); }
-.lp-daynote{ margin-top:8px; font-size:12px; font-weight:800; opacity:.85; }
-
-.lp-addons-box{
-  margin-top:16px; padding:12px; background:#fff;
-  border:1px solid rgba(17,24,39,.10);
-  border-radius:16px; box-shadow: var(--shadow);
-}
-.lp-addons-title{ margin:0 0 10px; font-size:14px; font-weight:900; }
-.lp-addons-grid{ display:grid; gap:12px; }
-/* ===== Adicionais compactos (bem menores) ===== */
-.lp-addons-box{ margin-top:14px; padding:10px; }
-.lp-addons-title{ font-size:13px; }
-
-.lp-addon-card{
-  display:flex;
-  align-items:center;
-  justify-content:space-between;
-  gap:10px;
-
-  padding:8px 10px;
-  border:1px solid rgba(17,24,39,.10);
-  border-radius:12px;
-  background:#fff;
-}
-
-.lp-addon-left{ min-width:0; }
-.lp-addon-name{ font-weight:900; font-size:12.5px; line-height:1.1; }
-.lp-addon-price{ font-weight:800; font-size:12px; opacity:.85; margin-top:2px; }
-
-.lp-addon-step{
-  display:flex;
-  align-items:center;
-  gap:8px;
-}
-
-.lp-addon-btn{
-  width:30px;
-  height:30px;
-  border-radius:10px;
-  border:1px solid rgba(17,24,39,.12);
-  background:#f8fafc;
-  font-weight:900;
-  line-height:1;
-}
-
-.lp-addon-mid{
-  min-width:88px;
-  height:30px;
-  border-radius:10px;
-  border:1px solid rgba(17,24,39,.12);
-  background:#fff;
-  font-weight:900;
-  font-size:12px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  gap:6px;
-}
-.lp-addon-mid span{ font-weight:900; }
-/* ===============================
-   MODAL / BOTTOM SHEET (ADICIONAIS)
-   =============================== */
-.lp-modal{ position:fixed; inset:0; z-index:99999; display:none; }
-.lp-modal.is-open{ display:block; }
-
-.lp-modal__backdrop{
-  position:absolute; inset:0;
-  background: rgba(0,0,0,.45);
-}
-
-.lp-modal__sheet{
-  position:absolute; left:0; right:0; bottom:0;
-  background: var(--card, #fff);
-  border-radius: 18px 18px 0 0;
-  box-shadow: 0 -18px 50px rgba(0,0,0,.25);
-  max-height: 86vh;
-  display:flex;
-  flex-direction:column;
-  overflow:hidden;
-  transform: translateY(12px);
-  animation: lpSheetUp .16s ease-out forwards;
-}
-
-@keyframes lpSheetUp{
-  to{ transform: translateY(0); }
-}
-
-.lp-modal__head{
-  display:flex; align-items:center; justify-content:space-between;
-  gap:12px;
-  padding: 14px 14px 10px;
-  border-bottom: 1px solid var(--line, rgba(0,0,0,.10));
-}
-
-.lp-modal__title{ display:block; font-size: 16px; }
-.lp-modal__sub{ font-size: 12px; color: var(--muted, rgba(0,0,0,.6)); margin-top:2px; }
-
-.lp-modal__close{
-  width: 34px; height: 34px;
-  border-radius: 999px;
-  border: 1px solid var(--line, rgba(0,0,0,.12));
-  background: #fff;
-  cursor:pointer;
-}
-
-.lp-modal__body{
-  padding: 12px 12px 0;
-  overflow:auto;
-}
-
-.addon-row{
-  display:grid;
-  grid-template-columns: 52px 1fr auto;
-  gap: 10px;
-  padding: 10px;
-  border: 1px solid var(--line, rgba(0,0,0,.10));
-  border-radius: 14px;
-  background: #fff;
-  margin-bottom: 10px;
-  align-items:center;
-}
-
-.addon-img{
-  width:52px; height:52px;
-  border-radius: 12px;
-  object-fit: cover;
-  border: 1px solid var(--line, rgba(0,0,0,.08));
-}
-
-.addon-title{ font-weight: 800; font-size: 14px; line-height:1.15; }
-.addon-desc{ font-size: 12px; color: var(--muted, rgba(0,0,0,.62)); margin-top:2px; }
-.addon-price{ font-weight: 900; font-size: 13px; margin-top:6px; }
-
-.addon-qty{
-  display:flex; align-items:center; gap:8px;
-}
-.addon-qty button{
-  width: 30px; height: 30px;
-  border-radius: 10px;
-  border: 1px solid var(--line, rgba(0,0,0,.12));
-  background:#fff;
-  font-weight:900;
-  cursor:pointer;
-}
-.addon-qty span{ min-width: 18px; text-align:center; font-weight:900; }
-
-.lp-modal__foot{
-  padding: 12px;
-  border-top: 1px solid var(--line, rgba(0,0,0,.10));
-  background: #fff;
-}
-
-.lp-modal__sum{
-  display:flex; gap:8px; align-items:center; flex-wrap:wrap;
-  font-size: 13px;
-  margin-bottom: 10px;
-  color: var(--muted, rgba(0,0,0,.72));
-}
-.lp-modal__sum strong{ color: var(--text, #111); }
-
-.lp-modal__btn{
-  width:100%;
-  padding: 12px 14px;
-  border-radius: 14px;
-  border:0;
-  background: var(--wine, #7f1d1d);
-  color:#fff;
-  font-weight: 900;
-  cursor:pointer;
-}
-
-/* Botão flutuante "Adicionais" */
-.addons-fab{
-  position: fixed;
-  right: 12px;
-  bottom: 92px; /* acima do CTA do carrinho */
-  z-index: 9999;
-  padding: 10px 12px;
-  border-radius: 999px;
-  border: 1px solid var(--line, rgba(0,0,0,.12));
-  background: #fff;
-  font-weight: 900;
-  box-shadow: 0 10px 24px rgba(0,0,0,.14);
-}
 
 /* ============================================================
-   ✅ PATCH OFICIAL (cole no FINAL do style.css)
-   Corrige: chaves quebradas, seletor solto, conflitos lp-step,
-   padroniza cards (foto livre à direita), adiciona botão Adicionais,
-   modal tipo pagamento, e QR com tamanho fixo.
+   ✅ MODAL DE ADICIONAIS (overlay por cima)
+   IDs esperados: #addonsModal, #addonsList, #addonsAddBtn
 ============================================================ */
-
-/* ========== 1) PRODUTOS / CARDS (Massas, Marmitas, Combos) ========== */
-
-/* grid padrão */
-.product-grid,
-#gridMassas,
-#gridMarmitas,
-#gridCombos{
-  display:grid;
-  grid-template-columns: repeat(1, minmax(0,1fr));
-  gap:12px;
-  margin-top:12px;
-}
-@media(min-width:820px){
-  .product-grid,
-  #gridMassas,
-  #gridMarmitas,
-  #gridCombos{
-    grid-template-columns: repeat(2, minmax(0,1fr));
-  }
-}
-
-/* card padrão (pega .product e .lp-card sem mudar o design) */
-.product,
-.lp-card{
-  position:relative;
-  background: rgba(255,255,255,.94);
-  border:1px solid rgba(17,24,39,.10);
-  border-radius: var(--radius2);
-  box-shadow: var(--shadow1);
-  overflow:hidden;
-
-  display:flex;
-  gap:12px;
-  padding:12px;
-  align-items:flex-start;
-}
-
-/* corpo do texto */
-.pbody,
-.lp-body,
-.lp-cardbody{
-  flex:1;
-  min-width:0;
-}
-
-/* título/descrição */
-.ptitle strong,
-.lp-title,
-.lp-card h3{
-  font-size:14px;
-  font-weight:950;
-}
-.pdesc,
-.lp-desc{
-  margin-top:6px;
-  font-size:12px;
-  color:var(--muted);
-  line-height:1.35;
-}
-
-/* ✅ FOTO LIVRE À DIREITA (NÃO SOBREPOE TEXTO) */
-.pimg,
-.product > img,
-.lp-card > img,
-.lp-card img.pimg{
-  width:92px;
-  height:92px;
-  object-fit:cover;
-  border-radius:16px;
-  border:1px solid rgba(17,24,39,.10);
-  box-shadow: 0 10px 18px rgba(17,24,39,.10);
-  flex:0 0 92px;
-  align-self:center;
-}
-
-/* se sua thumb vem em outro wrapper */
-.lp-media{
-  width:92px;
-  height:92px;
-  border-radius:16px;
-  overflow:hidden;
-  border:1px solid rgba(17,24,39,.10);
-  flex:0 0 92px;
-  align-self:center;
-}
-.lp-media img{
-  width:100%;
-  height:100%;
-  object-fit:cover;
-  display:block;
-}
-
-/* ========== 2) STEPPER LP ( -  Adicionar X  + ) ========== */
-/* força um padrão único e mata conflitos antigos */
-
-.lp-step{
-  display:flex;
-  align-items:center;
-  gap:10px;
-  margin-top:10px;
-  flex-wrap:nowrap;
-}
-
-/* botões - e + */
-.lp-step-btn{
-  width:38px;
-  height:38px;
-  border-radius:12px;
-  border:1px solid rgba(17,24,39,.14);
-  background:#fff;
-  cursor:pointer;
-  font-weight:1000;
-  font-size:18px;
-  line-height:1;
-  display:grid;
-  place-items:center;
-  transition: transform .08s ease, box-shadow .12s ease;
-}
-.lp-step-btn:hover{
-  transform: translateY(-1px);
-  box-shadow: 0 12px 22px rgba(17,24,39,.12);
-}
-.lp-step-btn:active{ transform: scale(.99); }
-
-/* botão do meio "Adicionar X" */
-.lp-step-mid{
-  height:38px;
-  border-radius:12px;
-  border:1px solid rgba(127,29,29,.18);
-  background: linear-gradient(180deg, rgba(211,47,47,.10), rgba(127,29,29,.06));
-  cursor:pointer;
-  font-weight:1000;
-  font-size:13px;
-  padding:0 12px;
-  min-width:120px;
-
-  display:inline-flex;
-  align-items:center;
-  justify-content:center;
-  gap:8px;
-}
-.lp-step-text{ font-weight:1000; }
-.lp-step-qty{ font-weight:1100; }
-
-/* ✅ desativa TODAS as versões antigas da foto dentro do stepper */
-.lp-step-photo,
-.lp-step-thumb{
-  all: unset;
-}
-
-/* ========== 3) BOTÃO "ADICIONAIS" PEQUENO (canto) ========== */
-/* você pediu "pequeno ao canto escrito Adicionais" */
-#openAddons,
-.addons-fab{
-  position: fixed;
-  right: 12px;
-  bottom: calc(var(--bottomBarH) + 12px); /* acima do CTA */
-  z-index: 9999;
-
-  padding: 10px 12px;
-  border-radius: 999px;
-  border: 1px solid rgba(17,24,39,.12);
-  background: rgba(255,255,255,.95);
-  font-weight: 900;
-  font-size: 13px;
-  box-shadow: 0 10px 24px rgba(0,0,0,.14);
-  cursor:pointer;
-}
-
-/* ========== 4) MODAL DE ADICIONAIS (igual pagamento: overlay por cima) ========== */
-/* IDs do seu JS: addonsModal, addonsList, addonsAddBtn */
 #addonsModal{
   position:fixed;
   inset:0;
   z-index: 99999;
   display:none;
+  background: rgba(0,0,0,.45);
 }
 #addonsModal.is-open{ display:block; }
 
-#addonsModal .lp-modal__backdrop,
-#addonsModal .addons-backdrop,
-#addonsModal [data-close-addons] ~ *{
-  /* não depende disso; só garante overlay */
-}
-
-/* se seu HTML não tem backdrop separado, o próprio modal vira backdrop */
-#addonsModal{
-  background: rgba(0,0,0,.45);
-}
-
-/* folha (sheet) embaixo */
 #addonsModal .lp-modal__sheet,
 #addonsModal .addons-sheet,
 #addonsModal .modal-sheet{
@@ -2046,12 +1062,8 @@ button,
   transform: translateY(12px);
   animation: lpSheetUp .16s ease-out forwards;
 }
+@keyframes lpSheetUp{ to{ transform: translateY(0); } }
 
-@keyframes lpSheetUp{
-  to{ transform: translateY(0); }
-}
-
-/* cabeçalho do modal (se existir) */
 #addonsModal .lp-modal__head,
 #addonsModal .addons-head{
   display:flex;
@@ -2065,19 +1077,14 @@ button,
   -webkit-backdrop-filter: blur(12px);
 }
 
-/* corpo do modal */
 #addonsModal .lp-modal__body,
 #addonsModal .addons-body{
   padding: 12px 12px 0;
   overflow:auto;
 }
 
-/* lista */
-#addonsList{
-  padding: 12px;
-}
+#addonsList{ padding: 12px; }
 
-/* item adicional */
 .addon-row{
   display:grid;
   grid-template-columns: 52px 1fr auto;
@@ -2089,7 +1096,6 @@ button,
   margin-bottom: 10px;
   align-items:center;
 }
-
 .addon-img{
   width:52px; height:52px;
   border-radius: 12px;
@@ -2097,12 +1103,10 @@ button,
   border: 1px solid rgba(17,24,39,.08);
   display:block;
 }
-
 .addon-title{ font-weight: 900; font-size: 13.5px; line-height:1.15; }
 .addon-desc{ font-size: 12px; color: var(--muted); margin-top:2px; }
 .addon-price{ font-weight: 950; font-size: 13px; margin-top:6px; color: var(--wine); }
 
-/* step do adicional */
 .addon-qty{
   display:flex; align-items:center; gap:8px;
 }
@@ -2120,17 +1124,13 @@ button,
   font-weight:1000;
 }
 
-/* rodapé do modal */
 #addonsModal .lp-modal__foot,
 #addonsModal .addons-foot{
   padding: 12px;
   border-top: 1px solid rgba(17,24,39,.10);
   background: #fff;
 }
-
-/* botão "Adicionar ao carrinho" */
-#addonsAddBtn,
-.lp-modal__btn{
+#addonsAddBtn{
   width:100%;
   padding: 12px 14px;
   border-radius: 14px;
@@ -2141,38 +1141,32 @@ button,
   cursor:pointer;
 }
 
-/* ========== 5) QR CODE (checkout) — garante aparecer e ficar quadrado ========== */
-
-.ck-qrwrap{
-  display:flex;
-  justify-content:center;
-  align-items:center;
-  padding:12px;
+/* botão pequeno "Adicionais" no canto */
+#openAddons,
+.addons-fab{
+  position: fixed;
+  right: 12px;
+  bottom: calc(var(--bottomBarH) + 12px);
+  z-index: 9999;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid rgba(17,24,39,.12);
+  background: rgba(255,255,255,.95);
+  font-weight: 900;
+  font-size: 13px;
+  box-shadow: 0 10px 24px rgba(0,0,0,.14);
+  cursor:pointer;
 }
 
-.ck-qr{
-  width:240px;
-  height:240px;
-  background:#fff !important;
-  border-radius:16px;
-  display:flex;
-  align-items:center;
-  justify-content:center;
-  overflow:hidden;
-  box-shadow: 0 8px 24px rgba(0,0,0,.12);
-}
-
-.ck-qr img,
-.ck-qr canvas{
-  width:100% !important;
-  height:100% !important;
-  display:block;
-  object-fit:contain;
-  background:#fff !important;
-}
-
-.ck-qr::before,
-.ck-qr::after{
-  content:none !important;
-  display:none !important;
+/* ============================================================
+   EXTRAS: toque premium
+============================================================ */
+button,
+.qbtn,
+.ck-pay,
+.ck-paybtn,
+.cta,
+.drawer-actions .btn,
+.icon-btn{
+  -webkit-tap-highlight-color: transparent;
 }
