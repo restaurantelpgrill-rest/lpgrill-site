@@ -3,7 +3,7 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>Sobremesas</title>
+  <title>Massas</title>
   <link rel="stylesheet" href="css/style.css" />
 </head>
 
@@ -27,7 +27,8 @@
   <div class="container" id="infoBar"></div>
 
   <main class="container">
-    <section class="product-grid" id="gridSobremesas"></section>
+    <!-- ✅ grid correto -->
+    <section class="product-grid" id="gridMassas"></section>
   </main>
 
   <a class="wa-float" id="waFloat" href="#" aria-label="WhatsApp">
@@ -44,7 +45,6 @@
       <strong id="ctaTotal">R$ 0,00</strong>
     </button>
 
-    <!-- ✅ abre overlay (sem navegar) -->
     <button class="cta primary" type="button" data-open-checkout>Finalizar</button>
   </div>
 
@@ -80,8 +80,6 @@
 
         <div class="drawer-actions">
           <button class="btn light" id="clearCart" type="button">Limpar</button>
-
-          <!-- ✅ Finalizar do carrinho abre overlay -->
           <a class="btn primary" href="checkout.html" data-open-checkout>Finalizar</a>
         </div>
       </div>
@@ -90,7 +88,7 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- ✅ CHECKOUT OVERLAY (mesmo padrão do index) -->
+  <!-- ✅ CHECKOUT OVERLAY -->
   <div id="checkoutOverlay" class="ck-overlay" aria-hidden="true">
     <div class="ck-modal" role="dialog" aria-modal="true" aria-label="Finalizar pedido">
       <header class="ck-head">
@@ -218,24 +216,64 @@
     </div>
   </div>
 
-<script src="js/data.js"></script>
-<script src="js/render.js"></script>
-<script src="js/cart.js"></script>
-<script src="js/app.js"></script>
-<script src="js/addons-modal.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<script src="js/checkout.js"></script>
+  <!-- ===============================
+       MODAL ADICIONAIS (Bottom Sheet)
+       =============================== -->
+  <div class="lp-modal" id="addonsModal" aria-hidden="true">
+    <div class="lp-modal__backdrop" data-close-addons></div>
 
-  <!-- QRCode + checkout.js -->
+    <section class="lp-modal__sheet" role="dialog" aria-modal="true" aria-label="Adicionais">
+      <header class="lp-modal__head">
+        <div>
+          <strong class="lp-modal__title">Adicionais</strong>
+          <div class="lp-modal__sub" id="addonsSubtitle">Selecione e adicione ao carrinho</div>
+        </div>
+
+        <button class="lp-modal__close" type="button" data-close-addons aria-label="Fechar">✕</button>
+      </header>
+
+      <div class="lp-modal__body" id="addonsList"></div>
+
+      <footer class="lp-modal__foot">
+        <div class="lp-modal__sum">
+          <span>Selecionados:</span>
+          <strong id="addonsCount">0</strong>
+          <span>• Total:</span>
+          <strong id="addonsTotal">R$ 0,00</strong>
+        </div>
+
+        <button class="lp-modal__btn" id="addonsAddBtn" type="button">
+          Adicionar ao carrinho
+        </button>
+      </footer>
+    </section>
+  </div>
+
+  <button class="addons-fab" id="openAddons" type="button" aria-label="Abrir Adicionais">
+    + Adicionais
+  </button>
+
+  <!-- Scripts (ORDEM CERTA) -->
+  <script src="js/data.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/app.js"></script>
+  <script src="js/addons-modal.js"></script>
+
+  <!-- QRCode + checkout -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script src="js/checkout.js"></script>
 
   <script>
-    window.PAGE = "marmitas"; /* ou "massas" na outra página */
-    window.renderCategory("sobremesas","gridSobremesas");
+    // ✅ esta página é MASSAS
+    window.PAGE = "massas";
+    // ✅ renderiza massas no grid correto
+    if (typeof window.renderCategory === "function") {
+      window.renderCategory("massas", "gridMassas");
+    }
   </script>
 
-  <!-- ✅ Badge padrão -->
+  <!-- ✅ Badge padrão (FECHADO CERTINHO) -->
   <script>
     (() => {
       const badge = document.getElementById("cartBadge");
@@ -258,44 +296,7 @@
       document.addEventListener("lp:cart-change", syncBadge);
       syncBadge();
     })();
-<!-- ===============================
-     MODAL ADICIONAIS (Bottom Sheet)
-     =============================== -->
-<div class="lp-modal" id="addonsModal" aria-hidden="true">
-  <div class="lp-modal__backdrop" data-close-addons></div>
+  </script>
 
-  <section class="lp-modal__sheet" role="dialog" aria-modal="true" aria-label="Adicionais">
-    <header class="lp-modal__head">
-      <div>
-        <strong class="lp-modal__title">Adicionais</strong>
-        <div class="lp-modal__sub" id="addonsSubtitle">Selecione e adicione ao carrinho</div>
-      </div>
-
-      <button class="lp-modal__close" type="button" data-close-addons aria-label="Fechar">✕</button>
-    </header>
-
-    <div class="lp-modal__body" id="addonsList">
-      <!-- preenchido via JS -->
-    </div>
-
-    <footer class="lp-modal__foot">
-      <div class="lp-modal__sum">
-        <span>Selecionados:</span>
-        <strong id="addonsCount">0</strong>
-        <span>• Total:</span>
-        <strong id="addonsTotal">R$ 0,00</strong>
-      </div>
-
-      <button class="lp-modal__btn" id="addonsAddBtn" type="button">
-        Adicionar ao carrinho
-      </button>
-    </footer>
-  </section>
-</div>
-
-<!-- Botão (pode ficar no header) -->
-<button class="addons-fab" id="openAddons" type="button" aria-label="Abrir Adicionais">
-  + Adicionais
-</button>
 </body>
 </html>
