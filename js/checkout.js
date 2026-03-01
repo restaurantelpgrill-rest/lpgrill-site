@@ -221,33 +221,58 @@
       return true;
     }
 
-    function renderPixQr(code){
-      if (!elQrWrap) return;
-      elQrWrap.innerHTML = "";
+async function renderPixQr(code){
+  if (!elQrWrap) return;
 
-      const pix = String(code||"").trim();
-      if (!pix){
-        elQrWrap.textContent = "Código PIX vazio.";
-        return;
-      }
-      if (!window.QRCode){
-        elQrWrap.textContent = "QR indisponível (qrcode.min.js não carregou).";
-        return;
-      }
-      try{
-        // eslint-disable-next-line no-new
-        new QRCode(elQrWrap, {
-          text: pix,
-          width: 240,
-          height: 240,
-          correctLevel: QRCode.CorrectLevel.M
-        });
-      } catch(e){
-        console.warn("Falha ao gerar QR:", e);
-        elQrWrap.textContent = "Não consegui gerar o QR.";
-      }
+  const pix = String(code || "").trim();
+  elQrWrap.innerHTML = "";
+
+  if (!pix){
+    elQrWrap.textContent = "Código PIX vazio.";
+    return;
+  }
+
+  // A lib que você carrega é qrcode@1.5.3:
+  // Ela NÃO usa "new QRCode(...)". Ela usa QRCode.toDataURL / QRCode.toCanvas.
+  if (!window.QRCode){
+    elQrWrap.textContent = "QR indisponível (biblioteca QR não carregou).";
+    return;
+  }
+
+  try{
+    // ✅ preferir DataURL (gera <img>)
+    if (typeof window.QRCode.toDataURL === "function") {
+      const url = await window.QRCode.toDataURL(pix, { margin: 1, width: 240 });
+      const img = new Image();
+      img.alt = "QR Code PIX";
+      img.src = url;
+      img.style.width = "240px";
+      img.style.height = "240px";
+      img.style.display = "block";
+      img.style.margin = "0 auto";
+      img.style.borderRadius = "12px";
+      elQrWrap.appendChild(img);
+      return;
     }
 
+    // ✅ fallback Canvas
+    if (typeof window.QRCode.toCanvas === "function") {
+      const canvas = document.createElement("canvas");
+      await window.QRCode.toCanvas(canvas, pix, { margin: 1, width: 240 });
+      canvas.style.display = "block";
+      canvas.style.margin = "0 auto";
+      canvas.style.borderRadius = "12px";
+      elQrWrap.appendChild(canvas);
+      return;
+    }
+
+    // Se a lib carregou mas não tem API esperada:
+    elQrWrap.textContent = "QR indisponível (API da biblioteca diferente).";
+  } catch (e) {
+    console.warn("Falha ao gerar QR:", e);
+    elQrWrap.textContent = "Não consegui gerar o QR.";
+  }
+}
     async function copyPix(){
       const val = String(elPixCode?.value || "").trim();
       if (!val) return;
