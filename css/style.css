@@ -1706,5 +1706,129 @@ button,
   justify-content:center;
   gap:6px;
 }
-
 .lp-addon-mid span{ font-weight:900; }
+/* ===============================
+   MODAL / BOTTOM SHEET (ADICIONAIS)
+   =============================== */
+.lp-modal{ position:fixed; inset:0; z-index:99999; display:none; }
+.lp-modal.is-open{ display:block; }
+
+.lp-modal__backdrop{
+  position:absolute; inset:0;
+  background: rgba(0,0,0,.45);
+}
+
+.lp-modal__sheet{
+  position:absolute; left:0; right:0; bottom:0;
+  background: var(--card, #fff);
+  border-radius: 18px 18px 0 0;
+  box-shadow: 0 -18px 50px rgba(0,0,0,.25);
+  max-height: 86vh;
+  display:flex;
+  flex-direction:column;
+  overflow:hidden;
+  transform: translateY(12px);
+  animation: lpSheetUp .16s ease-out forwards;
+}
+
+@keyframes lpSheetUp{
+  to{ transform: translateY(0); }
+}
+
+.lp-modal__head{
+  display:flex; align-items:center; justify-content:space-between;
+  gap:12px;
+  padding: 14px 14px 10px;
+  border-bottom: 1px solid var(--line, rgba(0,0,0,.10));
+}
+
+.lp-modal__title{ display:block; font-size: 16px; }
+.lp-modal__sub{ font-size: 12px; color: var(--muted, rgba(0,0,0,.6)); margin-top:2px; }
+
+.lp-modal__close{
+  width: 34px; height: 34px;
+  border-radius: 999px;
+  border: 1px solid var(--line, rgba(0,0,0,.12));
+  background: #fff;
+  cursor:pointer;
+}
+
+.lp-modal__body{
+  padding: 12px 12px 0;
+  overflow:auto;
+}
+
+.addon-row{
+  display:grid;
+  grid-template-columns: 52px 1fr auto;
+  gap: 10px;
+  padding: 10px;
+  border: 1px solid var(--line, rgba(0,0,0,.10));
+  border-radius: 14px;
+  background: #fff;
+  margin-bottom: 10px;
+  align-items:center;
+}
+
+.addon-img{
+  width:52px; height:52px;
+  border-radius: 12px;
+  object-fit: cover;
+  border: 1px solid var(--line, rgba(0,0,0,.08));
+}
+
+.addon-title{ font-weight: 800; font-size: 14px; line-height:1.15; }
+.addon-desc{ font-size: 12px; color: var(--muted, rgba(0,0,0,.62)); margin-top:2px; }
+.addon-price{ font-weight: 900; font-size: 13px; margin-top:6px; }
+
+.addon-qty{
+  display:flex; align-items:center; gap:8px;
+}
+.addon-qty button{
+  width: 30px; height: 30px;
+  border-radius: 10px;
+  border: 1px solid var(--line, rgba(0,0,0,.12));
+  background:#fff;
+  font-weight:900;
+  cursor:pointer;
+}
+.addon-qty span{ min-width: 18px; text-align:center; font-weight:900; }
+
+.lp-modal__foot{
+  padding: 12px;
+  border-top: 1px solid var(--line, rgba(0,0,0,.10));
+  background: #fff;
+}
+
+.lp-modal__sum{
+  display:flex; gap:8px; align-items:center; flex-wrap:wrap;
+  font-size: 13px;
+  margin-bottom: 10px;
+  color: var(--muted, rgba(0,0,0,.72));
+}
+.lp-modal__sum strong{ color: var(--text, #111); }
+
+.lp-modal__btn{
+  width:100%;
+  padding: 12px 14px;
+  border-radius: 14px;
+  border:0;
+  background: var(--wine, #7f1d1d);
+  color:#fff;
+  font-weight: 900;
+  cursor:pointer;
+}
+
+/* Botão flutuante "Adicionais" */
+.addons-fab{
+  position: fixed;
+  right: 12px;
+  bottom: 92px; /* acima do CTA do carrinho */
+  z-index: 9999;
+  padding: 10px 12px;
+  border-radius: 999px;
+  border: 1px solid var(--line, rgba(0,0,0,.12));
+  background: #fff;
+  font-weight: 900;
+  box-shadow: 0 10px 24px rgba(0,0,0,.14);
+}
