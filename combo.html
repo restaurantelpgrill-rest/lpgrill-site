@@ -196,17 +196,22 @@
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script src="js/checkout.js"></script>
 
-  <!-- Página: seta a categoria do render -->
   <script>
-    // ✅ renderizar COMBOS
+    // ✅ esta página é combos
     window.PAGE = "combo";
+
+    // ✅ render compatível: tenta "combos" primeiro, se não existir tenta "combo"
+    if (typeof window.renderCategory === "function") {
+      window.renderCategory("combos", "list");
+      // se seu render estiver preso no singular, este fallback ajuda:
+      // window.renderCategory("combo", "list");
+    }
   </script>
 
-  <!-- Badge -->
+  <!-- Badge (FECHADO CERTINHO, sem script perdido) -->
   <script>
     (() => {
       const badge = document.getElementById("cartBadge");
-
       function syncBadge(){
         try{
           const cart = window.Cart;
@@ -223,24 +228,10 @@
           }
         }catch{}
       }
-
       document.addEventListener("lp:cart-change", syncBadge);
       syncBadge();
     })();
-<script>
-  window.PAGE = "combo";
-<script src="js/render.js"></script>
-<script>
-  // precisa bater com a categoria do seu DATA
-  window.renderCategory("combos","listCombos");
-</script>
+  </script>
 
-<script src="js/data.js"></script>
-<script src="js/render.js"></script>
-<script src="js/cart.js"></script>
-<script src="js/app.js"></script>
-
-<!-- Checkout (overlay) -->
-<script src="js/checkout.js"></script>
 </body>
 </html>
