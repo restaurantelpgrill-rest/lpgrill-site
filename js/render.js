@@ -272,17 +272,7 @@
       `;
     };
 
-    return `
-      <section class="lp-addons-box">
-        <h3 class="lp-addons-title">➕ Adicionais</h3>
-        <div class="lp-addons-grid">
-          ${list.map(addonRow).join("")}
-        </div>
-      </section>
-    `;
-  }
-
-  // ✅ render por categoria
+     // ✅ render por categoria
   window.renderCategory = function(categoryKey, containerId){
     const el = document.getElementById(containerId);
     if(!el) return;
