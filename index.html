@@ -47,7 +47,6 @@
 
   <!-- TOPBAR (sem logo quadrada) -->
   <header class="pagebar">
-    <!-- Troquei a logo quadrada por texto premium -->
     <div class="brand-mini brand-mini--text" aria-label="LP Grill">
       <span class="brand-name">LP Grill</span>
     </div>
@@ -122,15 +121,17 @@
         </div>
       </a>
 
-    <a class="tile" href="massas.html">
-       <img class="tile-ico" src="imagem/massas.png" alt="">
-  <div>
-    <h3>🍝 Massas &amp; Especiais</h3>
-    <p>Lasanhas e massas artesanais com molho da casa.</p>
-  </div>
-</a>
-       <a class="tile" href="combo.html">
-        <div class="tile-media"><img src="img/cat-finalizar.jpg" alt="Combo"></div>
+      <!-- ✅ Massas no MESMO padrão visual (tile-media) -->
+      <a class="tile" href="massas.html">
+        <div class="tile-media"><img src="img/cat-massas.jpg" alt="Massas"></div>
+        <div>
+          <div class="tile-title">Massas</div>
+          <div class="tile-sub">Lasanhas e massas artesanais</div>
+        </div>
+      </a>
+
+      <a class="tile" href="combo.html">
+        <div class="tile-media"><img src="img/cat-finalizar.jpg" alt="Combos"></div>
         <div>
           <div class="tile-title">Combo</div>
           <div class="tile-sub">Monte e economize</div>
@@ -192,7 +193,9 @@
 
         <div class="drawer-actions">
           <button class="btn light" id="clearCart" type="button">Limpar</button>
-          <a class="btn primary" href="checkout.html" data-open-checkout>Finalizar</a>
+
+          <!-- ✅ FINALIZAR abre overlay (não navega) -->
+          <button class="btn primary" type="button" data-open-checkout>Finalizar</button>
         </div>
       </div>
     </div>
@@ -200,7 +203,7 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- CHECKOUT OVERLAY -->
+  <!-- CHECKOUT OVERLAY (✅ FECHADO CERTINHO) -->
   <div id="checkoutOverlay" class="ck-overlay" aria-hidden="true">
     <div class="ck-modal" role="dialog" aria-modal="true" aria-label="Finalizar pedido">
       <header class="ck-head">
@@ -219,7 +222,7 @@
           <div class="ck-grid">
             <button class="ck-pay" type="button" data-pay="pix">
               <span class="ck-pay-title">PIX</span>
-              <span class="ck-pay-desc">Copia e cola +  Code</span>
+              <span class="ck-pay-desc">Copia e cola + QR Code</span>
             </button>
 
             <button class="ck-pay" type="button" data-pay="credit">
@@ -238,7 +241,7 @@
           <button id="ckCancel" class="ck-btn ghost" type="button" style="width:100%;">Cancelar</button>
         </div>
       </section>
-      
+
       <!-- STEP: ENDEREÇO -->
       <section class="ck-step" data-step="addr" hidden>
         <div class="ck-card">
@@ -295,64 +298,69 @@
       </section>
 
       <!-- STEP: PIX -->
-<section class="ck-step" data-step="pix" hidden>
-  <div class="ck-card">
-    <div class="ck-summary" style="display:grid; gap:6px; margin-bottom:10px;">
-      <div class="row"><span>Subtotal</span> <strong id="ckTotalPix">R$ 0,00</strong></div>
-      <div class="row"><span>Taxa</span> <strong id="ckFeePix">R$ 0,00</strong></div>
-      <div class="row total"><span>Total</span> <strong id="ckPixTotal">R$ 0,00</strong></div>
+      <section class="ck-step" data-step="pix" hidden>
+        <div class="ck-card">
+          <div class="ck-summary" style="display:grid; gap:6px; margin-bottom:10px;">
+            <div class="row"><span>Subtotal</span> <strong id="ckTotalPix">R$ 0,00</strong></div>
+            <div class="row"><span>Taxa</span> <strong id="ckFeePix">R$ 0,00</strong></div>
+            <div class="row total"><span>Total</span> <strong id="ckPixTotal">R$ 0,00</strong></div>
+          </div>
+
+          <!-- ✅ wrapper correto do seu CSS -->
+          <div class="ck-qrwrap">
+            <div id="ckQr" class="ck-qr">Gerando QR…</div>
+          </div>
+
+          <label class="ck-field">
+            <span>Código PIX (copia e cola)</span>
+            <textarea id="ckPixCode" rows="4" readonly></textarea>
+          </label>
+
+          <button id="ckCopyPix" class="ck-btn full" type="button">Copiar código PIX</button>
+
+          <div class="ck-note muted" style="margin-top:10px; font-size:12px;">
+            Depois de pagar, toque em “Já paguei” e envie o comprovante no WhatsApp.
+          </div>
+
+          <button id="ckPaidPix" class="ck-btn full ghost" type="button">Já paguei (enviar comprovante)</button>
+        </div>
+
+        <div class="ck-actions">
+          <button id="ckBackFromPix" class="ck-btn ghost" type="button" style="width:100%;">Voltar</button>
+        </div>
+      </section>
+
     </div>
-
-    <div class="ck-wrap">
-      <div id="ckQr" class="ck-qr"></div>
-    </div>
-
-    <label class="ck-field">
-      <span>Código PIX (copia e cola)</span>
-      <textarea id="ckPixCode" rows="4" readonly></textarea>
-    </label>
-
-    <button id="ckCopyPix" class="ck-btn full" type="button">Copiar código PIX</button>
-
-    <div class="ck-note muted" style="margin-top:10px; font-size:12px;">
-      Depois de pagar, toque em “Já paguei” e envie o comprovante no WhatsApp.
-    </div>
-
-    <button id="ckPaidPix" class="ck-btn full ghost" type="button">Já paguei (enviar comprovante)</button>
   </div>
 
-  <div class="ck-actions">
-    <button id="ckBackFromPix" class="ck-btn ghost" type="button" style="width:100%;">Voltar</button>
-  </div>
-</section>
-</div>
-</div>
+  <!-- Admin gear (1x só, sem duplicar) -->
+  <script>
+  (() => {
+    const gear = document.getElementById("adminGear");
+    if (!gear) return;
 
-<!-- Admin gear (1x só, sem duplicar) -->
-<script>
-(() => {
-  const gear = document.getElementById("adminGear");
-  if (!gear) return;
+    gear.addEventListener("click", (e) => {
+      e.preventDefault();
+      const ok = localStorage.getItem("LPGRILL_ADMIN_SECRET_OK_V1") === "1";
+      window.location.href = ok ? "admin.html" : "admin.html?k=22550126";
+    });
+  })();
+  </script>
 
-  gear.addEventListener("click", (e) => {
-    e.preventDefault();
-    const ok = localStorage.getItem("LPGRILL_ADMIN_SECRET_OK_V1") === "1";
-    window.location.href = ok ? "admin.html" : "admin.html?k=22550126";
-  });
-})();
-</script>
+  <!-- Scripts (ORDEM CERTA) -->
+  <script src="js/data.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/app.js"></script>
 
-<!-- Scripts (ORDEM CERTA) -->
-<script src="js/data.js"></script>
-<script src="js/render.js"></script>
-<script src="js/cart.js"></script>
-<script src="js/app.js"></script>
+  <!-- QRCode (1x) -->
+  <script src="js/qrcode.min.js"></script>
+  <!-- (ou CDN se preferir)
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  -->
 
-<!-- ✅ Biblioteca QR LOCAL (crie/upload: js/qrcode.min.js) -->
-<script src="js/qrcode.min.js"></script>
-
-<!-- Checkout (overlay) -->
-<script src="js/checkout.js"></script>
+  <!-- Checkout (overlay) -->
+  <script src="js/checkout.js"></script>
 
 </body>
 </html>
