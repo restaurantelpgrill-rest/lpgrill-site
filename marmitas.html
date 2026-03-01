@@ -81,8 +81,8 @@
         <div class="drawer-actions">
           <button class="btn light" id="clearCart" type="button">Limpar</button>
 
-          <!-- ✅ Finalizar do carrinho abre o overlay (padrão) -->
-          <a class="btn primary" href="checkout.html" data-open-checkout>Finalizar</a>
+          <!-- ✅ Finalizar do carrinho abre o overlay -->
+          <button class="btn primary" type="button" data-open-checkout>Finalizar</button>
         </div>
       </div>
     </div>
@@ -90,7 +90,7 @@
 
   <div class="toast" id="toast"></div>
 
-  <!-- ✅ CHECKOUT OVERLAY (mesmo do index) -->
+  <!-- ✅ CHECKOUT OVERLAY -->
   <div id="checkoutOverlay" class="ck-overlay" aria-hidden="true">
     <div class="ck-modal" role="dialog" aria-modal="true" aria-label="Finalizar pedido">
       <header class="ck-head">
@@ -101,6 +101,7 @@
         <button id="ckClose" class="ck-x" type="button" aria-label="Fechar">✕</button>
       </header>
 
+      <!-- STEP: PAGAMENTO -->
       <section class="ck-step" data-step="pay">
         <div class="ck-card">
           <p class="ck-hint">Como você quer pagar?</p>
@@ -128,6 +129,7 @@
         </div>
       </section>
 
+      <!-- STEP: ENDEREÇO -->
       <section class="ck-step" data-step="addr" hidden>
         <div class="ck-card">
           <p class="ck-hint" id="ckKmHint">Toque em “Usar minha localização (GPS)” para calcular a taxa.</p>
@@ -182,6 +184,7 @@
         </div>
       </section>
 
+      <!-- STEP: PIX -->
       <section class="ck-step" data-step="pix" hidden>
         <div class="ck-card">
           <div class="ck-summary" style="display:grid; gap:6px; margin-bottom:10px;">
@@ -214,30 +217,8 @@
       </section>
     </div>
   </div>
-<script src="js/data.js"></script>
-<script src="js/render.js"></script>
-<script src="js/render-fix.js"></script>
-<script src="js/cart.js"></script>
-<script src="js/app.js"></script>
-<script src="js/addons-modal.js"></script>
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-<script src="js/checkout.js"></script>
 
-<script>
-  window.PAGE = "marmitas"; /* ou "massas" na outra página */
-</script>
-
-<!-- QRCode (só precisa se checkout gera QR) -->
-<script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
-
-<!-- Checkout (overlay) -->
-<script src="js/checkout.js"></script>
-
-<!-- Render da categoria (depois que render.js carregou) -->
-<script>
-  window.renderCategory("marmitas", "listMarmitas");
-  
-   <!-- ===============================
+  <!-- ===============================
        MODAL ADICIONAIS (Bottom Sheet)
        =============================== -->
   <div class="lp-modal" id="addonsModal" aria-hidden="true">
@@ -263,36 +244,81 @@
           <strong id="addonsTotal">R$ 0,00</strong>
         </div>
 
-        <button class="lp-modal__btn" id="addonsAddBtn" type="button">
-          Adicionar ao carrinho
-        </button>
+        <!-- ✅ aqui o botão vira "Fechar" (o + e - já adiciona no carrinho) -->
+        <button class="lp-modal__btn" id="addonsAddBtn" type="button">Fechar</button>
       </footer>
     </section>
   </div>
 
   <!-- Botão flutuante -->
-  <button class="addons-fab" id="openAddons" type="button" aria-label="Abrir Adicionais">
+  <button class="addons-fab" id="openAddons" type="button" aria-label="Abrir Adicionais" hidden>
     + Adicionais
   </button>
 
-  <!-- Scripts (ORDEM CERTA) -->
+  <!-- =========================
+       SCRIPTS (ORDEM CERTA)
+       ========================= -->
   <script src="js/data.js"></script>
-  <script src="js/render.js"></script>
   <script src="js/cart.js"></script>
+  <script src="js/render.js"></script>
   <script src="js/app.js"></script>
 
-  <!-- Modal de adicionais -->
-  <script src="js/addons-modal.js"></script>
-
-  <!-- QRCode + Checkout (APENAS 1 VEZ) -->
   <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
   <script src="js/checkout.js"></script>
 
+  <script src="js/addons-modal.js"></script>
+
   <script>
+    // ✅ página atual
     window.PAGE = "marmitas";
+
+    // ✅ renderiza marmitas
     if (typeof window.renderCategory === "function") {
       window.renderCategory("marmitas", "listMarmitas");
     }
+  </script>
+
+  <!-- ✅ Badge padrão -->
+  <script>
+    (() => {
+      const badge = document.getElementById("cartBadge");
+      function syncBadge(){
+        try{
+          const cart = window.Cart;
+          if(!cart) return;
+          let c = 0;
+          if(typeof cart.count === "function") c = cart.count() || 0;
+          else{
+            const items = (typeof cart.items === "function" ? cart.items() : cart.items) || cart.state?.items;
+            if(Array.isArray(items)) c = items.length;
+          }
+          if(badge){
+            badge.hidden = c <= 0;
+            badge.textContent = String(c);
+          }
+        }catch{}
+      }
+      document.addEventListener("lp:cart-change", syncBadge);
+      syncBadge();
+    })();
+  </script>
+
+  <!-- ✅ Mostrar botão Adicionais só se existir addon aplicável a "marmitas" -->
+  <script>
+    (() => {
+      const btn = document.getElementById("openAddons");
+      try{
+        const addons = (window.DATA && Array.isArray(window.DATA.addons)) ? window.DATA.addons : [];
+        const ok = addons.some(a => {
+          const ap = Array.isArray(a.applies) ? a.applies.map(x=>String(x).toLowerCase()) : null;
+          if(!ap) return true; // sem applies = vale pra tudo
+          return ap.includes("marmitas");
+        });
+        if(btn) btn.hidden = !ok;
+      }catch{
+        if(btn) btn.hidden = true;
+      }
+    })();
   </script>
 
 </body>
