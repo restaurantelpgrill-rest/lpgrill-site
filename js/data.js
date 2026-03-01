@@ -45,20 +45,17 @@
       { id:"b10", title:"H2O", desc:"500ml gelada.", tag:"500ml", price:7.50, img:"img/mockup.png" }
     ],
 
-    // 🔁 aqui é "sobremesas" por compatibilidade, mas você vai renomear no HTML para "Massas Caseiras"
-    sobremesas: [
-      { id:"ms1", title:"🧀 Macarrão à Bolonhesa com Queijo & Bacon", desc:"Macarrão envolvido em molho bolonhesa caseiro, finalizado com queijo e bacon crocante.", tag:"Fixo", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] },
-      { id:"ms2", title:"🔥 Lasanha Artesanal Assada na Hora (Bolonhesa)", desc:"Lasanha artesanal com molho caseiro, assada na hora em vasilha de alumínio. Acompanha arroz e salada (alface e tomate).", tag:"Premium", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] },
-      { id:"ms3", title:"🔥 Lasanha Artesanal Assada na Hora (Frango c/ Catupiry)", desc:"Lasanha artesanal com molho caseiro, assada na hora em vasilha de alumínio. Acompanha arroz e salada (alface e tomate).", tag:"Premium", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] }
-    ],
+      // ✅ precisa existir
+  massas: [
+    { id:"ms1", title:"Macarrão à Bolonhesa", desc:"Molho caseiro • queijo • bacon", price: 25.90, img:"img/massas-1.jpg" },
+    { id:"ms2", title:"Lasanha da Casa", desc:"Bem cremosa • porção generosa", price: 29.90, img:"img/massas-2.jpg" },
+  ],
 
-    // ✅ COMBO (dados)
-    combo: [
-      { id:"c1", title:"Combo Econômico", desc:"Marmita Tradicional + Coca Lata", tag:"Economize", price:22.90, img:"img/cat-finalizar.jpg" },
-      { id:"c2", title:"Combo Executivo", desc:"Marmita Carne + Guaraná", tag:"Mais pedido", price:27.90, img:"img/cat-finalizar.jpg" },
-      { id:"c3", title:"Combo Família", desc:"2 Marmitas + Refrigerante 2L", tag:"Vale a pena", price:49.90, img:"img/cat-finalizar.jpg" }
-    ],
 
+ combos: [
+    { id:"c1", title:"Combo Marmita + Refri", desc:"Marmita + Coca 350ml", price: 32.90, img:"img/combo-1.jpg" }
+  ],
+    
     // ✅ ADICIONAIS (somente marmitas e sobremesas/massas)
     addons: [
       { id:"a1", title:"🍟 Batata frita", desc:"Adicional", tag:"+", price:4.00, img:"img/mockup.png", applies:["marmitas","sobremesas"] },
