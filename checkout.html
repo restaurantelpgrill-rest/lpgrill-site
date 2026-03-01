@@ -3,37 +3,341 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width,initial-scale=1" />
-  <title>LP Grill — Redirecionando…</title>
+  <title>LP Grill — Finalizar</title>
+
+  <link rel="stylesheet" href="css/style.css" />
 
   <meta http-equiv="cache-control" content="no-cache, no-store, must-revalidate" />
   <meta http-equiv="pragma" content="no-cache" />
   <meta http-equiv="expires" content="0" />
-  <meta name="robots" content="noindex, nofollow" />
 
   <style>
-    body{font-family:system-ui,-apple-system,Segoe UI,Roboto,Arial; padding:24px;}
-    a{color:inherit;}
+    /* página simples, sem mexer no seu style.css */
+    .ck-page{
+      max-width:980px;
+      margin:0 auto;
+      padding:14px 14px calc(var(--bottomBarH) + 22px);
+    }
+    .ck-intro{
+      background: rgba(255,255,255,.92);
+      border:1px solid rgba(17,24,39,.10);
+      border-radius: 18px;
+      box-shadow: var(--shadow1);
+      padding: 14px;
+      margin-top: 12px;
+    }
+    .ck-intro h2{ margin:0; font-size:16px; font-weight:1000; }
+    .ck-intro p{ margin:8px 0 0; color:var(--muted); font-weight:800; font-size:13px; line-height:1.35; }
+    .ck-actions-row{
+      display:flex;
+      gap:10px;
+      margin-top:12px;
+      flex-wrap:wrap;
+    }
+    .ck-actions-row .btnlike{
+      height:52px;
+      border-radius: 18px;
+      font-weight: 1000;
+      padding: 0 14px;
+      border:1px solid rgba(17,24,39,.12);
+      background: rgba(255,255,255,.92);
+      box-shadow: var(--shadow1);
+      cursor:pointer;
+      display:flex;
+      align-items:center;
+      justify-content:center;
+      gap:10px;
+      flex:1;
+      min-width: 220px;
+    }
+    .ck-actions-row .btnlike.primary{
+      border:0;
+      color:#fff;
+      background: linear-gradient(180deg, var(--red2), var(--red1));
+      box-shadow: 0 18px 40px rgba(163,19,19,.24);
+    }
   </style>
+</head>
 
+<body class="app">
+
+  <!-- TOPBAR -->
+  <header class="pagebar">
+    <a class="back" href="index.html">← Voltar ao Menu</a>
+
+    <div class="page-title">
+      <h1>Finalizar</h1>
+      <p>Pagamento e dados do pedido</p>
+    </div>
+
+    <button class="cart-btn" id="openCart" data-open-cart type="button" aria-label="Carrinho">
+      <span class="cart-ico">🛒</span>
+      <span class="cart-badge" id="cartBadge" hidden>0</span>
+    </button>
+  </header>
+
+  <main class="ck-page">
+    <section class="ck-intro">
+      <h2>Pronto para finalizar?</h2>
+      <p>
+        Se você chegou aqui direto pelo link, toque em <strong>“Abrir Finalização”</strong>.
+        Você também pode abrir o carrinho para revisar itens.
+      </p>
+
+      <div class="ck-actions-row">
+        <button class="btnlike" type="button" data-open-cart>🛒 Abrir carrinho</button>
+        <button class="btnlike primary" type="button" data-open-checkout>✅ Abrir Finalização</button>
+      </div>
+    </section>
+  </main>
+
+  <!-- Whats -->
+  <a class="wa-float" id="waFloat" href="#" aria-label="WhatsApp">
+    <img src="img/whatsapp.png" alt="WhatsApp">
+  </a>
+
+  <!-- ✅ Barra inferior padrão -->
+  <div class="sticky-cta" id="stickyCTA" hidden>
+    <button class="cta" id="ctaOpenCart" data-open-cart type="button">
+      <span>
+        <strong style="display:block; font-weight:1000;">Ver carrinho</strong>
+        <span class="mini" style="display:block;">Itens e total</span>
+      </span>
+      <strong id="ctaTotal">R$ 0,00</strong>
+    </button>
+
+    <button class="cta primary" type="button" data-open-checkout>Finalizar</button>
+  </div>
+
+  <!-- ✅ CARRINHO ÚNICO PADRÃO -->
+  <aside class="drawer" id="cartDrawer" aria-hidden="true">
+    <div class="drawer-backdrop" id="closeCartBackdrop"></div>
+
+    <div class="drawer-panel" role="dialog" aria-modal="true" aria-label="Carrinho">
+      <div class="drawer-head">
+        <div>
+          <h3>Seu carrinho</h3>
+          <p class="muted">Itens + taxa (se entrega)</p>
+        </div>
+        <button class="icon-btn" id="closeCart" aria-label="Fechar" type="button">✕</button>
+      </div>
+
+      <div class="drawer-body">
+        <div class="delivery-toggle">
+          <button class="dt-btn" id="modeEntrega" type="button">🚚 Entrega</button>
+          <button class="dt-btn" id="modeRetirar" type="button">🏬 Retirar</button>
+        </div>
+
+        <div id="cartItems"></div>
+      </div>
+
+      <div class="drawer-foot">
+        <div class="totals">
+          <div class="row"><span>Subtotal</span><strong id="subTotal">R$ 0,00</strong></div>
+          <div class="row"><span>Taxa</span><strong id="deliveryFee">R$ 0,00</strong></div>
+          <div class="row total"><span>Total</span><strong id="grandTotal">R$ 0,00</strong></div>
+          <div class="mini muted">⏱️ Tempo médio: <span id="etaText">30–60 min</span></div>
+        </div>
+
+        <div class="drawer-actions">
+          <button class="btn light" id="clearCart" type="button">Limpar</button>
+
+          <!-- ✅ abre overlay (não navega) -->
+          <button class="btn primary" type="button" data-open-checkout>Finalizar</button>
+        </div>
+      </div>
+    </div>
+  </aside>
+
+  <div class="toast" id="toast"></div>
+
+  <!-- ✅ CHECKOUT OVERLAY -->
+  <div id="checkoutOverlay" class="ck-overlay" aria-hidden="true">
+    <div class="ck-modal" role="dialog" aria-modal="true" aria-label="Finalizar pedido">
+      <header class="ck-head">
+        <div class="ck-title">
+          <strong>Finalizar pedido</strong>
+          <span class="ck-sub">Escolha pagamento e confirme seus dados</span>
+        </div>
+        <button id="ckClose" class="ck-x" type="button" aria-label="Fechar">✕</button>
+      </header>
+
+      <!-- STEP: PAGAMENTO -->
+      <section class="ck-step" data-step="pay">
+        <div class="ck-card">
+          <p class="ck-hint">Como você quer pagar?</p>
+
+          <div class="ck-grid">
+            <button class="ck-pay" type="button" data-pay="pix">
+              <span class="ck-pay-title">PIX</span>
+              <span class="ck-pay-desc">Copia e cola + QR Code</span>
+            </button>
+
+            <button class="ck-pay" type="button" data-pay="credit">
+              <span class="ck-pay-title">Cartão (Crédito)</span>
+              <span class="ck-pay-desc">Pagar na entrega/retirada</span>
+            </button>
+
+            <button class="ck-pay" type="button" data-pay="debit">
+              <span class="ck-pay-title">Cartão (Débito)</span>
+              <span class="ck-pay-desc">Pagar na entrega/retirada</span>
+            </button>
+          </div>
+        </div>
+
+        <div class="ck-actions">
+          <button id="ckCancel" class="ck-btn ghost" type="button" style="width:100%;">Cancelar</button>
+        </div>
+      </section>
+
+      <!-- STEP: ENDEREÇO -->
+      <section class="ck-step" data-step="addr" hidden>
+        <div class="ck-card">
+          <p class="ck-hint" id="ckKmHint">Toque em “Usar minha localização (GPS)” para calcular a taxa.</p>
+
+          <div id="ckFeeLine" class="ck-fee" hidden>
+            <div><span>Distância</span> <strong id="ckKm">—</strong></div>
+            <div><span>Taxa</span> <strong id="ckFee">—</strong></div>
+          </div>
+
+          <div id="ckBlocked" class="ck-blocked" hidden>
+            Fora do raio de entrega. Entrega indisponível.
+          </div>
+
+          <button id="ckGetLocation" class="ck-btn full" type="button">Usar minha localização (GPS)</button>
+
+          <div class="ck-form">
+            <label class="ck-field">
+              <span>Nome</span>
+              <input id="ckName" type="text" placeholder="Seu nome" autocomplete="name" />
+            </label>
+
+            <label class="ck-field">
+              <span>Telefone (DDD)</span>
+              <input id="ckPhone" type="tel" placeholder="31999999999" autocomplete="tel" />
+            </label>
+
+            <label class="ck-field">
+              <span>Bairro</span>
+              <input id="ckBairro" type="text" placeholder="Ex.: Santa Tereza" />
+            </label>
+
+            <label class="ck-field">
+              <span>Endereço</span>
+              <input id="ckAddress" type="text" placeholder="Rua, número, referência" autocomplete="street-address" />
+            </label>
+
+            <label class="ck-field">
+              <span>Complemento (opcional)</span>
+              <input id="ckCompl" type="text" placeholder="Apto, bloco, casa..." />
+            </label>
+
+            <label class="ck-field">
+              <span>Observações (opcional)</span>
+              <textarea id="ckObs" rows="3" placeholder="Sem cebola, ponto da carne, etc."></textarea>
+            </label>
+          </div>
+        </div>
+
+        <div class="ck-actions">
+          <button id="ckBackFromAddr" class="ck-btn ghost" type="button" style="flex:1;">Voltar</button>
+          <button id="ckConfirmOrder" class="ck-btn primary" type="button" style="flex:1.2;">Confirmar</button>
+        </div>
+      </section>
+
+      <!-- STEP: PIX -->
+      <section class="ck-step" data-step="pix" hidden>
+        <div class="ck-card">
+          <div class="ck-summary" style="display:grid; gap:6px; margin-bottom:10px;">
+            <div class="row"><span>Subtotal</span> <strong id="ckTotalPix">R$ 0,00</strong></div>
+            <div class="row"><span>Taxa</span> <strong id="ckFeePix">R$ 0,00</strong></div>
+            <div class="row total"><span>Total</span> <strong id="ckPixTotal">R$ 0,00</strong></div>
+          </div>
+
+          <div class="ck-qrwrap">
+            <div id="ckQr" class="ck-qr">Gerando QR…</div>
+          </div>
+
+          <label class="ck-field">
+            <span>Código PIX (copia e cola)</span>
+            <textarea id="ckPixCode" rows="4" readonly></textarea>
+          </label>
+
+          <button id="ckCopyPix" class="ck-btn full" type="button">Copiar código PIX</button>
+
+          <div class="ck-note muted" style="margin-top:10px; font-size:12px;">
+            Depois de pagar, toque em “Já paguei” e envie o comprovante no WhatsApp.
+          </div>
+
+          <button id="ckPaidPix" class="ck-btn full ghost" type="button">Já paguei (enviar comprovante)</button>
+        </div>
+
+        <div class="ck-actions">
+          <button id="ckBackFromPix" class="ck-btn ghost" type="button" style="width:100%;">Voltar</button>
+        </div>
+      </section>
+    </div>
+  </div>
+
+  <!-- Scripts (ORDEM CERTA) -->
+  <script src="js/data.js"></script>
+  <script src="js/cart.js"></script>
+  <script src="js/render.js"></script>
+  <script src="js/app.js"></script>
+
+  <!-- QRCode: escolha UMA opção -->
+  <script src="js/qrcode.min.js"></script>
+  <!-- ou CDN:
+  <script src="https://cdn.jsdelivr.net/npm/qrcode@1.5.3/build/qrcode.min.js"></script>
+  -->
+
+  <script src="js/checkout.js"></script>
+
+  <!-- Badge padrão -->
+  <script>
+    (() => {
+      const badge = document.getElementById("cartBadge");
+      function syncBadge(){
+        try{
+          const cart = window.Cart;
+          if(!cart) return;
+          let c = 0;
+          if(typeof cart.count === "function") c = cart.count() || 0;
+          else{
+            const items = (typeof cart.items === "function" ? cart.items() : cart.items) || cart.state?.items;
+            if(Array.isArray(items)) c = items.length;
+          }
+          if(badge){
+            badge.hidden = c <= 0;
+            badge.textContent = String(c);
+          }
+        }catch{}
+      }
+      document.addEventListener("lp:cart-change", syncBadge);
+      syncBadge();
+    })();
+  </script>
+
+  <!-- ✅ abre automaticamente o overlay ao entrar no checkout.html -->
   <script>
     (function(){
-      // base do site (pasta atual), compatível com GitHub Pages em subpasta
-      var base = location.pathname.replace(/[^\/]+$/, ""); // remove arquivo atual
-      var target = base + "index.html";
-      // evita loop se já estiver no index
-      if (!/index\.html$/i.test(location.pathname)) {
-        location.replace(target);
+      // marca página
+      window.PAGE = "checkout";
+
+      // tenta abrir overlay depois que scripts carregarem
+      function openCheckout(){
+        const btn = document.querySelector('[data-open-checkout]');
+        if(btn) btn.click();
+      }
+
+      // pequeno delay pra garantir init do checkout.js
+      if (document.readyState === "loading") {
+        document.addEventListener("DOMContentLoaded", () => setTimeout(openCheckout, 120));
+      } else {
+        setTimeout(openCheckout, 120);
       }
     })();
   </script>
 
-  <!-- fallback extra (sem JS) -->
-  <noscript>
-    <meta http-equiv="refresh" content="0; url=index.html" />
-  </noscript>
-</head>
-<body>
-  Redirecionando para o cardápio… Se não redirecionar,
-  <a href="index.html">clique aqui</a>.
 </body>
 </html>
