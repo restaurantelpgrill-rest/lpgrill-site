@@ -29,17 +29,22 @@
     const cats = base.categories || base.categorias || null;
 
     const pick = (key)=>{
-      // tenta em categories
+      // tenta em categories/categorias
       if (cats && Array.isArray(cats[key])) return cats[key];
       // tenta direto no base
       if (Array.isArray(base[key])) return base[key];
       return [];
     };
 
-    // ✅ compat combos: alguns usam "combo", outros "combos"
-    const comboSrc = pick("combo");
+    // ✅ compat combos: aceita combo/combos e variações
+    const comboSrc  = pick("combo");
     const combosSrc = pick("combos");
-    const finalCombos = (comboSrc.length ? comboSrc : combosSrc);
+    const ComboSrc  = pick("Combo");
+    const CombosSrc = pick("Combos");
+    const finalCombos = (comboSrc.length ? comboSrc
+                      : combosSrc.length ? combosSrc
+                      : ComboSrc.length ? ComboSrc
+                      : CombosSrc);
 
     return {
       marmitas: pick("marmitas"),
@@ -47,12 +52,12 @@
       bebidas:  pick("bebidas"),
       massas:   pick("massas"),
 
-      // ✅ addons CERTOS (seu bug era "ons")
+      // ✅ addons CERTOS
       addons:   pick("addons"),
 
-      // ✅ combos CERTOS
-      combo:    finalCombos,
-      combos:   finalCombos, // alias
+      // ✅ combos CERTOS (alias total)
+      combos:   finalCombos,
+      combo:    finalCombos
     };
   }
 
@@ -201,6 +206,7 @@
         if(!id) return;
 
         const p = allProducts().find(x => x.id === id);
+        // ✅ trava fora do dia: só deixa mexer se já tiver >0
         if(p && !lpIsAvailable(p) && qtyInCart(id) === 0) return;
 
         window.Cart?.add?.(id);
@@ -228,12 +234,13 @@
     const addons = Array.isArray(d.addons) ? d.addons : [];
     if(!addons.length) return "";
 
-    // ✅ compat: massas também aceita "sobremesas" caso algum addon antigo use isso
+    // ✅ compat: massas também aceita "sobremesas" se algum addon antigo usar isso
     const accept = (categoryKey === "massas") ? ["massas","sobremesas"] : ["marmitas"];
 
     const list = addons.filter(a=>{
       const applies = Array.isArray(a.applies) ? a.applies : null;
       if(!applies) return true;
+
       const low = applies.map(x => String(x).toLowerCase());
       return accept.some(k => low.includes(k));
     });
@@ -282,8 +289,8 @@
 
     const d = normalizeData();
 
-    // ✅ compat: aceitar "combo" e "combos"
-    const key = (categoryKey === "combo") ? "combos" : categoryKey;
+    // ✅ compat: aceitar "combo" e "combos" em qualquer página
+    const key = (String(categoryKey).toLowerCase() === "combo") ? "combos" : categoryKey;
 
     const items = Array.isArray(d[key]) ? d[key] : [];
 
@@ -304,7 +311,7 @@
     if(!el) return;
 
     const d = normalizeData();
-    const key = (categoryKey === "combo") ? "combos" : categoryKey;
+    const key = (String(categoryKey).toLowerCase() === "combo") ? "combos" : categoryKey;
 
     const items = Array.isArray(d[key]) ? d[key] : [];
 
