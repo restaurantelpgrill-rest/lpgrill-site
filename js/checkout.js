@@ -1,4 +1,4 @@
-/* js/checkout.js — LP GRILL (PIX/QR funcionando + overlay) */
+/* js/checkout.js — LP GRILL (PIX/QR robusto + overlay) */
 (() => {
   if (window.__LPGRILL_CHECKOUT_INIT__) return;
   window.__LPGRILL_CHECKOUT_INIT__ = true;
@@ -46,6 +46,7 @@
       Math.sin(dLon / 2) ** 2;
     return 2 * R * Math.asin(Math.sqrt(a));
   }
+
   function feeByKm(km){
     if (km > CONFIG.maxKm) return { blocked:true, fee:0 };
     if (km <= 5) return { blocked:false, fee:CONFIG.feeUpTo5km };
@@ -132,10 +133,11 @@
       document.body.style.overflow = prevOverflowBody;
     };
 
+    // ⚠️ robusto: pega o primeiro de cada step
     const steps = {
       pay: overlay.querySelector('[data-step="pay"]'),
       addr: overlay.querySelector('[data-step="addr"]'),
-      pix: overlay.querySelectorAll('[data-step="pix"]')[0] || null // só existe 1 depois que você apagar o duplicado
+      pix: overlay.querySelector('[data-step="pix"]')
     };
 
     const payButtons = Array.from(overlay.querySelectorAll("[data-pay]"));
@@ -166,7 +168,7 @@
     const elPixCode  = $("#ckPixCode", overlay);
     const btnCopyPix = $("#ckCopyPix", overlay);
     const btnPaidPix = $("#ckPaidPix", overlay);
-    const elQrWrap   = $("#ckQr", overlay);
+    const elQrWrap   = $("#ckQr", overlay); // pode ser DIV ou IMG
 
     function goStep(step){
       Object.keys(steps).forEach(k => {
@@ -211,8 +213,6 @@
     }
 
     function isEntregaMode(){
-      // seu toggle real tá no carrinho (modeEntrega/modeRetirar).
-      // cart.js provavelmente salva algo. Vamos tentar ler:
       const v =
         localStorage.getItem("LPGRILL_DELIVERY_MODE_V1") ||
         localStorage.getItem("LPGRILL_MODE_V1") ||
@@ -221,58 +221,86 @@
       return true;
     }
 
-async function renderPixQr(code){
-  if (!elQrWrap) return;
+    // ==========================
+    // ✅ QR ROBUSTO (DIV ou IMG)
+    // ==========================
+    async function renderPixQr(code){
+      if (!elQrWrap) return;
 
-  const pix = String(code || "").trim();
-  elQrWrap.innerHTML = "";
+      const pix = String(code || "").trim();
 
-  if (!pix){
-    elQrWrap.textContent = "Código PIX vazio.";
-    return;
-  }
+      // Se for IMG: seta src direto (não usa innerHTML)
+      const isImg = elQrWrap.tagName === "IMG";
 
-  // A lib que você carrega é qrcode@1.5.3:
-  // Ela NÃO usa "new QRCode(...)". Ela usa QRCode.toDataURL / QRCode.toCanvas.
-  if (!window.QRCode){
-    elQrWrap.textContent = "QR indisponível (biblioteca QR não carregou).";
-    return;
-  }
+      // limpa
+      if (isImg) {
+        elQrWrap.removeAttribute("src");
+      } else {
+        elQrWrap.innerHTML = "";
+      }
 
-  try{
-    // ✅ preferir DataURL (gera <img>)
-    if (typeof window.QRCode.toDataURL === "function") {
-      const url = await window.QRCode.toDataURL(pix, { margin: 1, width: 240 });
-      const img = new Image();
-      img.alt = "QR Code PIX";
-      img.src = url;
-      img.style.width = "240px";
-      img.style.height = "240px";
-      img.style.display = "block";
-      img.style.margin = "0 auto";
-      img.style.borderRadius = "12px";
-      elQrWrap.appendChild(img);
-      return;
+      if (!pix){
+        if (isImg) return;
+        elQrWrap.textContent = "Código PIX vazio.";
+        return;
+      }
+
+      const QR = window.QRCode;
+      if (!QR){
+        if (isImg) return;
+        elQrWrap.textContent = "QR indisponível (biblioteca QR não carregou).";
+        return;
+      }
+
+      try{
+        // Preferir DataURL
+        if (typeof QR.toDataURL === "function"){
+          const url = await QR.toDataURL(pix, { margin: 1, width: 240 });
+
+          if (isImg){
+            elQrWrap.alt = "QR Code PIX";
+            elQrWrap.src = url;
+            return;
+          }
+
+          const img = new Image();
+          img.alt = "QR Code PIX";
+          img.src = url;
+          img.style.width = "240px";
+          img.style.height = "240px";
+          img.style.display = "block";
+          img.style.margin = "0 auto";
+          img.style.borderRadius = "12px";
+          elQrWrap.appendChild(img);
+          return;
+        }
+
+        // Fallback Canvas
+        if (typeof QR.toCanvas === "function"){
+          // se for IMG e só tem canvas, cria img via canvas
+          const canvas = document.createElement("canvas");
+          await QR.toCanvas(canvas, pix, { margin: 1, width: 240 });
+
+          if (isImg){
+            elQrWrap.alt = "QR Code PIX";
+            elQrWrap.src = canvas.toDataURL("image/png");
+            return;
+          }
+
+          canvas.style.display = "block";
+          canvas.style.margin = "0 auto";
+          canvas.style.borderRadius = "12px";
+          elQrWrap.appendChild(canvas);
+          return;
+        }
+
+        if (!isImg) elQrWrap.textContent = "QR indisponível (API da biblioteca diferente).";
+      } catch (e){
+        console.warn("Falha ao gerar QR:", e);
+        if (!isImg) elQrWrap.textContent = "Não consegui gerar o QR.";
+      }
     }
 
-    // ✅ fallback Canvas
-    if (typeof window.QRCode.toCanvas === "function") {
-      const canvas = document.createElement("canvas");
-      await window.QRCode.toCanvas(canvas, pix, { margin: 1, width: 240 });
-      canvas.style.display = "block";
-      canvas.style.margin = "0 auto";
-      canvas.style.borderRadius = "12px";
-      elQrWrap.appendChild(canvas);
-      return;
-    }
-
-    // Se a lib carregou mas não tem API esperada:
-    elQrWrap.textContent = "QR indisponível (API da biblioteca diferente).";
-  } catch (e) {
-    console.warn("Falha ao gerar QR:", e);
-    elQrWrap.textContent = "Não consegui gerar o QR.";
-  }
-}
     async function copyPix(){
       const val = String(elPixCode?.value || "").trim();
       if (!val) return;
@@ -287,8 +315,8 @@ async function renderPixQr(code){
         }, 1200);
       } catch {
         try{
-          elPixCode.focus();
-          elPixCode.select();
+          elPixCode?.focus?.();
+          elPixCode?.select?.();
           document.execCommand("copy");
           btnCopyPix.textContent = "Copiado ✅";
           setTimeout(()=>{
@@ -364,7 +392,6 @@ async function renderPixQr(code){
     payButtons.forEach(btn=>{
       btn.addEventListener("click", ()=>{
         payMethod = String(btn.getAttribute("data-pay")||"").toLowerCase().trim();
-        // sempre vai para endereço (igual seu fluxo)
         goStep("addr");
       });
     });
@@ -482,11 +509,14 @@ async function renderPixQr(code){
         });
 
         if (elPixCode) elPixCode.value = code;
+
+        // ✅ garante que o QR é sempre redesenhado
         renderPixQr(code);
+
         return;
       }
 
-      // cartão -> whatsapp (mantive simples, sem mexer no seu layout)
+      // cartão -> whatsapp
       const label = (payMethod === "credit") ? "Crédito" : "Débito";
       const msg =
         `🛒 *NOVO PEDIDO — LP GRILL*\n` +
