@@ -1,253 +1,165 @@
-// js/addons-modal.js — Modal de Adicionais (marmitas e massas)
-// Requer: js/data.js + js/cart.js carregados antes
-// ✅ compat: DATA / MENU.catalog / MENU.items / LP_DATA
-// ✅ robusto: não quebra se faltar addonsCount/addonsTotal
-// ✅ filtra applies por página (marmitas/massas) e também aceita "sobremesas" como alias das massas
-
+// js/addons-modal.js — Modal de Adicionais (usa window.DATA.addons + cart.js)
+// ✅ abre em marmitas e massas
+// ✅ filtra por applies (marmitas / massas / sobremesas)
+// ✅ + / - atualiza carrinho e contadores em tempo real
 (() => {
-  const money = (v) => Number(v || 0).toLocaleString("pt-BR", { style:"currency", currency:"BRL" });
+  const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
+  const esc = (s)=> String(s ?? "")
+    .replaceAll("&","&amp;").replaceAll("<","&lt;").replaceAll(">","&gt;")
+    .replaceAll('"',"&quot;").replaceAll("'","&#039;");
 
-  const modal   = document.getElementById("addonsModal");
+  const modal = document.getElementById("addonsModal");
   const btnOpen = document.getElementById("openAddons");
-  const listEl  = document.getElementById("addonsList");
-  const countEl = document.getElementById("addonsCount");
-  const totalEl = document.getElementById("addonsTotal");
-  const btnAdd  = document.getElementById("addonsAddBtn");
+  const listEl = document.getElementById("addonsList");
+  const sumEl = document.getElementById("addonsSum");
+  const subEl = document.getElementById("addonsSub");
+  const btnClose = document.getElementById("addonsAddBtn");
 
-  // Se sua página não tem modal/botão, não faz nada (sem erro)
-  if (!modal || !btnOpen || !listEl || !btnAdd) return;
+  if(!modal || !btnOpen || !listEl) return;
 
-  // Só ativa em marmitas e massas
-  const pageRaw = String(window.PAGE || "").toLowerCase().trim();
-  const allowed = (pageRaw === "marmitas" || pageRaw === "massas");
-  if (!allowed) {
-    btnOpen.style.display = "none";
-    return;
+  function qtyInCart(id){
+    const c = window.Cart?.readCart?.();
+    if (c && typeof c === "object") return Number(c[id] || 0);
+    return 0;
   }
 
-  const closeBtns = modal.querySelectorAll("[data-close-addons]");
-  closeBtns.forEach(b => b.addEventListener("click", close));
+  function currentCategory(){
+    // tenta inferir pela página (marmitas.html / massas.html)
+    const p = (location.pathname || "").toLowerCase();
+    if(p.includes("massas")) return "massas";
+    if(p.includes("marmitas")) return "marmitas";
 
-  // fecha no ESC e no clique fora (se você usar overlay)
-  document.addEventListener("keydown", (e) => {
-    if (e.key === "Escape" && modal.classList.contains("is-open")) close();
-  });
-  modal.addEventListener("click", (e) => {
-    if (e.target === modal) close(); // se modal for o overlay
-  });
+    // fallback: se tiver body com classe (se você quiser usar depois)
+    const b = document.body?.className?.toLowerCase() || "";
+    if(b.includes("massas")) return "massas";
+    if(b.includes("marmitas")) return "marmitas";
 
-  let selected = new Map(); // id -> qty
-  let addons = [];
+    // padrão
+    return "marmitas";
+  }
 
-  // =========================
-  // DATA HELPERS (robusto)
-  // =========================
-  function getCatalog(){
-    // Preferência: DATA (do seu data.js)
-    if (window.DATA && typeof window.DATA === "object") return window.DATA;
+  function getAddonsFor(cat){
+    const d = window.DATA || {};
+    const addons = Array.isArray(d.addons) ? d.addons : [];
+    if(!addons.length) return [];
 
-    // Compat: MENU.catalog / MENU.items
-    if (window.MENU && typeof window.MENU === "object") {
-      if (window.MENU.catalog && typeof window.MENU.catalog === "object") return window.MENU.catalog;
-      if (window.MENU.items && typeof window.MENU.items === "object") return window.MENU.items;
+    const accept = (cat === "massas") ? ["massas","sobremesas"] : ["marmitas"];
+    return addons.filter(a=>{
+      const applies = Array.isArray(a.applies) ? a.applies : null;
+      if(!applies) return true;
+      const low = applies.map(x => String(x).toLowerCase());
+      return accept.some(k => low.includes(k));
+    });
+  }
+
+  function addonRow(a){
+    const q = qtyInCart(a.id);
+    const img = (a.img && String(a.img).trim()) ? String(a.img).trim() : "img/mockup.png";
+    const title = a.title || a.name || "Adicional";
+    const desc  = a.desc || "";
+    const canDec = q > 0;
+
+    return `
+      <div class="addon-row" data-id="${esc(a.id)}">
+        <img class="addon-img" src="${esc(img)}" alt="${esc(title)}"
+          loading="lazy"
+          onerror="this.onerror=null; this.src='img/mockup.png';">
+
+        <div>
+          <div class="addon-title">${esc(title)}</div>
+          ${desc ? `<div class="addon-desc">${esc(desc)}</div>` : ``}
+          <div class="addon-price">${money(a.price)}</div>
+        </div>
+
+        <div class="addon-qty">
+          <button type="button" ${canDec ? `data-dec="${esc(a.id)}"` : "disabled"}>−</button>
+          <span class="addon-q">${q}</span>
+          <button type="button" data-add="${esc(a.id)}">+</button>
+        </div>
+      </div>
+    `;
+  }
+
+  function render(){
+    const cat = currentCategory();
+    const addons = getAddonsFor(cat);
+
+    // texto do topo
+    subEl && (subEl.textContent = cat === "massas"
+      ? "Adicionais para Massas"
+      : "Adicionais para Marmitas"
+    );
+
+    if(!addons.length){
+      listEl.innerHTML = `<div class="lp-empty">Sem adicionais disponíveis.</div>`;
+      sumEl && (sumEl.textContent = "");
+      return;
     }
 
-    // Compat: LP_DATA (se alguém usar isso)
-    if (window.LP_DATA && typeof window.LP_DATA === "object") return window.LP_DATA;
+    listEl.innerHTML = addons.map(addonRow).join("");
 
-    return {};
-  }
-
-  function pickAddonsFromCatalog(cat){
-    // tenta achar addons em vários formatos
-    // 1) cat.addons
-    if (Array.isArray(cat.addons)) return cat.addons;
-
-    // 2) cat.adicionais
-    if (Array.isArray(cat.adicionais)) return cat.adicionais;
-
-    // 3) cat.categories.addons / cat.categories.adicionais
-    const c = cat.categories || cat.categorias;
-    if (c && typeof c === "object") {
-      if (Array.isArray(c.addons)) return c.addons;
-      if (Array.isArray(c.adicionais)) return c.adicionais;
+    // resumo
+    let totalItens = 0;
+    let totalValor = 0;
+    for(const a of addons){
+      const q = qtyInCart(a.id);
+      totalItens += q;
+      totalValor += q * Number(a.price || 0);
     }
-
-    return [];
+    if(sumEl){
+      sumEl.innerHTML = totalItens
+        ? `Selecionados: <strong>${totalItens}</strong> • Total: <strong>${money(totalValor)}</strong>`
+        : `Nenhum adicional selecionado.`;
+    }
   }
 
-  function getAddonsForPage(){
-    const catalog = getCatalog();
-    const arr = pickAddonsFromCatalog(catalog);
-
-    // chave “oficial” da página
-    const pageKey = (pageRaw === "massas") ? "massas" : "marmitas";
-
-    // para compat: se alguém ainda usa "sobremesas" como massas
-    const aliasOk = (pageKey === "massas") ? ["massas", "sobremesas"] : ["marmitas"];
-
-    return (Array.isArray(arr) ? arr : [])
-      .filter(a => {
-        if (!a) return false;
-
-        const applies = a.applies || a.aplica || a.aplicavel || null;
-        if (!applies) return true; // sem applies = aparece em tudo
-
-        if (!Array.isArray(applies)) return true;
-
-        const low = applies.map(x => String(x).toLowerCase().trim());
-        return aliasOk.some(k => low.includes(k));
-      })
-      .map(a => ({
-        id: String(a.id || a.code || "").trim(),
-        title: String(a.title || a.nome || "Adicional").trim(),
-        desc: String(a.desc || a.descricao || "").trim(),
-        price: Number(a.price ?? a.preco ?? 0) || 0,
-        img: String(a.img || a.image || "img/mockup.png").trim()
-      }))
-      .filter(a => a.id);
-  }
-
-  // =========================
-  // MODAL
-  // =========================
   function open(){
-    addons = getAddonsForPage();
-    selected = new Map();
-    render();
     modal.classList.add("is-open");
-    modal.setAttribute("aria-hidden", "false");
-    document.body.style.overflow = "hidden";
+    modal.setAttribute("aria-hidden","false");
+    render();
   }
 
   function close(){
     modal.classList.remove("is-open");
-    modal.setAttribute("aria-hidden", "true");
-    document.body.style.overflow = "";
+    modal.setAttribute("aria-hidden","true");
   }
 
-  function render(){
-    if (!addons.length) {
-      listEl.innerHTML = `
-        <div style="padding:10px 2px;color:rgba(0,0,0,.65);font-weight:700">
-          Sem adicionais configurados para esta categoria.
-        </div>`;
-      updateSum();
-      return;
-    }
-
-    listEl.innerHTML = addons.map(a => {
-      const qty = selected.get(a.id) || 0;
-      return `
-        <div class="addon-row" data-id="${escapeHtml(a.id)}">
-          <img class="addon-img" src="${escapeHtml(a.img)}" alt="">
-          <div class="addon-info">
-            <div class="addon-title">${escapeHtml(a.title)}</div>
-            <div class="addon-desc">${escapeHtml(a.desc)}</div>
-            <div class="addon-price">${money(a.price)}</div>
-          </div>
-          <div class="addon-qty">
-            <button type="button" data-dec aria-label="Diminuir">−</button>
-            <span data-qty>${qty}</span>
-            <button type="button" data-inc aria-label="Aumentar">+</button>
-          </div>
-        </div>
-      `;
-    }).join("");
-
-    // listeners
-    listEl.querySelectorAll(".addon-row").forEach(row => {
-      const id = String(row.getAttribute("data-id") || "");
-      const qEl = row.querySelector("[data-qty]");
-
-      row.querySelector("[data-inc]")?.addEventListener("click", () => {
-        const q = (selected.get(id) || 0) + 1;
-        selected.set(id, q);
-        if (qEl) qEl.textContent = String(q);
-        updateSum();
-      });
-
-      row.querySelector("[data-dec]")?.addEventListener("click", () => {
-        const q0 = (selected.get(id) || 0);
-        const q = Math.max(0, q0 - 1);
-        if (q === 0) selected.delete(id);
-        else selected.set(id, q);
-        if (qEl) qEl.textContent = String(q);
-        updateSum();
-      });
-    });
-
-    updateSum();
-  }
-
-  function updateSum(){
-    let c = 0, t = 0;
-
-    for (const [id, qty] of selected.entries()) {
-      const a = addons.find(x => x.id === id);
-      if (!a) continue;
-      c += qty;
-      t += (a.price * qty);
-    }
-
-    if (countEl) countEl.textContent = String(c);
-    if (totalEl) totalEl.textContent = money(t);
-
-    btnAdd.disabled = (c === 0);
-    btnAdd.style.opacity = (c === 0) ? ".6" : "1";
-  }
-
-  // Adiciona selecionados ao carrinho
-  btnAdd.addEventListener("click", () => {
-    const Cart = window.Cart;
-
-    if (!Cart) {
-      alert("Carrinho não carregou (Cart.js).");
-      return;
-    }
-
-    // Tenta várias APIs comuns do carrinho
-    const addFn =
-      (typeof Cart.add === "function" && Cart.add.bind(Cart)) ||
-      (typeof Cart.addItem === "function" && Cart.addItem.bind(Cart)) ||
-      (typeof Cart.push === "function" && Cart.push.bind(Cart)) ||
-      null;
-
-    if (!addFn) {
-      alert("Não achei a função de adicionar no carrinho.");
-      return;
-    }
-
-    for (const [id, qty] of selected.entries()) {
-      const a = addons.find(x => x.id === id);
-      if (!a) continue;
-
-      for (let i = 0; i < qty; i++) {
-        addFn({
-          id: a.id,
-          title: a.title,
-          desc: a.desc,
-          price: a.price,
-          img: a.img,
-          tag: "Adicional"
-        });
-      }
-    }
-
-    close();
-
-    // abre carrinho se existir seu botão padrão
-    document.querySelector("[data-open-cart]")?.click?.();
+  // abrir/fechar
+  btnOpen.addEventListener("click", open);
+  btnClose && btnClose.addEventListener("click", close);
+  modal.addEventListener("click", (e)=>{
+    if(e.target && e.target.closest("[data-close-addons]")) close();
+  });
+  document.addEventListener("keydown", (e)=>{
+    if(e.key === "Escape" && modal.classList.contains("is-open")) close();
   });
 
-  btnOpen.addEventListener("click", open);
+  // + / -
+  modal.addEventListener("click", (e)=>{
+    const add = e.target.closest("[data-add]");
+    const dec = e.target.closest("[data-dec]");
 
-  function escapeHtml(s){
-    return String(s ?? "")
-      .replaceAll("&","&amp;")
-      .replaceAll("<","&lt;")
-      .replaceAll(">","&gt;")
-      .replaceAll('"',"&quot;")
-      .replaceAll("'","&#039;");
-  }
+    if(add){
+      const id = add.getAttribute("data-add");
+      if(!id) return;
+      window.Cart?.add?.(id);
+      render();
+      window.Cart?.renderAll?.();
+      return;
+    }
+    if(dec){
+      const id = dec.getAttribute("data-dec");
+      if(!id) return;
+      window.Cart?.dec?.(id);
+      render();
+      window.Cart?.renderAll?.();
+      return;
+    }
+  });
+
+  // re-render quando o carrinho muda por fora (opcional)
+  // (se o usuário mexer no carrinho aberto enquanto modal está aberto)
+  setInterval(()=>{
+    if(modal.classList.contains("is-open")) render();
+  }, 600);
 })();
