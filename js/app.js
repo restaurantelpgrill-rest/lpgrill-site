@@ -83,7 +83,7 @@
   // =========================
   function allProducts(){
     const d = window.DATA || {};
-    const cats = ["marmitas","porcoes","bebidas","sobremesas"];
+    const cats = ["marmitas","porcoes","bebidas","massas"];
     const out = [];
     cats.forEach(k => (Array.isArray(d[k]) ? d[k] : []).forEach(p => out.push(p)));
     return out;
