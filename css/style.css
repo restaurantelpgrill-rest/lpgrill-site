@@ -1170,3 +1170,28 @@ button,
 .icon-btn{
   -webkit-tap-highlight-color: transparent;
 }
+
+/* Checkout mais "GRANDE" (visual antigo) */
+.ck-modal{
+  max-width: 880px !important;
+}
+
+.ck-pay{
+  padding: 18px 18px !important;
+  border-radius: 18px !important;
+}
+
+.ck-pay strong{
+  font-size: 16px !important;
+}
+
+.ck-pay small{
+  font-size: 13px !important;
+  opacity: .75 !important;
+}
+
+/* No celular mantém confortável */
+@media (max-width: 640px){
+  .ck-modal{ max-width: 94vw !important; }
+  .ck-pay{ padding: 16px 14px !important; }
+}
