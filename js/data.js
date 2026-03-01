@@ -1,87 +1,89 @@
 // js/data.js — LP Grill (fonte única de dados + fallback + admin/localStorage)
 // ✅ garante img, price numérico e categorias sempre presentes
 // ✅ compat: Combo aparece mesmo se o render usar "combo" ou "combos"
+// ✅ compat: Massas funciona e "sobremesas" vira alias (pra não quebrar páginas antigas)
 (() => {
   const STORE_KEY = "LPGRILL_DATA_ADMIN_V1";
 
-// ========== Fallback (site funciona mesmo sem admin) ==========
-const fallback = {
-  marmitas: [
-    // ===== PRATOS DO DIA (aparecem só no dia) =====
-    { id:"mseg", title:"🔥 Frango Mineiro com Quiabo & Angu Cremoso", desc:"Frango caipira cozido lentamente com quiabo fresco, temperado no estilo mineiro. Acompanha arroz branco soltinho, feijão caseiro, couve refogada e angu cremoso.", tag:"Segunda", price:21.90, img:"img/mockup.png", days:[1] },
-    { id:"mter", title:"🥘 Carne de Panela com Mandioca da Roça", desc:"Carne macia cozida lentamente com mandioca, bem temperada e suculenta. Acompanha arroz, feijão, farofa artesanal, couve refogada e beterraba fresca.", tag:"Terça", price:21.90, img:"img/mockup.png", days:[2] },
-    { id:"mqua", title:"🍖 Costelinha ao Molho da Casa com Batata Rústica", desc:"Costelinha suína macia envolvida em molho especial da casa. Servida com arroz, feijão, batata rústica dourada, farofa rica e salada fresca de alface e tomate.", tag:"Quarta", price:21.90, img:"img/mockup.png", days:[3] },
-    { id:"mqui", title:"🌽 Tropeiro Raiz Completo", desc:"Feijão tropeiro bem temperado com linguiça, ovo e farofa crocante. Acompanha arroz branco e couve refogada no alho.", tag:"Quinta", price:21.90, img:"img/mockup.png", days:[4] },
-    { id:"msex", title:"🍲 Feijoada da Casa Completa", desc:"Feijoada tradicional preparada com carnes selecionadas e tempero especial. Servida com arroz, couve refogada, farofa crocante e laranja.", tag:"Sexta", price:21.90, img:"img/mockup.png", days:[5] },
+  // ========== Fallback (site funciona mesmo sem admin) ==========
+  const fallback = {
+    marmitas: [
+      // ===== PRATOS DO DIA (aparecem só no dia) =====
+      { id:"mseg", title:"🔥 Frango Mineiro com Quiabo & Angu Cremoso", desc:"Frango caipira cozido lentamente com quiabo fresco, temperado no estilo mineiro. Acompanha arroz branco soltinho, feijão caseiro, couve refogada e angu cremoso.", tag:"Segunda", price:21.90, img:"img/mockup.png", days:[1] },
+      { id:"mter", title:"🥘 Carne de Panela com Mandioca da Roça", desc:"Carne macia cozida lentamente com mandioca, bem temperada e suculenta. Acompanha arroz, feijão, farofa artesanal, couve refogada e beterraba fresca.", tag:"Terça", price:21.90, img:"img/mockup.png", days:[2] },
+      { id:"mqua", title:"🍖 Costelinha ao Molho da Casa com Batata Rústica", desc:"Costelinha suína macia envolvida em molho especial da casa. Servida com arroz, feijão, batata rústica dourada, farofa rica e salada fresca de alface e tomate.", tag:"Quarta", price:21.90, img:"img/mockup.png", days:[3] },
+      { id:"mqui", title:"🌽 Tropeiro Raiz Completo", desc:"Feijão tropeiro bem temperado com linguiça, ovo e farofa crocante. Acompanha arroz branco e couve refogada no alho.", tag:"Quinta", price:21.90, img:"img/mockup.png", days:[4] },
+      { id:"msex", title:"🍲 Feijoada da Casa Completa", desc:"Feijoada tradicional preparada com carnes selecionadas e tempero especial. Servida com arroz, couve refogada, farofa crocante e laranja.", tag:"Sexta", price:21.90, img:"img/mockup.png", days:[5] },
 
-    // ===== FIXOS (segunda a sábado) =====
-    { id:"mfixexecboi", title:"🍛 Prato Executivo da Casa (Bife de boi)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:20.90, img:"img/mockup.png", days:[1,2,3,4,5,6] },
-    { id:"mfixexecfrango", title:"🍛 Prato Executivo da Casa (Bife de frango)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:20.90, img:"img/mockup.png", days:[1,2,3,4,5,6] },
-    // ✅ corrigido: tirado a vírgula dupla
-    { id:"mfixexecporco", title:"🍛 Prato Executivo da Casa (Bife de porco)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:20.90, img:"img/mockup.png", days:[1,2,3,4,5,6] }
-  ],
+      // ===== FIXOS (segunda a sábado) =====
+      { id:"mfixexecboi", title:"🍛 Prato Executivo da Casa (Bife de boi)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:20.90, img:"img/mockup.png", days:[1,2,3,4,5,6] },
+      { id:"mfixexecfrango", title:"🍛 Prato Executivo da Casa (Bife de frango)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:20.90, img:"img/mockup.png", days:[1,2,3,4,5,6] },
+      { id:"mfixexecporco", title:"🍛 Prato Executivo da Casa (Bife de porco)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:20.90, img:"img/mockup.png", days:[1,2,3,4,5,6] }
+    ],
 
-  porcoes: [
-    { id:"p1", title:"Porção de Batata Frita (P)", desc:"Crocante • perfeita pra compartilhar.", tag:"Clássica", price:17.90, img:"img/mockup.png" },
-    { id:"p2", title:"Batata Frita (G)", desc:"Grande • serve bem 2–3 pessoas.", tag:"Compartilhar", price:27.90, img:"img/mockup.png" },
-    { id:"p5", title:"Torresmo Crocante", desc:"Sequinho • pururuca perfeita.", tag:"Crocante", price:29.90, img:"img/mockup.png" },
-    { id:"p6", title:"Isca de Carne", desc:"Tirinhas na chapa • bem temperadas.", tag:"Premium", price:39.90, img:"img/mockup.png" }
-  ],
+    porcoes: [
+      { id:"p1", title:"Porção de Batata Frita (P)", desc:"Crocante • perfeita pra compartilhar.", tag:"Clássica", price:17.90, img:"img/mockup.png" },
+      { id:"p2", title:"Batata Frita (G)", desc:"Grande • serve bem 2–3 pessoas.", tag:"Compartilhar", price:27.90, img:"img/mockup.png" },
+      { id:"p5", title:"Torresmo Crocante", desc:"Sequinho • pururuca perfeita.", tag:"Crocante", price:29.90, img:"img/mockup.png" },
+      { id:"p6", title:"Isca de Carne", desc:"Tirinhas na chapa • bem temperadas.", tag:"Premium", price:39.90, img:"img/mockup.png" }
+    ],
 
-  bebidas: [
-    { id:"b1", title:"Coca-Cola Lata", desc:"350ml gelada.", tag:"350ml", price:6.00, img:"img/coca_lata.jpg" },
-    { id:"b2", title:"Guaraná Lata", desc:"350ml gelada.", tag:"350ml", price:6.00, img:"img/guarana_lata.jpg" },
-    { id:"b3", title:"Fanta Lata", desc:"350ml gelada.", tag:"350ml", price:6.00, img:"img/mockup.png" },
-    { id:"b4", title:"Sprite Lata", desc:"350ml gelada.", tag:"350ml", price:6.00, img:"img/mockup.png" },
+    bebidas: [
+      { id:"b1", title:"Coca-Cola Lata", desc:"350ml gelada.", tag:"350ml", price:6.00, img:"img/coca_lata.jpg" },
+      { id:"b2", title:"Guaraná Lata", desc:"350ml gelada.", tag:"350ml", price:6.00, img:"img/guarana_lata.jpg" },
+      { id:"b3", title:"Fanta Lata", desc:"350ml gelada.", tag:"350ml", price:6.00, img:"img/mockup.png" },
+      { id:"b4", title:"Sprite Lata", desc:"350ml gelada.", tag:"350ml", price:6.00, img:"img/mockup.png" },
 
-    { id:"b5", title:"Coca-Cola 2L", desc:"Perfeita pra compartilhar.", tag:"2L", price:12.00, img:"img/mockup.png" },
-    { id:"b6", title:"Guaraná 2L", desc:"Bem gelada.", tag:"2L", price:12.00, img:"img/mockup.png" },
+      { id:"b5", title:"Coca-Cola 2L", desc:"Perfeita pra compartilhar.", tag:"2L", price:12.00, img:"img/mockup.png" },
+      { id:"b6", title:"Guaraná 2L", desc:"Bem gelada.", tag:"2L", price:12.00, img:"img/mockup.png" },
 
-    { id:"b7", title:"Água 500ml", desc:"Sem gás.", tag:"500ml", price:4.00, img:"img/agua_500.jpg" },
-    { id:"b8", title:"Água com gás", desc:"500ml gelada.", tag:"500ml", price:5.00, img:"img/agua_500.jpg" },
+      { id:"b7", title:"Água 500ml", desc:"Sem gás.", tag:"500ml", price:4.00, img:"img/agua_500.jpg" },
+      { id:"b8", title:"Água com gás", desc:"500ml gelada.", tag:"500ml", price:5.00, img:"img/agua_500.jpg" },
 
-    { id:"b9", title:"Suco Natural", desc:"300ml • sabor do dia.", tag:"300ml", price:8.00, img:"img/mockup.png" },
-    { id:"b10", title:"H2O", desc:"500ml gelada.", tag:"500ml", price:7.50, img:"img/mockup.png" }
-  ],
+      { id:"b9", title:"Suco Natural", desc:"300ml • sabor do dia.", tag:"300ml", price:8.00, img:"img/mockup.png" },
+      { id:"b10", title:"H2O", desc:"500ml gelada.", tag:"500ml", price:7.50, img:"img/mockup.png" }
+    ],
 
-  // ✅ MASSAS (antes era sobremesa)
-  massas: [
-    { id:"ms1", title:"Macarrão à Bolonhesa", desc:"Molho caseiro • queijo • bacon", price:25.90, img:"img/massas-1.jpg" },
-    { id:"ms2", title:"Lasanha da Casa", desc:"Bem cremosa • porção generosa", price:29.90, img:"img/massas-2.jpg" }
-  ],
+    // ✅ MASSAS (categoria nova)
+    massas: [
+      { id:"ms1", title:"Macarrão à Bolonhesa", desc:"Molho caseiro • queijo • bacon", price:25.90, img:"img/massas-1.jpg" },
+      { id:"ms2", title:"Lasanha da Casa", desc:"Bem cremosa • porção generosa", price:29.90, img:"img/massas-2.jpg" }
+    ],
 
-  // ✅ COMBOS
-  combos: [
-    { id:"c1", title:"Combo Marmita + Refri", desc:"Marmita + Coca 350ml", price:32.90, img:"img/combo-1.jpg" }
-  ],
+    // ✅ COMBOS
+    combos: [
+      { id:"c1", title:"Combo Marmita + Refri", desc:"Marmita + Coca 350ml", price:32.90, img:"img/combo-1.jpg" }
+    ],
 
-  // ✅ ADICIONAIS (marmitas e massas)
-  addons: [
-    // ✅ corrigido: applies agora usa "massas" (e mantive "sobremesas" por compat caso algum lugar antigo ainda use)
-    { id:"a1", title:"🍟 Batata frita", desc:"Adicional", tag:"+", price:4.00, img:"img/mockup.png", applies:["marmitas","massas","sobremesas"] },
-    { id:"a2", title:"🥩 Carne bovina", desc:"Adicional", tag:"+", price:5.00, img:"img/mockup.png", applies:["marmitas","massas","sobremesas"] },
-    { id:"a3", title:"🐷 Carne suína", desc:"Adicional", tag:"+", price:4.00, img:"img/mockup.png", applies:["marmitas","massas","sobremesas"] },
-    { id:"a4", title:"🍅 Molho à bolonhesa", desc:"Adicional", tag:"+", price:3.00, img:"img/mockup.png", applies:["marmitas","massas","sobremesas"] }
-  ]
-};
+    // ✅ ADICIONAIS (marmitas e massas)
+    addons: [
+      { id:"a1", title:"🍟 Batata frita", desc:"Adicional", tag:"+", price:4.00, img:"img/mockup.png", applies:["marmitas","massas","sobremesas"] },
+      { id:"a2", title:"🥩 Carne bovina", desc:"Adicional", tag:"+", price:5.00, img:"img/mockup.png", applies:["marmitas","massas","sobremesas"] },
+      { id:"a3", title:"🐷 Carne suína", desc:"Adicional", tag:"+", price:4.00, img:"img/mockup.png", applies:["marmitas","massas","sobremesas"] },
+      { id:"a4", title:"🍅 Molho à bolonhesa", desc:"Adicional", tag:"+", price:3.00, img:"img/mockup.png", applies:["marmitas","massas","sobremesas"] }
+    ]
+  };
 
-// ==============================
-// ✅ Compat: render antigo pode pedir "combo" ou "sobremesas"
-// ==============================
-fallback.combo = fallback.combo || fallback.combos || [];
-fallback.sobremesas = fallback.sobremesas || fallback.massas || [];
+  // ==============================
+  // ✅ Compat: render antigo pode pedir "combo"/"combos" e "sobremesas"
+  // ==============================
+  fallback.combo = fallback.combo || fallback.combos || [];
+  fallback.combos = fallback.combos || fallback.combo || [];
 
-// ==============================
-// ✅ Blindagem: garante price numérico e img string
-// ==============================
-for (const k of Object.keys(fallback)) {
-  if (!Array.isArray(fallback[k])) continue;
-  fallback[k] = fallback[k].map(it => ({
-    ...it,
-    price: Number(it.price || 0),
-    img: (it.img && String(it.img).trim()) ? String(it.img).trim() : "img/mockup.png"
-  }));
-}
+  fallback.massas = fallback.massas || fallback.sobremesas || [];
+  fallback.sobremesas = fallback.sobremesas || fallback.massas || []; // alias antigo
+
+  // ==============================
+  // ✅ Blindagem: garante price numérico e img string
+  // ==============================
+  for (const k of Object.keys(fallback)) {
+    if (!Array.isArray(fallback[k])) continue;
+    fallback[k] = fallback[k].map(it => ({
+      ...it,
+      price: Number(it?.price || 0),
+      img: (it?.img && String(it.img).trim()) ? String(it.img).trim() : "img/mockup.png"
+    }));
+  }
 
   // ========== Helpers ==========
   const isObj = (v) => v && typeof v === "object" && !Array.isArray(v);
@@ -112,22 +114,47 @@ for (const k of Object.keys(fallback)) {
   }
 
   function normalizeData(d){
-    // ✅ inclui combo e também combos (compat) + addons
-    const out = { marmitas: [], porcoes: [], bebidas: [], sobremesas: [], combo: [], combos: [], addons: [] };
+    // ✅ inclui massas + mantém sobremesas como alias
+    // ✅ inclui combo/combos + addons
+    const out = {
+      marmitas: [],
+      porcoes: [],
+      bebidas: [],
+      massas: [],
+      sobremesas: [], // alias compat
+      combo: [],
+      combos: [],     // alias compat
+      addons: []
+    };
+
     const src = isObj(d) ? d : {};
 
-    out.marmitas    = (Array.isArray(src.marmitas) ? src.marmitas : []).map((it,i)=> normalizeItem(it,i,"m"));
-    out.porcoes     = (Array.isArray(src.porcoes) ? src.porcoes : []).map((it,i)=> normalizeItem(it,i,"p"));
-    out.bebidas     = (Array.isArray(src.bebidas) ? src.bebidas : []).map((it,i)=> normalizeItem(it,i,"b"));
-    out.sobremesas  = (Array.isArray(src.sobremesas) ? src.sobremesas : []).map((it,i)=> normalizeItem(it,i,"s"));
+    out.marmitas = (Array.isArray(src.marmitas) ? src.marmitas : [])
+      .map((it,i)=> normalizeItem(it,i,"m"));
+
+    out.porcoes = (Array.isArray(src.porcoes) ? src.porcoes : [])
+      .map((it,i)=> normalizeItem(it,i,"p"));
+
+    out.bebidas = (Array.isArray(src.bebidas) ? src.bebidas : [])
+      .map((it,i)=> normalizeItem(it,i,"b"));
+
+    // ✅ MASSAS: aceita src.massas ou (legado) src.sobremesas
+    const massasSrc = Array.isArray(src.massas) ? src.massas
+                     : (Array.isArray(src.sobremesas) ? src.sobremesas : []);
+    out.massas = massasSrc.map((it,i)=> normalizeItem(it,i,"ms"));
+
+    // ✅ sobremesas vira alias das massas
+    out.sobremesas = out.massas;
 
     // ✅ aceita tanto src.combo quanto src.combos
-    const comboSrc = Array.isArray(src.combo) ? src.combo : (Array.isArray(src.combos) ? src.combos : []);
-    out.combo      = comboSrc.map((it,i)=> normalizeItem(it,i,"c"));
-    out.combos     = out.combo; // alias
+    const comboSrc = Array.isArray(src.combo) ? src.combo
+                   : (Array.isArray(src.combos) ? src.combos : []);
+    out.combo  = comboSrc.map((it,i)=> normalizeItem(it,i,"c"));
+    out.combos = out.combo;
 
     // ✅ addons
-    out.addons     = (Array.isArray(src.addons) ? src.addons : []).map((it,i)=> normalizeItem(it,i,"a"));
+    out.addons = (Array.isArray(src.addons) ? src.addons : [])
+      .map((it,i)=> normalizeItem(it,i,"a"));
 
     return out;
   }
@@ -137,16 +164,18 @@ for (const k of Object.keys(fallback)) {
     const B = normalizeData(base);
 
     const merged = {
-      marmitas:   A.marmitas.length   ? A.marmitas   : B.marmitas,
-      porcoes:    A.porcoes.length    ? A.porcoes    : B.porcoes,
-      bebidas:    A.bebidas.length    ? A.bebidas    : B.bebidas,
-      sobremesas: A.sobremesas.length ? A.sobremesas : B.sobremesas,
-      combo:      A.combo.length      ? A.combo      : B.combo,
-      addons:     A.addons.length     ? A.addons     : B.addons
+      marmitas: A.marmitas.length ? A.marmitas : B.marmitas,
+      porcoes:  A.porcoes.length  ? A.porcoes  : B.porcoes,
+      bebidas:  A.bebidas.length  ? A.bebidas  : B.bebidas,
+      massas:   A.massas.length   ? A.massas   : B.massas,
+      combo:    A.combo.length    ? A.combo    : B.combo,
+      addons:   A.addons.length   ? A.addons   : B.addons
     };
 
     // ✅ alias compat
+    merged.sobremesas = merged.massas;
     merged.combos = merged.combo;
+
     return merged;
   }
 
@@ -171,8 +200,16 @@ for (const k of Object.keys(fallback)) {
   }
   finalData.combos = finalData.combo; // alias final
 
+  // ✅ GARANTE massas e alias sobremesas
+  if (!Array.isArray(finalData.massas) || !finalData.massas.length){
+    finalData.massas = normalizeData(fallback).massas;
+  }
+  finalData.sobremesas = finalData.massas; // alias antigo
+
   // ✅ GARANTE addons (se admin vier sem)
-  if (!Array.isArray(finalData.addons)) finalData.addons = normalizeData(fallback).addons;
+  if (!Array.isArray(finalData.addons)){
+    finalData.addons = normalizeData(fallback).addons;
+  }
 
   window.DATA = finalData;
 
