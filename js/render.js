@@ -1,7 +1,7 @@
 // js/render.js — LP Grill (Cards com foto + stepper iFood-like)
 // ✅ Foto maior e MAIS visível ao lado do "Adicionar" em TODAS as categorias
 // ✅ Dias (days) travam adicionar fora do dia
-// ✅ Adicionais aparecem só em marmitas e sobremesas (Massas Caseiras)
+// ✅ Adicionais aparecem só em marmitas e massas (Massas Caseiras)
 // compatível com cart.js V3
 (() => {
   const money = (v)=> Number(v||0).toLocaleString("pt-BR",{style:"currency",currency:"BRL"});
@@ -37,8 +37,8 @@
       marmitas:   pick("marmitas"),
       porcoes:    pick("porcoes"),
       bebidas:    pick("bebidas"),
-      sobremesas: pick("sobremesas"),
-      ons:     pick("addons"),
+      massas:     pick("massas"),
+      ons:        pick("addons"),
     };
   }
 
@@ -160,7 +160,7 @@
   function allProducts(){
     const d = normalizeData();
     const addons = Array.isArray(d.addons) ? d.addons : [];
-    return [...d.marmitas, ...d.porcoes, ...d.bebidas, ...d.sobremesas, ...addons];
+    return [...d.marmitas, ...d.porcoes, ...d.bebidas, ...d.massas, ...addons];
   }
 
   function refreshCard(container, id){
@@ -208,7 +208,7 @@
   }
 
 function addonsBlockHtml(categoryKey){
-  if(categoryKey !== "marmitas" && categoryKey !== "sobremesas") return "";
+  if(categoryKey !== "marmitas" && categoryKey !== "massas") return "";
 
   const d = normalizeData();
   const addons = Array.isArray(d.addons) ? d.addons : [];
