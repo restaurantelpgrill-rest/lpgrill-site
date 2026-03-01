@@ -8,23 +8,21 @@
   const fallback = {
     marmitas: [
       // ===== PRATOS DO DIA (aparecem só no dia) =====
-      { id:"mseg", title:"🔥 Frango Mineiro com Quiabo & Angu Cremoso", desc:"Frango caipira cozido lentamente com quiabo fresco, temperado no estilo mineiro. Acompanha arroz branco soltinho, feijão caseiro, couve refogada e angu cremoso.", tag:"Segunda", price:0, img:"img/mockup.png", days:[1] },
-      { id:"mter", title:"🥘 Carne de Panela com Mandioca da Roça", desc:"Carne macia cozida lentamente com mandioca, bem temperada e suculenta. Acompanha arroz, feijão, farofa artesanal, couve refogada e beterraba fresca.", tag:"Terça", price:0, img:"img/mockup.png", days:[2] },
-      { id:"mqua", title:"🍖 Costelinha ao Molho da Casa com Batata Rústica", desc:"Costelinha suína macia envolvida em molho especial da casa. Servida com arroz, feijão, batata rústica dourada, farofa rica e salada fresca de alface e tomate.", tag:"Quarta", price:0, img:"img/mockup.png", days:[3] },
-      { id:"mqui", title:"🌽 Tropeiro Raiz Completo", desc:"Feijão tropeiro bem temperado com linguiça, ovo e farofa crocante. Acompanha arroz branco e couve refogada no alho.", tag:"Quinta", price:0, img:"img/mockup.png", days:[4] },
-      { id:"msex", title:"🍲 Feijoada da Casa Completa", desc:"Feijoada tradicional preparada com carnes selecionadas e tempero especial. Servida com arroz, couve refogada, farofa crocante e laranja.", tag:"Sexta", price:0, img:"img/mockup.png", days:[5] },
+      { id:"mseg", title:"🔥 Frango Mineiro com Quiabo & Angu Cremoso", desc:"Frango caipira cozido lentamente com quiabo fresco, temperado no estilo mineiro. Acompanha arroz branco soltinho, feijão caseiro, couve refogada e angu cremoso.", tag:"Segunda", price:21.90, img:"img/mockup.png", days:[1] },
+      { id:"mter", title:"🥘 Carne de Panela com Mandioca da Roça", desc:"Carne macia cozida lentamente com mandioca, bem temperada e suculenta. Acompanha arroz, feijão, farofa artesanal, couve refogada e beterraba fresca.", tag:"Terça", price:21.90, img:"img/mockup.png", days:[2] },
+      { id:"mqua", title:"🍖 Costelinha ao Molho da Casa com Batata Rústica", desc:"Costelinha suína macia envolvida em molho especial da casa. Servida com arroz, feijão, batata rústica dourada, farofa rica e salada fresca de alface e tomate.", tag:"Quarta", price:21.90, img:"img/mockup.png", days:[3] },
+      { id:"mqui", title:"🌽 Tropeiro Raiz Completo", desc:"Feijão tropeiro bem temperado com linguiça, ovo e farofa crocante. Acompanha arroz branco e couve refogada no alho.", tag:"Quinta", price:21.90, img:"img/mockup.png", days:[4] },
+      { id:"msex", title:"🍲 Feijoada da Casa Completa", desc:"Feijoada tradicional preparada com carnes selecionadas e tempero especial. Servida com arroz, couve refogada, farofa crocante e laranja.", tag:"Sexta", price:21.90, img:"img/mockup.png", days:[5] },
 
       // ===== FIXOS (segunda a sábado) =====
-      { id:"mfixexecboi", title:"🍛 Prato Executivo da Casa (Bife de boi)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] },
-      { id:"mfixexecfrango", title:"🍛 Prato Executivo da Casa (Bife de frango)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] },
-      { id:"mfixexecporco", title:"🍛 Prato Executivo da Casa (Bife de porco)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:0, img:"img/mockup.png", days:[1,2,3,4,5,6] }
+      { id:"mfixexecboi", title:"🍛 Prato Executivo da Casa (Bife de boi)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:20.90, img:"img/mockup.png", days:[1,2,3,4,5,6] },
+      { id:"mfixexecfrango", title:"🍛 Prato Executivo da Casa (Bife de frango)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:20.90, img:"img/mockup.png", days:[1,2,3,4,5,6] },
+      { id:"mfixexecporco", title:"🍛 Prato Executivo da Casa (Bife de porco)", desc:"Arroz, feijão, macarrão alho e óleo, batata frita e salada fresca de alface e tomate.", tag:"Fixo", price:20.90,, img:"img/mockup.png", days:[1,2,3,4,5,6] }
     ],
 
     porcoes: [
       { id:"p1", title:"Porção de Batata Frita (P)", desc:"Crocante • perfeita pra compartilhar.", tag:"Clássica", price:17.90, img:"img/mockup.png" },
       { id:"p2", title:"Batata Frita (G)", desc:"Grande • serve bem 2–3 pessoas.", tag:"Compartilhar", price:27.90, img:"img/mockup.png" },
-      { id:"p3", title:"Frango a Passarinho", desc:"Dourado • suculento • tempero da casa.", tag:"Top", price:34.90, img:"img/frango_grelhado.jpg" },
-      { id:"p4", title:"Calabresa Acebolada", desc:"Calabresa na chapa + cebola.", tag:"Chapa", price:32.90, img:"img/mockup.png" },
       { id:"p5", title:"Torresmo Crocante", desc:"Sequinho • pururuca perfeita.", tag:"Crocante", price:29.90, img:"img/mockup.png" },
       { id:"p6", title:"Isca de Carne", desc:"Tirinhas na chapa • bem temperadas.", tag:"Premium", price:39.90, img:"img/mockup.png" }
     ],
@@ -50,7 +48,6 @@
     { id:"ms1", title:"Macarrão à Bolonhesa", desc:"Molho caseiro • queijo • bacon", price: 25.90, img:"img/massas-1.jpg" },
     { id:"ms2", title:"Lasanha da Casa", desc:"Bem cremosa • porção generosa", price: 29.90, img:"img/massas-2.jpg" },
   ],
-
 
  combos: [
     { id:"c1", title:"Combo Marmita + Refri", desc:"Marmita + Coca 350ml", price: 32.90, img:"img/combo-1.jpg" }
