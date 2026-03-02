@@ -12,7 +12,7 @@ marmitas: [
   // ===== PRATOS DO DIA (aparecem só no dia) =====
   { id:"mseg", title:"🔥 Frango Mineiro com Quiabo & Angu Cremoso", desc:"Frango caipira cozido lentamente com quiabo fresco, temperado no estilo mineiro. Acompanha arroz branco soltinho, feijão caseiro, couve refogada e angu cremoso.", tag:"Segunda", price:21.90, img:"img/frango-mineiro-quiabo-angu.jpg", days:[1] },
   { id:"mter", title:"🥘 Carne de Panela com Mandioca da Roça", desc:"Carne macia cozida lentamente com mandioca, bem temperada e suculenta. Acompanha arroz, feijão, farofa artesanal, couve refogada e beterraba fresca.", tag:"Terça", price:21.90, img:"img/carne-panela-mandioca.jpg", days:[2] },
-  { id:"mqua", title:"🍖 Costelinha ao Molho da Casa com Batata Rústica", desc:"Costelinha suína macia envolvida em molho especial da casa. Servida com arroz, feijão, batata rústica dourada, farofa rica e salada fresca de alface e tomate.", tag:"Quarta", price:21.90, img:"img/costelinha-molho-batata.jpg", days:[3] },
+  { id:"mqua", title:"🍖 Costelinha ao Molho da Casa com Batata Rústica", desc:"Costelinha suína macia envolvida em molho especial da casa. Servida com arroz, feijão, Purê de batata cremoso, farofa rica e salada fresca de alface e tomate.", tag:"Quarta", price:21.90, img:"img/costelinha-molho-batata.jpg", days:[3] },
   { id:"mqui", title:"🌽 Tropeiro Raiz Completo", desc:"Feijão tropeiro bem temperado com linguiça, ovo e farofa crocante. Acompanha arroz branco e couve refogada no alho.", tag:"Quinta", price:21.90, img:"img/tropeiro-raiz.jpg", days:[4] },
   { id:"msex", title:"🍲 Feijoada da Casa Completa", desc:"Feijoada tradicional preparada com carnes selecionadas e tempero especial. Servida com arroz, couve refogada, farofa crocante e laranja.", tag:"Sexta", price:21.90, img:"img/feijoada-completa.jpg", days:[5] },
 
@@ -23,26 +23,21 @@ marmitas: [
 ],
 
 porcoes: [
-  { id:"p1", title:"Porção de Batata Frita (P)", desc:"Crocante • perfeita pra compartilhar.", tag:"Clássica", price:17.90, img:"img/mockup.png" },
-  { id:"p2", title:"Batata Frita (G)", desc:"Grande • serve bem 2–3 pessoas.", tag:"Compartilhar", price:27.90, img:"img/mockup.png" },
-  { id:"p5", title:"Torresmo Crocante", desc:"Sequinho • pururuca perfeita.", tag:"Crocante", price:29.90, img:"img/mockup.png" },
-  { id:"p6", title:"Isca de Carne", desc:"Tirinhas na chapa • bem temperadas.", tag:"Premium", price:39.90, img:"img/mockup.png" }
-],
+  { id:"p1", title:"Porção de Batata Frita (P)", desc:"Crocante • perfeita pra compartilhar.", tag:"Clássica 200 G", price:10.00, img:"img/batata-frita-p.png" },
+  { id:"p2", title:"Batata Frita e musserarela (G)", desc:"Grande • serve bem 2- pessoas.", tag:"Compartilhar 400G", price:20.00, img:"img/batata-frita-mussarela-g.png" },
+  { id:"p5", title:"Torresmo Crocante+batata frita", desc:"Sequinho • pururuca perfeita.", tag:"Crocante 400G", price:29.90, img:"img/torresmo-calabresa.png" }
+ ],
 
 bebidas: [
   { id:"b1", title:"Coca-Cola Lata", desc:"350ml gelada.", tag:"350ml", price:6.00, img:"img/coca-lata.jpg" },
-  { id:"b2", title:"Guaraná Lata", desc:"350ml gelada.", tag:"350ml", price:6.00, img:"img/guarana_lata.jpg" },
-  { id:"b3", title:"Fanta Lata", desc:"350ml gelada.", tag:"350ml", price:6.00, img:"img/mockup.png" },
-  { id:"b4", title:"Sprite Lata", desc:"350ml gelada.", tag:"350ml", price:6.00, img:"img/mockup.png" },
-
-  { id:"b5", title:"Coca-Cola 2L", desc:"Perfeita pra compartilhar.", tag:"2L", price:12.00, img:"img/mockup.png" },
-  { id:"b6", title:"Guaraná 2L", desc:"Bem gelada.", tag:"2L", price:12.00, img:"img/mockup.png" },
+   
+  { id:"b5", title:"Coca-Cola 1L", desc:"Perfeita pra compartilhar.", tag:"1L", price:12.00, img:"coca-cola-1l.jpg" },
+  { id:"b6", title:"Guaraná 1L", desc:"Bem gelada.", tag:"1L", price:12.00, img:"guarana-1l.jpg" },
 
   { id:"b7", title:"Água 500ml", desc:"Sem gás.", tag:"500ml", price:4.00, img:"img/agua-500.jpg" },
-  { id:"b8", title:"Água com gás", desc:"500ml gelada.", tag:"500ml", price:5.00, img:"img/agua_500.jpg" },
+  { id:"b8", title:"Guarana antartica 200ML", desc:"200MLgelada.", tag:"200ml", price:4.00, img:"guarana-200ml.jpg" },
 
-  { id:"b9", title:"Suco Natural", desc:"300ml • sabor do dia.", tag:"300ml", price:8.00, img:"img/mockup.png" },
-  { id:"b10", title:"H2O", desc:"500ml gelada.", tag:"500ml", price:7.50, img:"img/mockup.png" }
+  { id:"b10", title:"Coca cola 200ML", desc:"200 ml gelada.", tag:"200ML", price:4.00, img:"coca-cola-200ml.jpg" }
 ],
 
 // ✅ MASSAS (mantive suas 2 e adicionei as 2 novas — sem mexer nas existentes)
@@ -57,18 +52,18 @@ massas: [
 
 // ✅ COMBOS (mantive o seu c1 e adicionei mais 3)
 combos: [
-  { id:"c1", title:"Combo Marmita + Refri", desc:"Marmita + Coca 350ml", price:32.90, img:"img/combo-marmita-refri.jpg" },
-  { id:"c2", title:"Combo Massa + Refri", desc:"Massa + Refri 350ml", price:34.90, img:"img/combo-massa-refri.jpg" },
-  { id:"c3", title:"Combo Casal", desc:"2 pratos + 2 refris 350ml", price:69.90, img:"img/combo-casal.jpg" },
-  { id:"c4", title:"Combo Família", desc:"4 pratos + 1 refri 2L", price:119.90, img:"img/combo-familia.jpg" }
+  { id:"c1", title:"Combo Marmita + Refri", desc:"Marmita + Coca 350ml", price:25.00, img:"img/combo-marmita-refri.jpg" },
+  { id:"c2", title:"Combo 1 Massa + 1 Bolonhesa + 2 Refri", desc:"Massa + Refri 200ml", price:42.00, img:"img/combo-massa-refri.jpg" },
+  { id:"c3", title:"Combo Casal", desc:"2 pratos do dia + 2 refris 200ML", price:47.00, img:"img/combo-casal.jpg" },
+  { id:"c4", title:"Combo Família", desc:"4 pratos + 1 refri 1L", price:95.00, img:"img/combo-familia.jpg" }
 ],
 
 // ✅ ADICIONAIS (marmitas e massas)
     addons: [
-      { id:"a1", title:"🍟 Batata frita", desc:"Adicional", tag:"+", price:4.00, img:"img/mockup.png", applies:["marmitas","massas","sobremesas"] },
-      { id:"a2", title:"🥩 Carne bovina", desc:"Adicional", tag:"+", price:5.00, img:"img/mockup.png", applies:["marmitas","massas","sobremesas"] },
-      { id:"a3", title:"🐷 Carne suína", desc:"Adicional", tag:"+", price:4.00, img:"img/mockup.png", applies:["marmitas","massas","sobremesas"] },
-      { id:"a4", title:"🍅 Molho à bolonhesa", desc:"Adicional", tag:"+", price:3.00, img:"img/mockup.png", applies:["marmitas","massas","sobremesas"] }
+      { id:"a1", title:"🍟 Batata frita", desc:"Adicional", tag:"+", price:4.00, img:"img/batata-frita-addon.jpg", applies:["marmitas","massas","sobremesas"] },
+      { id:"a2", title:"🥩 Carne bovina", desc:"Adicional", tag:"+", price:5.00, img:"img/carne-bovina-addon.jpg", applies:["marmitas","massas","sobremesas"] },
+      { id:"a3", title:"🐷 Carne suína", desc:"Adicional", tag:"+", price:4.00, img:"img/carne-suina-addon.jpg", applies:["marmitas","massas","sobremesas"] },
+      { id:"a4", title:"🍅 Molho à bolonhesa", desc:"Adicional", tag:"+", price:3.00, img:"img/molho-bolonhesa-addon.jpg", applies:["marmitas","massas","sobremesas"] }
     ]
 };
   // ==============================
