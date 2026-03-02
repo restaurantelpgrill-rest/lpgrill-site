@@ -1254,6 +1254,57 @@ button,
   transform: translateX(-50%) translateY(0);
 }
 /* ===========================
+   AJUSTE PC / DESKTOP
+   (mantém celular perfeito)
+   =========================== */
+@media (min-width: 900px){
+
+  /* container principal: não fica estourado e centraliza */
+  .container{
+    max-width: 1100px;
+    margin: 0 auto;
+  }
+
+  /* banner/topo: limita altura e evita “cortar” */
+  .top-banner,
+  .top-banner-full,
+  .hero-banner,
+  .banner{
+    max-height: 260px;
+    overflow: hidden;
+    border-radius: 18px;
+  }
+
+  .top-banner img,
+  .top-banner-full img,
+  .hero-banner img,
+  .banner img{
+    width: 100%;
+    height: 260px;
+    object-fit: cover;      /* mantém bonito */
+    object-position: center;/* centraliza */
+    display: block;
+  }
+
+  /* cards das categorias: grid mais bonito no PC */
+  .cats,
+  .categories,
+  .grid-cats{
+    display: grid;
+    grid-template-columns: repeat(3, minmax(220px, 1fr));
+    gap: 16px;
+  }
+
+  /* barra de ações (ver carrinho + finalizar): fica alinhada no PC */
+  .sticky-cta,
+  #stickyCTA{
+    max-width: 1100px;
+    left: 50%;
+    transform: translateX(-50%);
+    border-radius: 16px;
+  }
+}
+/* ===========================
    BANNER TOPO — AJUSTE DESKTOP
    =========================== */
 @media (min-width: 900px){
