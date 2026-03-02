@@ -30,7 +30,7 @@ porcoes: [
 ],
 
 bebidas: [
-  { id:"b1", title:"Coca-Cola Lata", desc:"350ml gelada.", tag:"350ml", price:6.00, img:"img/coca_lata.jpg" },
+  { id:"b1", title:"Coca-Cola Lata", desc:"350ml gelada.", tag:"350ml", price:6.00, img:"img/coca-lata.jpg" },
   { id:"b2", title:"Guaraná Lata", desc:"350ml gelada.", tag:"350ml", price:6.00, img:"img/guarana_lata.jpg" },
   { id:"b3", title:"Fanta Lata", desc:"350ml gelada.", tag:"350ml", price:6.00, img:"img/mockup.png" },
   { id:"b4", title:"Sprite Lata", desc:"350ml gelada.", tag:"350ml", price:6.00, img:"img/mockup.png" },
@@ -38,7 +38,7 @@ bebidas: [
   { id:"b5", title:"Coca-Cola 2L", desc:"Perfeita pra compartilhar.", tag:"2L", price:12.00, img:"img/mockup.png" },
   { id:"b6", title:"Guaraná 2L", desc:"Bem gelada.", tag:"2L", price:12.00, img:"img/mockup.png" },
 
-  { id:"b7", title:"Água 500ml", desc:"Sem gás.", tag:"500ml", price:4.00, img:"img/agua_500.jpg" },
+  { id:"b7", title:"Água 500ml", desc:"Sem gás.", tag:"500ml", price:4.00, img:"img/agua-500.jpg" },
   { id:"b8", title:"Água com gás", desc:"500ml gelada.", tag:"500ml", price:5.00, img:"img/agua_500.jpg" },
 
   { id:"b9", title:"Suco Natural", desc:"300ml • sabor do dia.", tag:"300ml", price:8.00, img:"img/mockup.png" },
