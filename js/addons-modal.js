@@ -21,8 +21,9 @@
   const totalEl = document.getElementById("addonsTotal");
   const btnAdd  = document.getElementById("addonsAddBtn");
 
-  if(!modal || !btnOpen || !listEl) return; 
-    // ✅ Toast verde: "Item adicionado"
+  if(!modal || !btnOpen || !listEl) return;
+
+  // ✅ Toast verde: "Item adicionado"
   function showAddedToast(text="Item adicionado ✅"){
     let t = document.querySelector(".added-toast");
     if(!t){
@@ -196,11 +197,10 @@
 
     if(add){
       e.preventDefault();
-      e.stopPropagation(); // ✅ impede disparar outro clique por cima
+      e.stopPropagation();
       const id = add.getAttribute("data-add");
       if(!id) return;
 
-      // ✅ trava clique duplo muito rápido (anti 2x)
       if(add.dataset.busy === "1") return;
       add.dataset.busy = "1";
       setTimeout(()=> (add.dataset.busy="0"), 180);
@@ -226,17 +226,6 @@
       render();
 
       showAddedToast("Adicional removido ✅");
-      return;
-    }
-  });
-
-    if(dec){
-      const id = dec.getAttribute("data-dec");
-      if(!id) return;
-      window.Cart?.dec?.(id);
-      window.Cart?.renderAll?.();
-      document.dispatchEvent(new CustomEvent("lp:cart-change"));
-      render();
       return;
     }
   });
