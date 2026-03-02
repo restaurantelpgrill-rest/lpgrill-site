@@ -1205,3 +1205,29 @@ button,
   .ck-modal{ max-width: 94vw !important; }
   .ck-pay{ padding: 16px 14px !important; }
 }
+/* botão flutuante WhatsApp */
+.waFloat,
+#waFloat{
+  width: 46px;
+  height: 46px;
+  bottom: calc(var(--bottomBarH) + 18px);
+  right: 12px;
+  border-radius: 50%;
+  padding: 6px;
+}
+
+/* imagem interna */
+.waFloat img,
+#waFloat img{
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+}
+@media (max-width: 600px){
+  .waFloat,
+  #waFloat{
+    width: 42px;
+    height: 42px;
+    bottom: calc(var(--bottomBarH) + 16px);
+  }
+}
