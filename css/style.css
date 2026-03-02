@@ -1253,3 +1253,26 @@ button,
   opacity:1;
   transform: translateX(-50%) translateY(0);
 }
+/* ===========================
+   BANNER TOPO — AJUSTE DESKTOP
+   =========================== */
+@media (min-width: 900px){
+
+  /* deixa o banner realmente full width */
+  .top-banner,
+  .top-banner-full,
+  header img[src*="banner-topo"],
+  img[src*="banner-topo"]{
+    width: 100vw;
+    max-width: 100vw;
+    margin-left: calc(50% - 50vw);
+    display: block;
+  }
+
+  /* limita altura para não ficar gigante */
+  img[src*="banner-topo"]{
+    height: 260px;
+    object-fit: cover;
+    object-position: center;
+  }
+}
