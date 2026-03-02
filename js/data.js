@@ -31,13 +31,13 @@ porcoes: [
 bebidas: [
   { id:"b1", title:"Coca-Cola Lata", desc:"350ml gelada.", tag:"350ml", price:6.00, img:"img/coca-lata.jpg" },
    
-  { id:"b5", title:"Coca-Cola 1L", desc:"Perfeita pra compartilhar.", tag:"1L", price:12.00, img:"coca-cola-1l.jpg" },
-  { id:"b6", title:"Guaraná 1L", desc:"Bem gelada.", tag:"1L", price:12.00, img:"guarana-1l.jpg" },
+  { id:"b5", title:"Coca-Cola 1L", desc:"Perfeita pra compartilhar.", tag:"1L", price:12.00, img:"img/coca-cola-1l.jpg" },
+  { id:"b6", title:"Guaraná 1L", desc:"Bem gelada.", tag:"1L", price:12.00, img:"img/guarana-1l.jpg" },
 
   { id:"b7", title:"Água 500ml", desc:"Sem gás.", tag:"500ml", price:4.00, img:"img/agua-500.jpg" },
-  { id:"b8", title:"Guarana antartica 200ML", desc:"200MLgelada.", tag:"200ml", price:4.00, img:"guarana-200ml.jpg" },
+  { id:"b8", title:"Guarana antartica 200ML", desc:"200MLgelada.", tag:"200ml", price:4.00, img:"img/guarana-200ml.jpg" },
 
-  { id:"b10", title:"Coca cola 200ML", desc:"200 ml gelada.", tag:"200ML", price:4.00, img:"coca-cola-200ml.jpg" }
+  { id:"b10", title:"Coca cola 200ML", desc:"200 ml gelada.", tag:"200ML", price:4.00, img:"img/coca-cola-200ml.jpg" }
 ],
 
 // ✅ MASSAS (mantive suas 2 e adicionei as 2 novas — sem mexer nas existentes)
